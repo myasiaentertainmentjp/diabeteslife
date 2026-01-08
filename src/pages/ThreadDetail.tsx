@@ -95,12 +95,11 @@ export function ThreadDetail() {
     if (!id) return
 
     try {
-      // Get comments (filter hidden ones)
+      // Get comments
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
         .eq('thread_id', id)
-        .eq('status', 'visible')
         .order('created_at', { ascending: true })
 
       if (commentsError) {
