@@ -134,6 +134,8 @@ export async function uploadToSupabaseStorage(
   const fileName = generateFileName(file.name)
   const filePath = `${fileName}`
 
+  console.log('Uploading to Supabase Storage:', { bucket, filePath, fileType: file.type, fileSize: file.size })
+
   const { error } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {
@@ -143,7 +145,14 @@ export async function uploadToSupabaseStorage(
 
   if (error) {
     console.error('Supabase storage upload failed:', error)
-    throw new Error('画像のアップロードに失敗しました')
+    // Provide more specific error messages
+    if (error.message?.includes('Bucket not found')) {
+      throw new Error(`ストレージバケット "${bucket}" が存在しません。Supabaseダッシュボードで作成してください。`)
+    }
+    if (error.message?.includes('row-level security') || error.message?.includes('policy')) {
+      throw new Error('ストレージのアクセス権限がありません。RLSポリシーを確認してください。')
+    }
+    throw new Error(`画像のアップロードに失敗しました: ${error.message}`)
   }
 
   const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath)
