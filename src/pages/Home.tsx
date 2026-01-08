@@ -37,7 +37,6 @@ export function Home() {
       let query = supabase
         .from('threads')
         .select('*')
-        .eq('status', 'normal')
         .limit(10)
 
       if (activeTab === 'popular') {
@@ -70,7 +69,6 @@ export function Home() {
       const { data, error } = await supabase
         .from('threads')
         .select('*')
-        .eq('status', 'normal')
         .gte('created_at', oneWeekAgo.toISOString())
         .order('comments_count', { ascending: false })
         .limit(5)
