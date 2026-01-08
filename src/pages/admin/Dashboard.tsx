@@ -49,19 +49,19 @@ export function Dashboard() {
     setLoading(true)
 
     try {
-      // Fetch counts with error handling for each
+      // Fetch counts
       const [usersResult, threadsResult, commentsResult, articlesResult] = await Promise.all([
-        supabase.from('users').select('id', { count: 'exact', head: true }).catch(() => ({ count: 0 })),
-        supabase.from('threads').select('id', { count: 'exact', head: true }).catch(() => ({ count: 0 })),
-        supabase.from('comments').select('id', { count: 'exact', head: true }).catch(() => ({ count: 0 })),
-        supabase.from('articles').select('id', { count: 'exact', head: true }).eq('is_published', true).catch(() => ({ count: 0 })),
+        supabase.from('users').select('id', { count: 'exact', head: true }),
+        supabase.from('threads').select('id', { count: 'exact', head: true }),
+        supabase.from('comments').select('id', { count: 'exact', head: true }),
+        supabase.from('articles').select('id', { count: 'exact', head: true }).eq('is_published', true),
       ])
 
       setStats({
-        totalUsers: (usersResult as { count: number | null }).count || 0,
-        totalThreads: (threadsResult as { count: number | null }).count || 0,
-        totalComments: (commentsResult as { count: number | null }).count || 0,
-        totalArticles: (articlesResult as { count: number | null }).count || 0,
+        totalUsers: usersResult.count || 0,
+        totalThreads: threadsResult.count || 0,
+        totalComments: commentsResult.count || 0,
+        totalArticles: articlesResult.count || 0,
       })
 
       // Fetch recent threads with error handling

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
 import { supabase } from '../lib/supabase'
 import { Article, ARTICLE_CATEGORY_LABELS } from '../types/database'
 import { ArrowLeft, Calendar, Tag, Loader2, FileText } from 'lucide-react'
@@ -139,9 +138,10 @@ export function ArticleDetail() {
           </h1>
 
           {/* Content */}
-          <div className="prose prose-gray max-w-none prose-headings:font-bold prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline prose-ul:my-4 prose-li:my-1 prose-blockquote:border-green-500 prose-blockquote:bg-green-50 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r">
-            <ReactMarkdown>{article.content}</ReactMarkdown>
-          </div>
+          <div
+            className="article-content"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
