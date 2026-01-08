@@ -168,55 +168,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Auth state changed:', event)
         if (!mounted) return
 
-        setSession(newSession)
-        setUser(newSession?.user ?? null)
+        try {
+          setSession(newSession)
+          setUser(newSession?.user ?? null)
 
-        if (newSession?.user) {
-          const userProfile = await fetchUserData(
-            newSession.user.id,
-            newSession.user.email || ''
-          )
-          if (mounted) {
-            setProfile(userProfile)
+          if (newSession?.user) {
+            const userProfile = await fetchUserData(
+              newSession.user.id,
+              newSession.user.email || ''
+            )
+            if (mounted) {
+              setProfile(userProfile)
+            }
+          } else {
+            setProfile(null)
           }
-        } else {
-          setProfile(null)
+        } catch (error) {
+          console.error('Error in auth state change handler:', error)
+          // Set default profile on error
+          if (newSession?.user && mounted) {
+            const isAdminEmail = newSession.user.email === 'info@diabeteslife.jp'
+            setProfile({
+              id: newSession.user.id,
+              email: newSession.user.email || '',
+              role: isAdminEmail ? 'admin' : 'user',
+              display_name: null,
+            })
+          }
+        } finally {
+          if (mounted) setLoading(false)
         }
-
-        if (mounted) setLoading(false)
       }
     )
 
-    // Safety timeout - if auth takes too long, set a default admin profile for known admin email
+    // Safety timeout - force loading to false after timeout
+    // This prevents infinite loading in case of any errors
     const timeoutId = setTimeout(async () => {
-      if (mounted && loading) {
-        console.log('Auth timeout reached, checking for session...')
+      if (!mounted) return
 
+      console.log('Auth timeout reached, forcing loading to false...')
+
+      try {
         // Try to get current session
         const { data: sessionData } = await supabase.auth.getSession()
-        if (sessionData?.session?.user) {
+        if (sessionData?.session?.user && mounted) {
           const userEmail = sessionData.session.user.email || ''
           const isAdminEmail = userEmail === 'info@diabeteslife.jp'
 
           console.log('Setting fallback profile after timeout. Email:', userEmail, 'Is admin:', isAdminEmail)
 
-          if (mounted && !profile) {
-            setUser(sessionData.session.user)
-            setSession(sessionData.session)
-            setProfile({
-              id: sessionData.session.user.id,
-              email: userEmail,
-              role: isAdminEmail ? 'admin' : 'user',
-              display_name: null,
-            })
-          }
+          setUser(sessionData.session.user)
+          setSession(sessionData.session)
+          setProfile((currentProfile) => currentProfile || {
+            id: sessionData.session.user.id,
+            email: userEmail,
+            role: isAdminEmail ? 'admin' : 'user',
+            display_name: null,
+          })
         }
-
+      } catch (error) {
+        console.error('Error in timeout handler:', error)
+      } finally {
+        // Always set loading to false after timeout
         if (mounted) {
           setLoading(false)
         }
       }
-    }, 5000) // Increased to 5 seconds
+    }, 5000)
 
     return () => {
       mounted = false
