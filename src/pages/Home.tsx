@@ -20,9 +20,14 @@ export function Home() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
+  // 初回マウント時にサイドバーの人気トピックを取得
+  useEffect(() => {
+    fetchPopularThreads()
+  }, [])
+
+  // タブ切り替え時（初回含む）にメインコンテンツを取得
   useEffect(() => {
     fetchThreads()
-    fetchPopularThreads()
   }, [activeTab])
 
   async function fetchThreads() {
