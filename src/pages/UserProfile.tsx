@@ -66,7 +66,7 @@ export function UserProfile() {
         .from('threads')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_hidden', false)
+        .eq('status', 'normal')
         .order('created_at', { ascending: false })
         .limit(10)
 

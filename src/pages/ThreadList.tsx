@@ -44,7 +44,7 @@ export function ThreadList() {
       let query = supabase
         .from('threads')
         .select('*', { count: 'exact' })
-        .eq('is_hidden', false)
+        .eq('status', 'normal')
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {

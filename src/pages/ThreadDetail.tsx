@@ -100,7 +100,7 @@ export function ThreadDetail() {
         .from('comments')
         .select('*')
         .eq('thread_id', id)
-        .eq('is_hidden', false)
+        .eq('status', 'visible')
         .order('created_at', { ascending: true })
 
       if (commentsError) {
