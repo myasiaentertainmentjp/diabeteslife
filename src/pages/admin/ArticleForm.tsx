@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { ArticleCategory, ARTICLE_CATEGORY_LABELS } from '../../types/database'
 import { RichTextEditor } from '../../components/RichTextEditor'
@@ -54,6 +55,7 @@ function generateExcerpt(html: string, maxLength: number = 150): string {
 export function ArticleForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { showToast } = useToast()
   const isEdit = Boolean(id)
 
@@ -69,29 +71,36 @@ export function ArticleForm() {
   }, [id, isEdit])
 
   async function fetchArticle(articleId: string) {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('id', articleId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', articleId)
+        .single()
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching article:', error)
+        showToast('記事の取得に失敗しました', 'error')
+        navigate('/admin/articles')
+        return
+      }
+
+      setFormData({
+        title: data.title,
+        slug: data.slug,
+        category: data.category,
+        tags: data.tags?.join(', ') || '',
+        thumbnail_url: data.thumbnail_url || '',
+        content: data.content,
+        is_published: data.is_published,
+      })
+    } catch (error) {
       console.error('Error fetching article:', error)
       showToast('記事の取得に失敗しました', 'error')
       navigate('/admin/articles')
-      return
+    } finally {
+      setLoading(false)
     }
-
-    setFormData({
-      title: data.title,
-      slug: data.slug,
-      category: data.category,
-      tags: data.tags?.join(', ') || '',
-      thumbnail_url: data.thumbnail_url || '',
-      content: data.content,
-      is_published: data.is_published,
-    })
-    setLoading(false)
   }
 
   function generateSlug() {
@@ -141,14 +150,18 @@ export function ArticleForm() {
     const autoExcerpt = generateExcerpt(formData.content)
 
     const now = new Date().toISOString()
+
+    // Build tags array, ensuring it's properly formatted
+    const tagsArray = formData.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+
     const articleData: Record<string, unknown> = {
       title: formData.title.trim(),
       slug: formData.slug.trim(),
       category: formData.category,
-      tags: formData.tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
+      tags: tagsArray.length > 0 ? tagsArray : null, // Send null if no tags
       thumbnail_url: formData.thumbnail_url.trim() || null,
       excerpt: autoExcerpt || null,
       content: formData.content,
@@ -162,7 +175,19 @@ export function ArticleForm() {
       articleData.created_at = now
     }
 
+    console.log('Article data to be sent:', JSON.stringify(articleData, null, 2))
+
     try {
+      // Check authentication status
+      const { data: session } = await supabase.auth.getSession()
+      console.log('Current session:', session?.session?.user?.id)
+
+      if (!session?.session) {
+        showToast('セッションが切れました。再度ログインしてください。', 'error')
+        setSaving(false)
+        return
+      }
+
       if (isEdit && id) {
         console.log('Updating article:', id, articleData)
         const { error } = await supabase
@@ -172,6 +197,7 @@ export function ArticleForm() {
 
         if (error) {
           console.error('Error updating article:', error)
+          console.error('Error details:', JSON.stringify(error, null, 2))
           showToast('更新に失敗しました: ' + error.message, 'error')
         } else {
           showToast('記事を更新しました', 'success')
@@ -179,16 +205,21 @@ export function ArticleForm() {
         }
       } else {
         console.log('Creating article:', articleData)
-        const { error } = await supabase.from('articles').insert(articleData)
+        const { data, error } = await supabase.from('articles').insert(articleData).select()
 
         if (error) {
           console.error('Error creating article:', error)
+          console.error('Error code:', error.code)
+          console.error('Error message:', error.message)
+          console.error('Error details:', error.details)
+          console.error('Error hint:', error.hint)
           if (error.code === '23505') {
             showToast('このスラッグは既に使用されています', 'error')
           } else {
             showToast('作成に失敗しました: ' + error.message, 'error')
           }
         } else {
+          console.log('Article created successfully:', data)
           showToast('記事を作成しました', 'success')
           navigate('/admin/articles')
         }

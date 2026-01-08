@@ -36,6 +36,7 @@ import { AdminThreadList } from './pages/admin/ThreadList'
 import { AdminCommentList } from './pages/admin/CommentList'
 import { AdminNgWordList } from './pages/admin/NgWordList'
 import { AdminUserList } from './pages/admin/UserList'
+import { ReportList } from './pages/admin/ReportList'
 
 function App() {
   return (
@@ -91,6 +92,7 @@ function App() {
               <Route path="comments" element={<AdminCommentList />} />
               <Route path="ng-words" element={<AdminNgWordList />} />
               <Route path="users" element={<AdminUserList />} />
+              <Route path="reports" element={<ReportList />} />
             </Route>
           </Routes>
         </ToastProvider>

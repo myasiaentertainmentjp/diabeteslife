@@ -15,18 +15,24 @@ export function AdminArticleList() {
   }, [])
 
   async function fetchArticles() {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching articles:', error)
+        showToast('記事の取得に失敗しました', 'error')
+      } else {
+        setArticles(data as unknown as Article[])
+      }
+    } catch (error) {
       console.error('Error fetching articles:', error)
       showToast('記事の取得に失敗しました', 'error')
-    } else {
-      setArticles(data as unknown as Article[])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function togglePublish(article: Article) {

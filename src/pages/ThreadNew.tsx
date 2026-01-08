@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ThreadCategory, THREAD_CATEGORY_LABELS } from '../types/database'
-import { ArrowLeft, Send, AlertCircle, Loader2 } from 'lucide-react'
+import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
+import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare } from 'lucide-react'
 
 const categories: ThreadCategory[] = ['health', 'lifestyle', 'work', 'food', 'exercise', 'other']
 
@@ -11,6 +11,7 @@ export function ThreadNew() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState<ThreadCategory>('health')
+  const [mode, setMode] = useState<ThreadMode>('normal')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -78,6 +79,7 @@ export function ThreadNew() {
         title: title.trim(),
         content: content.trim(),
         category,
+        mode,
         comments_count: 0,
       } as never)
       .select()
@@ -126,6 +128,58 @@ export function ThreadNew() {
               <span className="text-sm">{error}</span>
             </div>
           )}
+
+          {/* Mode Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              スレッドタイプ
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setMode('normal')}
+                className={`p-4 border-2 rounded-lg text-left transition-all ${
+                  mode === 'normal'
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <MessageSquare size={24} className={mode === 'normal' ? 'text-green-600' : 'text-gray-400'} />
+                  <span className={`font-medium ${mode === 'normal' ? 'text-green-700' : 'text-gray-700'}`}>
+                    通常モード
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  誰でも投稿・コメントできます。質問や議論に最適。
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('diary')}
+                className={`p-4 border-2 rounded-lg text-left transition-all ${
+                  mode === 'diary'
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <BookOpen size={24} className={mode === 'diary' ? 'text-green-600' : 'text-gray-400'} />
+                  <span className={`font-medium ${mode === 'diary' ? 'text-green-700' : 'text-gray-700'}`}>
+                    日記モード
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  あなただけが投稿できます。食事記録や経過報告に。
+                </p>
+              </button>
+            </div>
+            {mode === 'diary' && (
+              <p className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                日記モードは作成後に変更できません。他のユーザーはコメントのみ可能です。
+              </p>
+            )}
+          </div>
 
           {/* Category */}
           <div>

@@ -22,30 +22,34 @@ export function ArticleList() {
   async function fetchArticles() {
     setLoading(true)
 
-    let query = supabase
-      .from('articles')
-      .select('*', { count: 'exact' })
-      .eq('is_published', true)
-      .order('published_at', { ascending: false })
+    try {
+      let query = supabase
+        .from('articles')
+        .select('*', { count: 'exact' })
+        .eq('is_published', true)
+        .order('published_at', { ascending: false })
 
-    if (selectedCategory !== 'all') {
-      query = query.eq('category', selectedCategory)
-    }
+      if (selectedCategory !== 'all') {
+        query = query.eq('category', selectedCategory)
+      }
 
-    const from = (currentPage - 1) * ITEMS_PER_PAGE
-    const to = from + ITEMS_PER_PAGE - 1
-    query = query.range(from, to)
+      const from = (currentPage - 1) * ITEMS_PER_PAGE
+      const to = from + ITEMS_PER_PAGE - 1
+      query = query.range(from, to)
 
-    const { data, error, count } = await query
+      const { data, error, count } = await query
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching articles:', error)
+      } else {
+        setArticles(data as Article[])
+        setTotalCount(count || 0)
+      }
+    } catch (error) {
       console.error('Error fetching articles:', error)
-    } else {
-      setArticles(data as Article[])
-      setTotalCount(count || 0)
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   function formatDate(dateString: string | null) {

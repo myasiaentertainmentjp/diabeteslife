@@ -30,27 +30,33 @@ export function AdminThreadList() {
 
   async function fetchThreads() {
     setLoading(true)
-    let query = supabase
-      .from('threads')
-      .select(`*, profiles:user_id(display_name, email)`)
-      .order('created_at', { ascending: false })
+    try {
+      let query = supabase
+        .from('threads')
+        .select(`*, profiles:user_id(display_name, email)`)
+        .order('created_at', { ascending: false })
 
-    if (categoryFilter) {
-      query = query.eq('category', categoryFilter)
-    }
-    if (statusFilter) {
-      query = query.eq('status', statusFilter)
-    }
+      if (categoryFilter) {
+        query = query.eq('category', categoryFilter)
+      }
+      if (statusFilter) {
+        query = query.eq('status', statusFilter)
+      }
 
-    const { data, error } = await query
+      const { data, error } = await query
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching threads:', error)
+        showToast('スレッドの取得に失敗しました', 'error')
+      } else {
+        setThreads(data as unknown as ThreadWithUser[])
+      }
+    } catch (error) {
       console.error('Error fetching threads:', error)
       showToast('スレッドの取得に失敗しました', 'error')
-    } else {
-      setThreads(data as unknown as ThreadWithUser[])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function updateStatus(id: string, status: ThreadStatus) {

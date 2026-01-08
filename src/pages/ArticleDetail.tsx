@@ -21,43 +21,46 @@ export function ArticleDetail() {
 
     setLoading(true)
 
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_published', true)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single()
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching article:', error)
+        return
+      }
+
+      const articleData = data as unknown as Article
+      setArticle(articleData)
+
+      // Increment view count
+      await supabase
+        .from('articles')
+        .update({ view_count: (articleData.view_count || 0) + 1 } as never)
+        .eq('id', articleData.id)
+
+      // Fetch related articles
+      const { data: related } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('is_published', true)
+        .eq('category', articleData.category)
+        .neq('id', articleData.id)
+        .order('published_at', { ascending: false })
+        .limit(3)
+
+      if (related) {
+        setRelatedArticles(related as unknown as Article[])
+      }
+    } catch (error) {
       console.error('Error fetching article:', error)
+    } finally {
       setLoading(false)
-      return
     }
-
-    const articleData = data as unknown as Article
-    setArticle(articleData)
-
-    // Increment view count
-    await supabase
-      .from('articles')
-      .update({ view_count: (articleData.view_count || 0) + 1 } as never)
-      .eq('id', articleData.id)
-
-    // Fetch related articles
-    const { data: related } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('is_published', true)
-      .eq('category', articleData.category)
-      .neq('id', articleData.id)
-      .order('published_at', { ascending: false })
-      .limit(3)
-
-    if (related) {
-      setRelatedArticles(related as unknown as Article[])
-    }
-
-    setLoading(false)
   }
 
   function formatDate(dateString: string | null) {

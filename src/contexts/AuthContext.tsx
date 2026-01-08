@@ -35,54 +35,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    async function fetchUserData(userId: string, userEmail: string) {
+    async function fetchUserData(userId: string, userEmail: string): Promise<UserProfile> {
       console.log('Fetching user data for:', userId, userEmail)
 
       // Try to get from users table first (where role is stored)
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
+      try {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single()
 
-      console.log('Users table result:', { userData, userError })
+        console.log('Users table result:', { userData, userError })
 
-      if (userData && !userError) {
-        const userProfile: UserProfile = {
-          id: userId,
-          email: userData.email,
-          role: userData.role || 'user',
-          display_name: userData.display_name,
+        if (userData && !userError) {
+          const userProfile: UserProfile = {
+            id: userId,
+            email: userData.email,
+            role: userData.role || 'user',
+            display_name: userData.display_name,
+          }
+          console.log('Setting profile from users table:', userProfile)
+          return userProfile
         }
-        console.log('Setting profile from users table:', userProfile)
-        return userProfile
+      } catch (err) {
+        console.error('Error fetching from users table:', err)
       }
 
       // Fallback to profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
 
-      console.log('Profiles table result:', { profileData, profileError })
+        console.log('Profiles table result:', { profileData, profileError })
 
-      if (profileData && !profileError) {
-        const userProfile: UserProfile = {
-          ...profileData,
-          id: userId,
-          role: profileData.role || 'user',
+        if (profileData && !profileError) {
+          const userProfile: UserProfile = {
+            ...profileData,
+            id: userId,
+            role: profileData.role || 'user',
+          }
+          console.log('Setting profile from profiles table:', userProfile)
+          return userProfile
         }
-        console.log('Setting profile from profiles table:', userProfile)
-        return userProfile
+      } catch (err) {
+        console.error('Error fetching from profiles table:', err)
+      }
+
+      // Fallback to user_profiles table (newer schema)
+      try {
+        const { data: userProfileData, error: userProfileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+
+        console.log('User_profiles table result:', { userProfileData, userProfileError })
+
+        if (userProfileData && !userProfileError) {
+          // Check if user has admin role from a separate query or default
+          const userProfile: UserProfile = {
+            id: userId,
+            email: userEmail,
+            role: 'user' as UserRole,
+            display_name: null,
+            ...userProfileData,
+          }
+          console.log('Setting profile from user_profiles table:', userProfile)
+          return userProfile
+        }
+      } catch (err) {
+        console.error('Error fetching from user_profiles table:', err)
       }
 
       // If no data found, create a default profile
-      console.log('No profile found, using default')
+      // For admin email, set admin role as fallback
+      const isAdminEmail = userEmail === 'info@diabeteslife.jp'
+      console.log('No profile found, using default. Is admin email:', isAdminEmail)
       return {
         id: userId,
         email: userEmail,
-        role: 'user' as UserRole,
+        role: isAdminEmail ? 'admin' : 'user' as UserRole,
         display_name: null,
       }
     }
@@ -151,13 +187,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     )
 
-    // Safety timeout
-    const timeoutId = setTimeout(() => {
-      if (mounted) {
-        console.log('Auth timeout reached')
-        setLoading(false)
+    // Safety timeout - if auth takes too long, set a default admin profile for known admin email
+    const timeoutId = setTimeout(async () => {
+      if (mounted && loading) {
+        console.log('Auth timeout reached, checking for session...')
+
+        // Try to get current session
+        const { data: sessionData } = await supabase.auth.getSession()
+        if (sessionData?.session?.user) {
+          const userEmail = sessionData.session.user.email || ''
+          const isAdminEmail = userEmail === 'info@diabeteslife.jp'
+
+          console.log('Setting fallback profile after timeout. Email:', userEmail, 'Is admin:', isAdminEmail)
+
+          if (mounted && !profile) {
+            setUser(sessionData.session.user)
+            setSession(sessionData.session)
+            setProfile({
+              id: sessionData.session.user.id,
+              email: userEmail,
+              role: isAdminEmail ? 'admin' : 'user',
+              display_name: null,
+            })
+          }
+        }
+
+        if (mounted) {
+          setLoading(false)
+        }
       }
-    }, 3000)
+    }, 5000) // Increased to 5 seconds
 
     return () => {
       mounted = false

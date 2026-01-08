@@ -6,6 +6,7 @@ import {
   MessageCircle,
   ShieldAlert,
   Users,
+  Flag,
   ArrowLeft,
   Menu,
   X,
@@ -17,6 +18,7 @@ const MENU_ITEMS = [
   { path: '/admin/articles', label: '記事管理', icon: FileText },
   { path: '/admin/threads', label: 'スレッド管理', icon: MessageSquare },
   { path: '/admin/comments', label: 'コメント管理', icon: MessageCircle },
+  { path: '/admin/reports', label: '通報管理', icon: Flag },
   { path: '/admin/ng-words', label: 'NGワード管理', icon: ShieldAlert },
   { path: '/admin/users', label: 'ユーザー管理', icon: Users },
 ]
