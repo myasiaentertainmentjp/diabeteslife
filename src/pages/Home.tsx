@@ -31,6 +31,7 @@ export function Home() {
   }, [activeTab])
 
   async function fetchThreads() {
+    console.log('[Home] fetchThreads started, activeTab:', activeTab)
     setLoading(true)
 
     try {
@@ -46,16 +47,20 @@ export function Home() {
         query = query.order('created_at', { ascending: false })
       }
 
+      console.log('[Home] Executing query...')
       const { data, error } = await query
+      console.log('[Home] Query result:', { data, error, dataLength: data?.length })
 
       if (error) {
-        console.error('Error fetching threads:', error)
+        console.error('[Home] Error fetching threads:', error)
       } else if (data) {
+        console.log('[Home] Setting threads:', data.length, 'items')
         setThreads(data as unknown as ThreadWithUser[])
       }
     } catch (error) {
-      console.error('Error fetching threads:', error)
+      console.error('[Home] Catch error:', error)
     } finally {
+      console.log('[Home] fetchThreads complete, setting loading false')
       setLoading(false)
     }
   }
