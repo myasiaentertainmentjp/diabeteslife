@@ -75,6 +75,11 @@ export function ArticleList() {
     })
   }
 
+  function truncateText(text: string, maxLength: number) {
+    if (text.length <= maxLength) return text
+    return text.slice(0, maxLength).trim() + '...'
+  }
+
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   return (
@@ -147,8 +152,8 @@ export function ArticleList() {
                   {article.title}
                 </h2>
                 {article.excerpt && (
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1">
-                    {article.excerpt}
+                  <p className="text-gray-600 text-sm mb-3 flex-1">
+                    {truncateText(article.excerpt, 80)}
                   </p>
                 )}
                 <div className="flex items-center gap-1 text-gray-500 text-sm">
