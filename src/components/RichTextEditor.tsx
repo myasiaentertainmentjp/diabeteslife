@@ -27,7 +27,7 @@ import {
   Redo,
   Minus,
 } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface RichTextEditorProps {
   content: string
@@ -36,12 +36,91 @@ interface RichTextEditorProps {
   onImageUpload?: (file: File) => Promise<string>
 }
 
+// Helper function to check if URL is external (not from Supabase)
+function isExternalImageUrl(url: string): boolean {
+  if (!url) return false
+  // Supabase storage URLs contain supabase.co
+  if (url.includes('supabase.co')) return false
+  // Check if it's an http/https URL
+  return url.startsWith('http://') || url.startsWith('https://')
+}
+
+// Helper function to extract image URLs from HTML
+function extractImageUrls(html: string): string[] {
+  const urls: string[] = []
+  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi
+  let match
+  while ((match = imgRegex.exec(html)) !== null) {
+    if (isExternalImageUrl(match[1])) {
+      urls.push(match[1])
+    }
+  }
+  return urls
+}
+
+// Helper function to fetch image and convert to File
+async function fetchImageAsFile(url: string): Promise<File> {
+  // Use proxy for CORS issues - convert http to https first
+  const secureUrl = url.replace(/^http:\/\//, 'https://')
+
+  const response = await fetch(secureUrl)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`)
+  }
+
+  const blob = await response.blob()
+  const extension = url.split('.').pop()?.split('?')[0] || 'jpg'
+  const fileName = `pasted_${Date.now()}.${extension}`
+
+  return new File([blob], fileName, { type: blob.type || 'image/jpeg' })
+}
+
 export function RichTextEditor({
   content,
   onChange,
   placeholder = '記事の内容を入力...',
   onImageUpload,
 }: RichTextEditorProps) {
+  const [processingImages, setProcessingImages] = useState(false)
+  const [processingCount, setProcessingCount] = useState({ current: 0, total: 0 })
+
+  // Process external images in HTML - upload to Supabase and replace URLs
+  const processExternalImages = useCallback(async (html: string): Promise<string> => {
+    if (!onImageUpload) return html
+
+    const imageUrls = extractImageUrls(html)
+    if (imageUrls.length === 0) return html
+
+    setProcessingImages(true)
+    setProcessingCount({ current: 0, total: imageUrls.length })
+
+    let processedHtml = html
+
+    for (let i = 0; i < imageUrls.length; i++) {
+      const originalUrl = imageUrls[i]
+      setProcessingCount({ current: i + 1, total: imageUrls.length })
+
+      try {
+        // Fetch the image
+        const file = await fetchImageAsFile(originalUrl)
+
+        // Upload to Supabase (this also compresses to WebP)
+        const newUrl = await onImageUpload(file)
+
+        // Replace old URL with new URL in HTML
+        processedHtml = processedHtml.split(originalUrl).join(newUrl)
+      } catch (error) {
+        console.error(`Failed to process image ${originalUrl}:`, error)
+        // Convert http to https as fallback
+        const secureUrl = originalUrl.replace(/^http:\/\//, 'https://')
+        processedHtml = processedHtml.split(originalUrl).join(secureUrl)
+      }
+    }
+
+    setProcessingImages(false)
+    return processedHtml
+  }, [onImageUpload])
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -80,15 +159,6 @@ export function RichTextEditor({
       attributes: {
         class: 'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[400px] px-4 py-3',
       },
-      handlePaste: (view, event) => {
-        // Handle paste to preserve formatting
-        const html = event.clipboardData?.getData('text/html')
-        if (html) {
-          // Let TipTap handle HTML paste
-          return false
-        }
-        return false
-      },
     },
   })
 
@@ -98,6 +168,36 @@ export function RichTextEditor({
       editor.commands.setContent(content)
     }
   }, [content, editor])
+
+  // Handle paste events to process external images
+  useEffect(() => {
+    if (!editor || !onImageUpload) return
+
+    const handlePaste = async (event: ClipboardEvent) => {
+      const html = event.clipboardData?.getData('text/html')
+      if (!html) return
+
+      // Check if there are external images in the pasted content
+      const imageUrls = extractImageUrls(html)
+      if (imageUrls.length === 0) return
+
+      // Process images after a short delay (after TipTap has handled the paste)
+      setTimeout(async () => {
+        const currentHtml = editor.getHTML()
+        const processedHtml = await processExternalImages(currentHtml)
+        if (processedHtml !== currentHtml) {
+          editor.commands.setContent(processedHtml)
+        }
+      }, 100)
+    }
+
+    const editorElement = editor.view.dom
+    editorElement.addEventListener('paste', handlePaste)
+
+    return () => {
+      editorElement.removeEventListener('paste', handlePaste)
+    }
+  }, [editor, onImageUpload, processExternalImages])
 
   const setLink = useCallback(() => {
     if (!editor) return
@@ -343,6 +443,16 @@ export function RichTextEditor({
           <ImageIcon size={18} />
         </ToolbarButton>
       </div>
+
+      {/* Processing indicator */}
+      {processingImages && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border-b border-blue-200 text-blue-700 text-sm">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span>
+            外部画像をアップロード中... ({processingCount.current}/{processingCount.total})
+          </span>
+        </div>
+      )}
 
       {/* Editor content */}
       <EditorContent editor={editor} />

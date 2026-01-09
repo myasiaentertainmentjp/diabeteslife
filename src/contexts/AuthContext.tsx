@@ -140,36 +140,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     )
 
-    // Safety timeout - force loading to false after timeout
-    // This prevents infinite loading in case of any errors
-    const timeoutId = setTimeout(async () => {
-      if (!mounted) return
-
-      try {
-        // Try to get current session
-        const { data: sessionData } = await supabase.auth.getSession()
-        if (sessionData?.session?.user && mounted) {
-          const userEmail = sessionData.session.user.email || ''
-          const isAdminEmail = userEmail === 'info@diabeteslife.jp'
-
-          setUser(sessionData.session.user)
-          setSession(sessionData.session)
-          setProfile((currentProfile) => currentProfile || {
-            id: sessionData.session.user.id,
-            email: userEmail,
-            role: isAdminEmail ? 'admin' : 'user',
-            display_name: null,
-          })
-        }
-      } catch (error) {
-        console.error('Error in timeout handler:', error)
-      } finally {
-        // Always set loading to false after timeout
-        if (mounted) {
-          setLoading(false)
-        }
+    // Safety timeout - force loading to false after 3 seconds
+    // This ensures UI shows login buttons even if Supabase hangs
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        setLoading(false)
       }
-    }, 5000)
+    }, 3000)
 
     return () => {
       mounted = false
