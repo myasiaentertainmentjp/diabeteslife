@@ -113,8 +113,13 @@ export function AdminCommentList() {
     })
   }
 
-  function truncateText(text: string, maxLength: number) {
+  function truncateText(text: string | null | undefined, maxLength: number) {
+    if (!text) return ''
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+  }
+
+  function getCommentContent(comment: CommentWithRelations) {
+    return (comment as any).body || comment.content || ''
   }
 
   function getStatusBadge(status: CommentStatus) {
@@ -175,7 +180,7 @@ export function AdminCommentList() {
                   >
                     <td className="px-4 py-3">
                       <div className="max-w-xs text-gray-900">
-                        {truncateText(comment.content, 30)}
+                        {truncateText(getCommentContent(comment), 30)}
                       </div>
                     </td>
                     <td className="px-4 py-3">
