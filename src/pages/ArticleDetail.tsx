@@ -26,30 +26,47 @@ export function ArticleDetail() {
 
     setLoading(true)
 
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('articles')
         .select('*')
         .eq('slug', slug)
         .eq('is_published', true)
         .single()
 
-      if (error) {
-        console.error('Error fetching article:', error)
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch article timeout')
+        setArticle(null)
+        setLoading(false)
         return
       }
 
-      const articleData = data as unknown as Article
+      if (result.error) {
+        console.error('Error fetching article:', result.error)
+        setArticle(null)
+        setLoading(false)
+        return
+      }
+
+      const articleData = result.data as unknown as Article
       setArticle(articleData)
 
-      // Increment view count
-      await supabase
+      // Increment view count (fire and forget)
+      supabase
         .from('articles')
         .update({ view_count: (articleData.view_count || 0) + 1 } as never)
         .eq('id', articleData.id)
+        .then(() => {})
 
-      // Fetch related articles
-      const { data: related } = await supabase
+      // Fetch related articles with timeout
+      const relatedPromise = supabase
         .from('articles')
         .select('*')
         .eq('is_published', true)
@@ -58,11 +75,14 @@ export function ArticleDetail() {
         .order('published_at', { ascending: false })
         .limit(3)
 
-      if (related) {
-        setRelatedArticles(related as unknown as Article[])
+      const relatedResult = await Promise.race([relatedPromise, timeoutPromise])
+
+      if (relatedResult && relatedResult !== null && relatedResult.data) {
+        setRelatedArticles(relatedResult.data as unknown as Article[])
       }
     } catch (error) {
       console.error('Error fetching article:', error)
+      setArticle(null)
     } finally {
       setLoading(false)
     }

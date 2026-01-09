@@ -2,17 +2,20 @@ import imageCompression from 'browser-image-compression'
 
 // Image compression options
 const COMPRESSION_OPTIONS = {
-  maxSizeMB: 1, // Maximum file size in MB
+  maxSizeMB: 2, // Maximum file size in MB (increased for quality)
   maxWidthOrHeight: 1200, // Maximum dimension
   useWebWorker: true,
   fileType: 'image/webp' as const,
+  initialQuality: 0.92, // 92% quality (high quality)
 }
 
+// Thumbnail: note.com style 1280 x 670 px (aspect ratio 1.91:1)
 const THUMBNAIL_OPTIONS = {
-  maxSizeMB: 0.3, // Smaller for thumbnails
-  maxWidthOrHeight: 800,
+  maxSizeMB: 0.5, // Slightly larger for better thumbnail quality
+  maxWidthOrHeight: 1280, // note.com standard width
   useWebWorker: true,
   fileType: 'image/webp' as const,
+  initialQuality: 0.88, // 88% quality for thumbnails
 }
 
 /**

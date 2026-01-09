@@ -30,6 +30,12 @@ export function AdminThreadList() {
 
   async function fetchThreads() {
     setLoading(true)
+
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
       let query = supabase
         .from('threads')
@@ -43,17 +49,23 @@ export function AdminThreadList() {
         query = query.eq('status', statusFilter)
       }
 
-      const { data, error } = await query
+      const result = await Promise.race([query, timeoutPromise])
 
-      if (error) {
-        console.error('Error fetching threads:', error)
+      if (result === null) {
+        console.warn('Fetch threads timeout')
+        showToast('スレッドの取得がタイムアウトしました', 'error')
+        setThreads([])
+      } else if (result.error) {
+        console.error('Error fetching threads:', result.error)
         showToast('スレッドの取得に失敗しました', 'error')
+        setThreads([])
       } else {
-        setThreads(data as unknown as ThreadWithUser[])
+        setThreads(result.data as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching threads:', error)
       showToast('スレッドの取得に失敗しました', 'error')
+      setThreads([])
     } finally {
       setLoading(false)
     }

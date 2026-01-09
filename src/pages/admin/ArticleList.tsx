@@ -15,21 +15,34 @@ export function AdminArticleList() {
   }, [])
 
   async function fetchArticles() {
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('articles')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching articles:', error)
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch articles timeout')
+        showToast('記事の取得がタイムアウトしました', 'error')
+        setArticles([])
+      } else if (result.error) {
+        console.error('Error fetching articles:', result.error)
         showToast('記事の取得に失敗しました', 'error')
+        setArticles([])
       } else {
-        setArticles(data as unknown as Article[])
+        setArticles(result.data as unknown as Article[])
       }
     } catch (error) {
       console.error('Error fetching articles:', error)
       showToast('記事の取得に失敗しました', 'error')
+      setArticles([])
     } finally {
       setLoading(false)
     }

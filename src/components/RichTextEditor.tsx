@@ -63,20 +63,31 @@ function extractImageUrls(html: string): string[] {
 }
 
 // Helper function to fetch image and convert to File
-async function fetchImageAsFile(url: string): Promise<File> {
-  // Use proxy for CORS issues - convert http to https first
-  const secureUrl = url.replace(/^http:\/\//, 'https://')
+// Returns null if CORS or other errors occur
+async function fetchImageAsFile(url: string): Promise<File | null> {
+  try {
+    // Convert http to https first
+    const secureUrl = url.replace(/^http:\/\//, 'https://')
 
-  const response = await fetch(secureUrl)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch image: ${response.status}`)
+    const response = await fetch(secureUrl, {
+      mode: 'cors',
+      credentials: 'omit',
+    })
+    if (!response.ok) {
+      console.warn(`Failed to fetch image: ${response.status}`)
+      return null
+    }
+
+    const blob = await response.blob()
+    const extension = url.split('.').pop()?.split('?')[0] || 'jpg'
+    const fileName = `pasted_${Date.now()}.${extension}`
+
+    return new File([blob], fileName, { type: blob.type || 'image/jpeg' })
+  } catch (error) {
+    // CORS or network error - return null to use fallback
+    console.warn(`CORS/Network error fetching image: ${url}`, error)
+    return null
   }
-
-  const blob = await response.blob()
-  const extension = url.split('.').pop()?.split('?')[0] || 'jpg'
-  const fileName = `pasted_${Date.now()}.${extension}`
-
-  return new File([blob], fileName, { type: blob.type || 'image/jpeg' })
 }
 
 export function RichTextEditor({
@@ -100,28 +111,36 @@ export function RichTextEditor({
 
     let processedHtml = html
 
-    for (let i = 0; i < imageUrls.length; i++) {
-      const originalUrl = imageUrls[i]
-      setProcessingCount({ current: i + 1, total: imageUrls.length })
+    try {
+      for (let i = 0; i < imageUrls.length; i++) {
+        const originalUrl = imageUrls[i]
+        setProcessingCount({ current: i + 1, total: imageUrls.length })
 
-      try {
-        // Fetch the image
+        // Try to fetch and upload the image
         const file = await fetchImageAsFile(originalUrl)
 
-        // Upload to Supabase (this also compresses to WebP)
-        const newUrl = await onImageUpload(file)
-
-        // Replace old URL with new URL in HTML
-        processedHtml = processedHtml.split(originalUrl).join(newUrl)
-      } catch (error) {
-        console.error(`Failed to process image ${originalUrl}:`, error)
-        // Convert http to https as fallback
-        const secureUrl = originalUrl.replace(/^http:\/\//, 'https://')
-        processedHtml = processedHtml.split(originalUrl).join(secureUrl)
+        if (file) {
+          try {
+            // Upload to Supabase (this also compresses to WebP)
+            const newUrl = await onImageUpload(file)
+            // Replace old URL with new URL in HTML
+            processedHtml = processedHtml.split(originalUrl).join(newUrl)
+          } catch (uploadError) {
+            console.warn(`Failed to upload image: ${originalUrl}`, uploadError)
+            // Fallback: convert http to https
+            const secureUrl = originalUrl.replace(/^http:\/\//, 'https://')
+            processedHtml = processedHtml.split(originalUrl).join(secureUrl)
+          }
+        } else {
+          // CORS error - just convert http to https
+          const secureUrl = originalUrl.replace(/^http:\/\//, 'https://')
+          processedHtml = processedHtml.split(originalUrl).join(secureUrl)
+        }
       }
+    } finally {
+      setProcessingImages(false)
     }
 
-    setProcessingImages(false)
     return processedHtml
   }, [onImageUpload])
 

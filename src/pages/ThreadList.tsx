@@ -31,6 +31,11 @@ export function ThreadList() {
   async function fetchThreads() {
     setLoading(true)
 
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
       let query = supabase
         .from('threads')
@@ -45,7 +50,17 @@ export function ThreadList() {
       const to = from + ITEMS_PER_PAGE - 1
       query = query.range(from, to)
 
-      const { data, error, count } = await query
+      const result = await Promise.race([query, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch threads timeout')
+        setThreads([])
+        setTotalCount(0)
+        setLoading(false)
+        return
+      }
+
+      const { data, error, count } = result
 
       if (error) {
         console.error('Error fetching threads:', error)

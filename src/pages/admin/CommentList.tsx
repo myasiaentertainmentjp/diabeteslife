@@ -23,6 +23,12 @@ export function AdminCommentList() {
 
   async function fetchComments() {
     setLoading(true)
+
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
       let query = supabase
         .from('comments')
@@ -34,19 +40,25 @@ export function AdminCommentList() {
         query = query.eq('status', statusFilter)
       }
 
-      const { data, error } = await query
+      const result = await Promise.race([query, timeoutPromise])
 
-      if (error) {
-        console.error('Error fetching comments:', error)
+      if (result === null) {
+        console.warn('Fetch comments timeout')
+        showToast('コメントの取得がタイムアウトしました', 'error')
+        setComments([])
+      } else if (result.error) {
+        console.error('Error fetching comments:', result.error)
         // Don't show toast for table not found - just show empty state
-        if (!error.message.includes('Could not find')) {
+        if (!result.error.message.includes('Could not find')) {
           showToast('コメントの取得に失敗しました', 'error')
         }
-      } else if (data) {
-        setComments(data as unknown as CommentWithRelations[])
+        setComments([])
+      } else if (result.data) {
+        setComments(result.data as unknown as CommentWithRelations[])
       }
     } catch (error) {
       console.error('Error fetching comments:', error)
+      setComments([])
     } finally {
       setLoading(false)
     }

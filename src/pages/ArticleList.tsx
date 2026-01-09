@@ -22,6 +22,11 @@ export function ArticleList() {
   async function fetchArticles() {
     setLoading(true)
 
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
       let query = supabase
         .from('articles')
@@ -37,16 +42,24 @@ export function ArticleList() {
       const to = from + ITEMS_PER_PAGE - 1
       query = query.range(from, to)
 
-      const { data, error, count } = await query
+      const result = await Promise.race([query, timeoutPromise])
 
-      if (error) {
-        console.error('Error fetching articles:', error)
+      if (result === null) {
+        console.warn('Fetch articles timeout')
+        setArticles([])
+        setTotalCount(0)
+      } else if (result.error) {
+        console.error('Error fetching articles:', result.error)
+        setArticles([])
+        setTotalCount(0)
       } else {
-        setArticles(data as Article[])
-        setTotalCount(count || 0)
+        setArticles(result.data as Article[])
+        setTotalCount(result.count || 0)
       }
     } catch (error) {
       console.error('Error fetching articles:', error)
+      setArticles([])
+      setTotalCount(0)
     } finally {
       setLoading(false)
     }

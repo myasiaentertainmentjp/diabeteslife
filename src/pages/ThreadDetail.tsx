@@ -60,6 +60,13 @@ export function ThreadDetail() {
 
   async function fetchData() {
     setLoading(true)
+
+    // 15秒タイムアウト（複数のクエリがあるため長めに設定）
+    const timeoutId = setTimeout(() => {
+      console.warn('Fetch data timeout')
+      setLoading(false)
+    }, 15000)
+
     try {
       const threadData = await fetchThread()
       await fetchComments()
@@ -70,6 +77,7 @@ export function ThreadDetail() {
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
+      clearTimeout(timeoutId)
       setLoading(false)
     }
   }
