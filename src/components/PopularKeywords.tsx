@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { PopularKeyword } from '../types/database'
 import { TrendingUp, Loader2 } from 'lucide-react'
-
-interface PopularKeyword {
-  keyword: string
-  count: number
-}
 
 export function PopularKeywords() {
   const [keywords, setKeywords] = useState<PopularKeyword[]>([])
@@ -17,41 +13,32 @@ export function PopularKeywords() {
   }, [])
 
   async function fetchPopularKeywords() {
-    try {
-      // Get searches from the past 7 days
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    // 3秒タイムアウト
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+      setKeywords([])
+    }, 3000)
 
+    try {
       const { data, error } = await supabase
-        .from('search_logs')
-        .select('keyword')
-        .gte('created_at', sevenDaysAgo.toISOString())
+        .from('popular_keywords')
+        .select('id, keyword, display_order, is_active')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+        .limit(15)
+
+      clearTimeout(timeoutId)
 
       if (error) {
         console.error('Error fetching popular keywords:', error)
-        return
-      }
-
-      if (data) {
-        // Count keyword occurrences
-        const keywordCounts: Record<string, number> = {}
-        data.forEach((log) => {
-          const keyword = log.keyword.toLowerCase().trim()
-          if (keyword) {
-            keywordCounts[keyword] = (keywordCounts[keyword] || 0) + 1
-          }
-        })
-
-        // Sort by count and take top 10
-        const sortedKeywords = Object.entries(keywordCounts)
-          .map(([keyword, count]) => ({ keyword, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 10)
-
-        setKeywords(sortedKeywords)
+        setKeywords([])
+      } else {
+        setKeywords(data || [])
       }
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Error fetching popular keywords:', error)
+      setKeywords([])
     } finally {
       setLoading(false)
     }
@@ -84,13 +71,13 @@ export function PopularKeywords() {
       <div className="p-4">
         {keywords.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-2">
-            まだ検索データがありません
+            キーワードがありません
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {keywords.map((item, index) => (
               <Link
-                key={item.keyword}
+                key={item.id}
                 to={`/search?q=${encodeURIComponent(item.keyword)}`}
                 className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm transition-colors ${
                   index < 3

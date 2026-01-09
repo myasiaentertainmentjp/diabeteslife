@@ -105,7 +105,7 @@ export function Privacy() {
           </h2>
           <p className="text-gray-700">
             本ポリシーに関するお問い合わせは、
-            <Link to="/contact" className="text-green-600 hover:underline">
+            <Link to="/contact" className="text-rose-500 hover:underline">
               お問い合わせフォーム
             </Link>
             よりお願いします。
@@ -114,7 +114,7 @@ export function Privacy() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-green-600 hover:underline text-sm">
+        <Link to="/" className="text-rose-500 hover:underline text-sm">
           トップページに戻る
         </Link>
       </div>

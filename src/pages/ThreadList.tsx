@@ -6,22 +6,13 @@ import {
   ThreadCategory,
   ThreadWithUser,
   THREAD_CATEGORY_LABELS,
+  THREAD_CATEGORY_COLORS,
 } from '../types/database'
-import { MessageSquare, Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { MessageSquare, Plus, ChevronLeft, ChevronRight, Loader2, BookOpen } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
 
-const categories: (ThreadCategory | 'all')[] = ['all', 'health', 'lifestyle', 'work', 'food', 'exercise', 'other']
-
-// Category badge colors
-const categoryColors: Record<ThreadCategory, string> = {
-  health: 'bg-green-100 text-green-700',
-  food: 'bg-orange-100 text-orange-700',
-  exercise: 'bg-blue-100 text-blue-700',
-  lifestyle: 'bg-purple-100 text-purple-700',
-  work: 'bg-gray-100 text-gray-700',
-  other: 'bg-gray-100 text-gray-600',
-}
+const categories: (ThreadCategory | 'all')[] = ['all', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function ThreadList() {
   const [threads, setThreads] = useState<ThreadWithUser[]>([])
@@ -43,8 +34,7 @@ export function ThreadList() {
     try {
       let query = supabase
         .from('threads')
-        .select('*', { count: 'exact' })
-        
+        .select('id, user_id, title, category, comments_count, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {
@@ -59,12 +49,16 @@ export function ThreadList() {
 
       if (error) {
         console.error('Error fetching threads:', error)
+        setThreads([])
+        setTotalCount(0)
+        setLoading(false)
         return
       }
 
       if (!data || data.length === 0) {
         setThreads([])
         setTotalCount(count || 0)
+        setLoading(false)
         return
       }
 
@@ -89,6 +83,8 @@ export function ThreadList() {
       setTotalCount(count || 0)
     } catch (error) {
       console.error('Error fetching threads:', error)
+      setThreads([])
+      setTotalCount(0)
     } finally {
       setLoading(false)
     }
@@ -127,7 +123,7 @@ export function ThreadList() {
         {user && (
           <Link
             to="/threads/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors"
           >
             <Plus size={20} />
             <span>新規作成</span>
@@ -146,7 +142,7 @@ export function ThreadList() {
             }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category
-                ? 'bg-green-600 text-white'
+                ? 'bg-rose-500 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -158,7 +154,7 @@ export function ThreadList() {
       {/* Thread List */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <Loader2 size={32} className="animate-spin text-green-600" />
+          <Loader2 size={32} className="animate-spin text-rose-500" />
         </div>
       ) : threads.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -167,7 +163,7 @@ export function ThreadList() {
           {user && (
             <Link
               to="/threads/new"
-              className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+              className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors"
             >
               <Plus size={20} />
               <span>最初のスレッドを作成</span>
@@ -185,9 +181,15 @@ export function ThreadList() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded ${categoryColors[thread.category]}`}>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
                       {THREAD_CATEGORY_LABELS[thread.category]}
                     </span>
+                    {(thread as any).mode === 'diary' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
+                        <BookOpen size={12} />
+                        日記
+                      </span>
+                    )}
                   </div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2 truncate">
                     {thread.title}
@@ -199,7 +201,7 @@ export function ThreadList() {
                         e.stopPropagation()
                         navigate(`/users/${thread.user_id}`)
                       }}
-                      className="text-gray-700 hover:text-green-600 hover:underline font-medium"
+                      className="text-gray-700 hover:text-rose-500 hover:underline font-medium"
                     >
                       {thread.profiles?.display_name || '匿名'}
                     </button>
@@ -244,7 +246,7 @@ export function ThreadList() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-10 h-10 rounded-lg font-medium transition-colors ${
                         currentPage === page
-                          ? 'bg-green-600 text-white'
+                          ? 'bg-rose-500 text-white'
                           : 'text-gray-600 hover:bg-gray-100'
                       }`}
                     >

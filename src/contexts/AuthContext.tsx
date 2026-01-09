@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
-import { sendWelcomeEmail } from '../lib/email'
 import type { Profile, AppUser, UserRole } from '../types/database'
 
 // Extended profile that includes role from users table
@@ -36,9 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true
 
     async function fetchUserData(userId: string, userEmail: string): Promise<UserProfile> {
-      console.log('Fetching user data for:', userId, userEmail)
-
-      // Try to get from users table first (where role is stored)
+      // Get from users table (where role is stored)
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -46,75 +43,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('id', userId)
           .single()
 
-        console.log('Users table result:', { userData, userError })
-
         if (userData && !userError) {
-          const userProfile: UserProfile = {
+          return {
             id: userId,
             email: userData.email,
             role: userData.role || 'user',
             display_name: userData.display_name,
           }
-          console.log('Setting profile from users table:', userProfile)
-          return userProfile
         }
       } catch (err) {
         console.error('Error fetching from users table:', err)
       }
 
-      // Fallback to profiles table
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single()
-
-        console.log('Profiles table result:', { profileData, profileError })
-
-        if (profileData && !profileError) {
-          const userProfile: UserProfile = {
-            ...profileData,
-            id: userId,
-            role: profileData.role || 'user',
-          }
-          console.log('Setting profile from profiles table:', userProfile)
-          return userProfile
-        }
-      } catch (err) {
-        console.error('Error fetching from profiles table:', err)
-      }
-
-      // Fallback to user_profiles table (newer schema)
-      try {
-        const { data: userProfileData, error: userProfileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-
-        console.log('User_profiles table result:', { userProfileData, userProfileError })
-
-        if (userProfileData && !userProfileError) {
-          // Check if user has admin role from a separate query or default
-          const userProfile: UserProfile = {
-            id: userId,
-            email: userEmail,
-            role: 'user' as UserRole,
-            display_name: null,
-            ...userProfileData,
-          }
-          console.log('Setting profile from user_profiles table:', userProfile)
-          return userProfile
-        }
-      } catch (err) {
-        console.error('Error fetching from user_profiles table:', err)
-      }
-
       // If no data found, create a default profile
       // For admin email, set admin role as fallback
       const isAdminEmail = userEmail === 'info@diabeteslife.jp'
-      console.log('No profile found, using default. Is admin email:', isAdminEmail)
       return {
         id: userId,
         email: userEmail,
@@ -125,7 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function initialize() {
       try {
-        console.log('Initializing auth...')
         const { data, error } = await supabase.auth.getSession()
 
         if (!mounted) return
@@ -135,8 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false)
           return
         }
-
-        console.log('Session data:', data.session ? 'exists' : 'null')
 
         if (data.session) {
           setSession(data.session)
@@ -165,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Auth state changed:', event)
         if (!mounted) return
 
         try {
@@ -206,16 +145,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const timeoutId = setTimeout(async () => {
       if (!mounted) return
 
-      console.log('Auth timeout reached, forcing loading to false...')
-
       try {
         // Try to get current session
         const { data: sessionData } = await supabase.auth.getSession()
         if (sessionData?.session?.user && mounted) {
           const userEmail = sessionData.session.user.email || ''
           const isAdminEmail = userEmail === 'info@diabeteslife.jp'
-
-          console.log('Setting fallback profile after timeout. Email:', userEmail, 'Is admin:', isAdminEmail)
 
           setUser(sessionData.session.user)
           setSession(sessionData.session)
@@ -253,13 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       })
 
-      // Send welcome email (don't block on failure)
-      if (!error) {
-        sendWelcomeEmail(email, displayName).catch((e) => {
-          console.error('Failed to send welcome email:', e)
-        })
-      }
-
       return { error: error as Error | null }
     } catch (error) {
       return { error: error as Error }
@@ -282,7 +210,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function refreshProfile() {
     if (user) {
-      // Try users table first
       const { data: userData } = await supabase
         .from('users')
         .select('*')
@@ -296,28 +223,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: userData.role || 'user',
           display_name: userData.display_name,
         })
-        return
-      }
-
-      // Fallback to profiles
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (profileData) {
-        setProfile({
-          ...profileData,
-          id: user.id,
-          role: profileData.role || 'user',
-        })
       }
     }
   }
-
-  // Debug log
-  console.log('AuthContext state:', { user: user?.email, profile, loading })
 
   return (
     <AuthContext.Provider value={{

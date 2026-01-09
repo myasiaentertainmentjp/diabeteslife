@@ -205,7 +205,7 @@ export function Search() {
           onClick={() => setActiveTab('threads')}
           className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'threads'
-              ? 'border-green-600 text-green-600'
+              ? 'border-rose-500 text-rose-500'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -218,7 +218,7 @@ export function Search() {
           onClick={() => setActiveTab('articles')}
           className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'articles'
-              ? 'border-green-600 text-green-600'
+              ? 'border-rose-500 text-rose-500'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -232,7 +232,7 @@ export function Search() {
       {/* Loading */}
       {loading && (
         <div className="flex justify-center items-center py-12">
-          <Loader2 size={32} className="animate-spin text-green-600" />
+          <Loader2 size={32} className="animate-spin text-rose-500" />
         </div>
       )}
 
@@ -283,7 +283,7 @@ export function Search() {
                     <div className="text-center">
                       <button
                         onClick={loadMoreThreads}
-                        className="px-6 py-2 text-green-600 hover:text-green-700 text-sm font-medium"
+                        className="px-6 py-2 text-rose-500 hover:text-rose-600 text-sm font-medium"
                       >
                         もっと見る
                       </button>
@@ -329,7 +329,7 @@ export function Search() {
                               </p>
                             )}
                             <div className="flex items-center gap-2 text-sm">
-                              <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-xs">
+                              <span className="px-2 py-0.5 bg-rose-50 text-rose-500 rounded text-xs">
                                 {ARTICLE_CATEGORY_LABELS[article.category as ArticleCategory]}
                               </span>
                               <span className="text-gray-400">
@@ -348,7 +348,7 @@ export function Search() {
                     <div className="text-center">
                       <button
                         onClick={loadMoreArticles}
-                        className="px-6 py-2 text-green-600 hover:text-green-700 text-sm font-medium"
+                        className="px-6 py-2 text-rose-500 hover:text-rose-600 text-sm font-medium"
                       >
                         もっと見る
                       </button>

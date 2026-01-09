@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { Article, ARTICLE_CATEGORY_LABELS } from '../types/database'
 import { ArrowLeft, Calendar, Tag, Loader2, FileText } from 'lucide-react'
 
+const SITE_URL = 'https://diabeteslife.jp'
+const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
+
 export function ArticleDetail() {
   const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
   const [article, setArticle] = useState<Article | null>(null)
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,7 +81,7 @@ export function ArticleDetail() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -89,7 +94,7 @@ export function ArticleDetail() {
           <p className="text-gray-600 mb-4">記事が見つかりませんでした</p>
           <Link
             to="/articles"
-            className="inline-flex items-center gap-2 text-green-600 hover:underline"
+            className="inline-flex items-center gap-2 text-rose-500 hover:underline"
           >
             <ArrowLeft size={20} />
             <span>記事一覧に戻る</span>
@@ -99,12 +104,32 @@ export function ArticleDetail() {
     )
   }
 
+  const ogDescription = article.excerpt || article.content.replace(/<[^>]*>/g, '').substring(0, 150)
+  const ogImage = article.thumbnail_url || DEFAULT_OGP_IMAGE
+  const ogUrl = `${SITE_URL}/articles/${article.slug}`
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>{article.title} | Dライフ</title>
+        <meta name="description" content={ogDescription} />
+        <meta property="og:title" content={article.title} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Dライフ" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        <link rel="canonical" href={ogUrl} />
+      </Helmet>
+
       {/* Back Link */}
       <Link
         to="/articles"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 mb-6"
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
       >
         <ArrowLeft size={20} />
         <span>記事一覧に戻る</span>
@@ -114,7 +139,7 @@ export function ArticleDetail() {
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Thumbnail */}
         {article.thumbnail_url && (
-          <div className="aspect-video bg-gray-200">
+          <div className="bg-gray-200" style={{ aspectRatio: '1.91 / 1' }}>
             <img
               src={article.thumbnail_url}
               alt={article.title}
@@ -126,7 +151,7 @@ export function ArticleDetail() {
         <div className="p-6 md:p-8">
           {/* Meta */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-700 rounded">
+            <span className="px-3 py-1 text-sm font-medium bg-rose-100 text-rose-600 rounded">
               {ARTICLE_CATEGORY_LABELS[article.category]}
             </span>
             <span className="flex items-center gap-1 text-gray-500 text-sm">
@@ -152,12 +177,13 @@ export function ArticleDetail() {
               <div className="flex items-center gap-2 flex-wrap">
                 <Tag size={16} className="text-gray-500" />
                 {article.tags.map((tag) => (
-                  <span
+                  <button
                     key={tag}
-                    className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                    onClick={() => navigate(`/search?q=${encodeURIComponent(tag)}`)}
+                    className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
                   >
                     {tag}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -176,7 +202,7 @@ export function ArticleDetail() {
                 to={`/articles/${related.slug}`}
                 className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="aspect-video bg-gray-200">
+                <div className="bg-gray-200" style={{ aspectRatio: '1.91 / 1' }}>
                   {related.thumbnail_url ? (
                     <img
                       src={related.thumbnail_url}

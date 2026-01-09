@@ -7,6 +7,8 @@ import {
   ShieldAlert,
   Users,
   Flag,
+  TrendingUp,
+  Bell,
   ArrowLeft,
   Menu,
   X,
@@ -15,11 +17,13 @@ import { useState } from 'react'
 
 const MENU_ITEMS = [
   { path: '/admin', label: 'ダッシュボード', icon: LayoutDashboard, exact: true },
+  { path: '/admin/notifications', label: '通知', icon: Bell },
   { path: '/admin/articles', label: '記事管理', icon: FileText },
   { path: '/admin/threads', label: 'スレッド管理', icon: MessageSquare },
   { path: '/admin/comments', label: 'コメント管理', icon: MessageCircle },
   { path: '/admin/reports', label: '通報管理', icon: Flag },
   { path: '/admin/ng-words', label: 'NGワード管理', icon: ShieldAlert },
+  { path: '/admin/keywords', label: '人気キーワード', icon: TrendingUp },
   { path: '/admin/users', label: 'ユーザー管理', icon: Users },
 ]
 
@@ -65,7 +69,7 @@ export function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-rose-500 text-white'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`
                 }

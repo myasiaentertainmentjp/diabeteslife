@@ -5,12 +5,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
 import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare } from 'lucide-react'
 
-const categories: ThreadCategory[] = ['health', 'lifestyle', 'work', 'food', 'exercise', 'other']
+const categories: ThreadCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function ThreadNew() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [category, setCategory] = useState<ThreadCategory>('health')
+  const [category, setCategory] = useState<ThreadCategory>('food_recipe')
   const [mode, setMode] = useState<ThreadMode>('normal')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -98,7 +98,7 @@ export function ThreadNew() {
   if (authLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -110,13 +110,13 @@ export function ThreadNew() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Back Link */}
-      <Link
-        to="/threads"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 mb-6"
+      <button
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
       >
         <ArrowLeft size={20} />
-        <span>スレッド一覧に戻る</span>
-      </Link>
+        <span>前のページに戻る</span>
+      </button>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">新規スレッド作成</h1>
@@ -140,13 +140,13 @@ export function ThreadNew() {
                 onClick={() => setMode('normal')}
                 className={`p-4 border-2 rounded-lg text-left transition-all ${
                   mode === 'normal'
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-rose-500 bg-rose-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare size={24} className={mode === 'normal' ? 'text-green-600' : 'text-gray-400'} />
-                  <span className={`font-medium ${mode === 'normal' ? 'text-green-700' : 'text-gray-700'}`}>
+                  <MessageSquare size={24} className={mode === 'normal' ? 'text-rose-500' : 'text-gray-400'} />
+                  <span className={`font-medium ${mode === 'normal' ? 'text-rose-600' : 'text-gray-700'}`}>
                     通常モード
                   </span>
                 </div>
@@ -159,13 +159,13 @@ export function ThreadNew() {
                 onClick={() => setMode('diary')}
                 className={`p-4 border-2 rounded-lg text-left transition-all ${
                   mode === 'diary'
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-rose-500 bg-rose-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <BookOpen size={24} className={mode === 'diary' ? 'text-green-600' : 'text-gray-400'} />
-                  <span className={`font-medium ${mode === 'diary' ? 'text-green-700' : 'text-gray-700'}`}>
+                  <BookOpen size={24} className={mode === 'diary' ? 'text-rose-500' : 'text-gray-400'} />
+                  <span className={`font-medium ${mode === 'diary' ? 'text-rose-600' : 'text-gray-700'}`}>
                     日記モード
                   </span>
                 </div>
@@ -190,7 +190,7 @@ export function ThreadNew() {
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value as ThreadCategory)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors bg-white"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -210,7 +210,7 @@ export function ThreadNew() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
               placeholder="スレッドのタイトルを入力"
               maxLength={100}
               required
@@ -229,7 +229,7 @@ export function ThreadNew() {
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
               placeholder="スレッドの本文を入力..."
               rows={8}
               maxLength={5000}
@@ -251,7 +251,7 @@ export function ThreadNew() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>

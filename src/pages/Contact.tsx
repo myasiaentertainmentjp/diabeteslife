@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Send, CheckCircle, Loader2, AlertCircle, Mail } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Send, Loader2, AlertCircle, Mail } from 'lucide-react'
 
 const inquiryTypes = [
   { value: '', label: '選択してください' },
@@ -13,6 +13,7 @@ const inquiryTypes = [
 ]
 
 export function Contact() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,7 +21,6 @@ export function Contact() {
     message: '',
   })
   const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -38,38 +38,14 @@ export function Contact() {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     setSubmitting(false)
-    setSubmitted(true)
-  }
-
-  if (submitted) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle size={32} className="text-green-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            お問い合わせを受け付けました
-          </h1>
-          <p className="text-gray-600 mb-6">
-            内容を確認の上、ご連絡させていただきます。
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
-          >
-            トップページに戻る
-          </Link>
-        </div>
-      </div>
-    )
+    navigate('/contact/complete')
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-          <Mail size={24} className="text-green-600" />
+        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+          <Mail size={24} className="text-rose-500" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">お問い合わせ</h1>
@@ -96,7 +72,7 @@ export function Contact() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
               placeholder="ニックネームでも可"
             />
           </div>
@@ -112,7 +88,7 @@ export function Contact() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
               placeholder="example@email.com"
             />
           </div>
@@ -127,7 +103,7 @@ export function Contact() {
               value={formData.inquiryType}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors bg-white"
             >
               {inquiryTypes.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -148,7 +124,7 @@ export function Contact() {
               onChange={handleChange}
               required
               rows={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
               placeholder="お問い合わせ内容をご記入ください"
             />
           </div>
@@ -162,7 +138,7 @@ export function Contact() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
@@ -180,7 +156,7 @@ export function Contact() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-green-600 hover:underline text-sm">
+        <Link to="/" className="text-rose-500 hover:underline text-sm">
           トップページに戻る
         </Link>
       </div>

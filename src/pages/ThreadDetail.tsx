@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { sendCommentNotificationEmail } from '../lib/email'
@@ -7,6 +8,7 @@ import {
   ThreadWithUser,
   ThreadCommentWithUser,
   THREAD_CATEGORY_LABELS,
+  THREAD_CATEGORY_COLORS,
   ThreadCategory,
   ThreadMode,
   THREAD_MODE_LABELS,
@@ -15,15 +17,8 @@ import {
 import { ReportButton } from '../components/ReportButton'
 import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon } from 'lucide-react'
 
-// Category badge colors
-const categoryColors: Record<ThreadCategory, string> = {
-  health: 'bg-green-100 text-green-700',
-  food: 'bg-orange-100 text-orange-700',
-  exercise: 'bg-blue-100 text-blue-700',
-  lifestyle: 'bg-purple-100 text-purple-700',
-  work: 'bg-gray-100 text-gray-700',
-  other: 'bg-gray-100 text-gray-600',
-}
+const SITE_URL = 'https://diabeteslife.jp'
+const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
 
 // Extended thread type with author email for notifications
 interface ThreadWithAuthor extends ThreadWithUser {
@@ -44,6 +39,7 @@ export function ThreadDetail() {
   const [loading, setLoading] = useState(true)
   const [commentContent, setCommentContent] = useState('')
   const [diaryContent, setDiaryContent] = useState('')
+  const [diaryImages, setDiaryImages] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [submittingDiary, setSubmittingDiary] = useState(false)
   const [error, setError] = useState('')
@@ -51,7 +47,10 @@ export function ThreadDetail() {
   const [showComments, setShowComments] = useState(false)
   const [showDiaryForm, setShowDiaryForm] = useState(false)
 
+  const MAX_DIARY_IMAGES = 4
+
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (id) {
@@ -206,6 +205,48 @@ export function ThreadDetail() {
     }
   }
 
+  function handleDiaryImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    if (diaryImages.length + files.length > MAX_DIARY_IMAGES) {
+      setDiaryError(`画像は${MAX_DIARY_IMAGES}枚まで添付できます`)
+      return
+    }
+    setDiaryImages([...diaryImages, ...files])
+  }
+
+  function removeDiaryImage(index: number) {
+    setDiaryImages(diaryImages.filter((_, i) => i !== index))
+  }
+
+  async function uploadDiaryImages(files: File[]): Promise<string[]> {
+    const urls: string[] = []
+
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+      const filePath = `diary/${user?.id}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file)
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError)
+        continue
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath)
+
+      if (urlData?.publicUrl) {
+        urls.push(urlData.publicUrl)
+      }
+    }
+
+    return urls
+  }
+
   async function handleSubmitDiaryEntry(e: React.FormEvent) {
     e.preventDefault()
     if (!user || !diaryContent.trim() || !id || !thread) return
@@ -222,12 +263,20 @@ export function ThreadDetail() {
       return
     }
 
+    // Upload images if any
+    let imageUrls: string[] = []
+    if (diaryImages.length > 0) {
+      imageUrls = await uploadDiaryImages(diaryImages)
+    }
+
     const { error: insertError } = await supabase
       .from('diary_entries')
       .insert({
         thread_id: id,
         user_id: user.id,
         content: diaryContent.trim(),
+        image_url: imageUrls[0] || null, // First image as main image
+        image_urls: imageUrls, // All images
       } as never)
 
     if (insertError) {
@@ -235,6 +284,7 @@ export function ThreadDetail() {
       console.error('Error posting diary entry:', insertError)
     } else {
       setDiaryContent('')
+      setDiaryImages([])
       setShowDiaryForm(false)
       fetchDiaryEntries()
     }
@@ -297,15 +347,45 @@ export function ThreadDetail() {
           .eq('id', id)
         setThread({ ...thread, comments_count: thread.comments_count + 1 })
 
-        // Send notification email to thread author (if not the same user)
-        if (thread.user_id !== user.id && thread.users?.email) {
-          // Get current user's display name
-          const { data: currentUserData } = await supabase
-            .from('users')
-            .select('display_name')
-            .eq('id', user.id)
+        // Get current user's display name
+        const { data: currentUserData } = await supabase
+          .from('users')
+          .select('display_name')
+          .eq('id', user.id)
+          .single()
+
+        // Check if thread author is a dummy user
+        const { data: authorProfile } = await supabase
+          .from('users')
+          .select('is_dummy, display_name')
+          .eq('id', thread.user_id)
+          .single()
+
+        // If thread author is dummy user, create admin notification
+        if (authorProfile?.is_dummy) {
+          const { data: newComment } = await supabase
+            .from('comments')
+            .select('id')
+            .eq('thread_id', id)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
             .single()
 
+          await supabase
+            .from('admin_notifications')
+            .insert({
+              type: 'new_comment',
+              thread_id: id,
+              comment_id: newComment?.id || null,
+              user_id: user.id,
+              message: `${currentUserData?.display_name || '匿名'}さんが「${thread.title}」にコメントしました`,
+              is_read: false,
+            } as never)
+        }
+
+        // Send notification email to thread author (if not the same user and not dummy)
+        if (thread.user_id !== user.id && thread.users?.email && !authorProfile?.is_dummy) {
           sendCommentNotificationEmail({
             threadAuthorEmail: thread.users.email,
             threadAuthorName: thread.users.display_name || 'ユーザー',
@@ -334,10 +414,80 @@ export function ThreadDetail() {
     })
   }
 
+  // Parse comment text and convert >>N patterns to clickable anchor links
+  function renderCommentWithAnchors(text: string, totalComments: number) {
+    // Match >>N or >>N-M patterns (e.g., >>5, >>3-7)
+    const anchorRegex = />>(\d+)(?:-(\d+))?/g
+    const parts: (string | JSX.Element)[] = []
+    let lastIndex = 0
+    let match
+
+    while ((match = anchorRegex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index))
+      }
+
+      const startNum = parseInt(match[1], 10)
+      const endNum = match[2] ? parseInt(match[2], 10) : null
+
+      // Validate anchor numbers
+      if (startNum >= 1 && startNum <= totalComments) {
+        if (endNum) {
+          // Range anchor >>N-M
+          parts.push(
+            <button
+              key={`${match.index}-range`}
+              onClick={() => scrollToComment(startNum)}
+              className="text-rose-500 hover:text-rose-600 hover:underline font-medium"
+            >
+              {match[0]}
+            </button>
+          )
+        } else {
+          // Single anchor >>N
+          parts.push(
+            <button
+              key={match.index}
+              onClick={() => scrollToComment(startNum)}
+              className="text-rose-500 hover:text-rose-600 hover:underline font-medium"
+            >
+              {match[0]}
+            </button>
+          )
+        }
+      } else {
+        // Invalid anchor, keep as plain text
+        parts.push(match[0])
+      }
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex))
+    }
+
+    return parts.length > 0 ? parts : text
+  }
+
+  function scrollToComment(commentNumber: number) {
+    const element = document.getElementById(`comment-${commentNumber}`)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Highlight effect
+      element.classList.add('bg-rose-50')
+      setTimeout(() => {
+        element.classList.remove('bg-rose-50')
+      }, 2000)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -347,34 +497,54 @@ export function ThreadDetail() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center py-12">
           <p className="text-gray-600 mb-4">スレッドが見つかりませんでした</p>
-          <Link
-            to="/threads"
-            className="inline-flex items-center gap-2 text-green-600 hover:underline"
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-rose-500 hover:underline"
           >
             <ArrowLeft size={20} />
-            <span>スレッド一覧に戻る</span>
-          </Link>
+            <span>前のページに戻る</span>
+          </button>
         </div>
       </div>
     )
   }
 
+  const threadContent = (thread as any).body || thread.content || ''
+  const ogDescription = threadContent.substring(0, 150)
+  const ogUrl = `${SITE_URL}/threads/${thread.id}`
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>{thread.title} | Dライフ</title>
+        <meta name="description" content={ogDescription} />
+        <meta property="og:title" content={thread.title} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={DEFAULT_OGP_IMAGE} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Dライフ" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={thread.title} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={DEFAULT_OGP_IMAGE} />
+        <link rel="canonical" href={ogUrl} />
+      </Helmet>
+
       {/* Back Link */}
-      <Link
-        to="/threads"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 mb-6"
+      <button
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
       >
         <ArrowLeft size={20} />
-        <span>スレッド一覧に戻る</span>
-      </Link>
+        <span>前のページに戻る</span>
+      </button>
 
       {/* Thread Header */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-xs font-medium rounded ${categoryColors[thread.category]}`}>
+            <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
               {THREAD_CATEGORY_LABELS[thread.category]}
             </span>
             {thread.mode === 'diary' && (
@@ -390,7 +560,7 @@ export function ThreadDetail() {
         <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-4">
           <Link
             to={`/users/${thread.user_id}`}
-            className="font-medium text-gray-700 hover:text-green-600 hover:underline"
+            className="font-medium text-gray-700 hover:text-rose-500 hover:underline"
           >
             {thread.profiles?.display_name || '匿名'}
           </Link>
@@ -443,26 +613,70 @@ export function ThreadDetail() {
                   rows={4}
                   required
                 />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowDiaryForm(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingDiary || !diaryContent.trim()}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-400 disabled:cursor-not-allowed"
-                  >
-                    {submittingDiary ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <Send size={18} />
-                    )}
-                    <span>投稿</span>
-                  </button>
+
+                {/* Image Preview */}
+                {diaryImages.length > 0 && (
+                  <div className="flex gap-2 mb-3 flex-wrap">
+                    {diaryImages.map((img, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={URL.createObjectURL(img)}
+                          alt=""
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeDiaryImage(i)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <label className="cursor-pointer text-gray-500 hover:text-purple-500 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleDiaryImageSelect}
+                      className="hidden"
+                      disabled={diaryImages.length >= MAX_DIARY_IMAGES}
+                    />
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <ImageIcon size={18} />
+                      画像を追加（{diaryImages.length}/{MAX_DIARY_IMAGES}）
+                    </span>
+                  </label>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDiaryForm(false)
+                        setDiaryImages([])
+                        setDiaryContent('')
+                      }}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingDiary || !diaryContent.trim()}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-400 disabled:cursor-not-allowed"
+                    >
+                      {submittingDiary ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        <Send size={18} />
+                      )}
+                      <span>投稿</span>
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -475,24 +689,40 @@ export function ThreadDetail() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {diaryEntries.map((entry) => (
-                <div key={entry.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500">
-                      {formatDate(entry.created_at)}
-                    </span>
-                    <ReportButton targetType="diary_entry" targetId={entry.id} />
+              {diaryEntries.map((entry, index) => {
+                const images = (entry as any).image_urls || (entry.image_url ? [entry.image_url] : [])
+                return (
+                  <div key={entry.id} className="px-6 py-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-purple-500 text-sm">{index + 1}.</span>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(entry.created_at)}
+                        </span>
+                      </div>
+                      <ReportButton targetType="diary_entry" targetId={entry.id} />
+                    </div>
+                    <p className="text-gray-700 whitespace-pre-wrap">{entry.content}</p>
+                    {images.length > 0 && (
+                      <div className={`grid gap-2 mt-3 ${
+                        images.length === 1 ? 'grid-cols-1 max-w-md' :
+                        images.length === 2 ? 'grid-cols-2' :
+                        'grid-cols-2'
+                      }`}>
+                        {images.map((url: string, i: number) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`日記の画像 ${i + 1}`}
+                            className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => window.open(url, '_blank')}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-gray-700 whitespace-pre-wrap">{entry.content}</p>
-                  {entry.image_url && (
-                    <img
-                      src={entry.image_url}
-                      alt="日記の画像"
-                      className="mt-3 max-w-full h-auto rounded-lg"
-                    />
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -538,10 +768,14 @@ export function ThreadDetail() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {comments.map((comment, index) => (
-                  <div key={comment.id} className="px-6 py-4">
+                  <div
+                    key={comment.id}
+                    id={`comment-${index + 1}`}
+                    className="px-6 py-4 transition-colors duration-500"
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-green-600">
+                      <div className="shrink-0 w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-bold text-rose-500">
                           {index + 1}
                         </span>
                       </div>
@@ -549,7 +783,7 @@ export function ThreadDetail() {
                         <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
                           <Link
                             to={`/users/${comment.user_id}`}
-                            className="font-medium text-gray-700 hover:text-green-600 hover:underline"
+                            className="font-medium text-gray-700 hover:text-rose-500 hover:underline"
                           >
                             {comment.profiles?.display_name || '匿名'}
                           </Link>
@@ -558,7 +792,9 @@ export function ThreadDetail() {
                           </span>
                           <ReportButton targetType="comment" targetId={comment.id} />
                         </div>
-                        <p className="text-gray-700 whitespace-pre-wrap">{(comment as any).body || comment.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">
+                          {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -581,14 +817,14 @@ export function ThreadDetail() {
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
                       placeholder="コメントを入力..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors resize-none"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
                       rows={3}
                       required
                     />
                     <button
                       type="submit"
                       disabled={submitting || !commentContent.trim()}
-                      className="self-end px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
+                      className="self-end px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <Loader2 size={20} className="animate-spin" />
@@ -603,7 +839,7 @@ export function ThreadDetail() {
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 text-center">
                 <p className="text-gray-600 text-sm">
                   コメントするには
-                  <Link to="/login" className="text-green-600 hover:underline mx-1">
+                  <Link to="/login" className="text-rose-500 hover:underline mx-1">
                     ログイン
                   </Link>
                   してください

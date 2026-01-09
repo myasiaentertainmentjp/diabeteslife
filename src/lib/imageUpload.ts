@@ -3,7 +3,7 @@ import imageCompression from 'browser-image-compression'
 // Image compression options
 const COMPRESSION_OPTIONS = {
   maxSizeMB: 1, // Maximum file size in MB
-  maxWidthOrHeight: 1920, // Maximum dimension
+  maxWidthOrHeight: 1200, // Maximum dimension
   useWebWorker: true,
   fileType: 'image/webp' as const,
 }

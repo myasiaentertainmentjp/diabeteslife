@@ -52,7 +52,7 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-green-600 underline',
+          class: 'text-rose-500 underline',
         },
       }),
       Image.configure({
@@ -167,7 +167,7 @@ export function RichTextEditor({
       disabled={disabled}
       title={title}
       className={`p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-        isActive ? 'bg-green-100 text-green-700' : 'text-gray-600'
+        isActive ? 'bg-rose-100 text-rose-600' : 'text-gray-600'
       }`}
     >
       {children}

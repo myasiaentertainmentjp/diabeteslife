@@ -1,57 +1,22 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-
-const sections = [
-  { id: 'article1', title: '第1条（適用）' },
-  { id: 'article2', title: '第2条（定義）' },
-  { id: 'article3', title: '第3条（会員登録）' },
-  { id: 'article4', title: '第4条（アカウント管理）' },
-  { id: 'article5', title: '第5条（禁止事項）' },
-  { id: 'article6', title: '第6条（投稿コンテンツ）' },
-  { id: 'article7', title: '第7条（免責事項）' },
-  { id: 'article8', title: '第8条（サービスの変更・終了）' },
-  { id: 'article9', title: '第9条（規約の変更）' },
-  { id: 'article10', title: '第10条（準拠法・管轄）' },
-]
+import { FileText } from 'lucide-react'
 
 export function Terms() {
-  useEffect(() => {
-    // Handle hash navigation on page load
-    if (window.location.hash) {
-      const element = document.querySelector(window.location.hash)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
-  }, [])
-
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Dライフ利用規約</h1>
-      <p className="text-sm text-gray-500 mb-8">最終更新日：2026年1月8日</p>
-
-      {/* Table of Contents */}
-      <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-8">
-        <h2 className="font-bold text-gray-900 mb-4">目次</h2>
-        <nav>
-          <ul className="space-y-2">
-            {sections.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className="text-green-600 hover:underline text-sm"
-                >
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+          <FileText size={24} className="text-rose-500" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dライフ利用規約</h1>
+          <p className="text-sm text-gray-500">最終更新日：2026年1月8日</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 space-y-8">
-        <section id="article1">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+      <div className="space-y-4">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第1条（適用）
           </h2>
           <p className="text-gray-700 leading-relaxed">
@@ -59,8 +24,8 @@ export function Terms() {
           </p>
         </section>
 
-        <section id="article2">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第2条（定義）
           </h2>
           <ul className="list-disc list-inside text-gray-700 space-y-2">
@@ -70,8 +35,8 @@ export function Terms() {
           </ul>
         </section>
 
-        <section id="article3">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第3条（会員登録）
           </h2>
           <ol className="list-decimal list-inside text-gray-700 space-y-3">
@@ -87,8 +52,8 @@ export function Terms() {
           </ol>
         </section>
 
-        <section id="article4">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第4条（アカウント管理）
           </h2>
           <ol className="list-decimal list-inside text-gray-700 space-y-2">
@@ -98,8 +63,8 @@ export function Terms() {
           </ol>
         </section>
 
-        <section id="article5">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第5条（禁止事項）
           </h2>
           <p className="text-gray-700 mb-3">本サービスの利用にあたり、以下の行為を禁止します。</p>
@@ -116,8 +81,8 @@ export function Terms() {
           </ul>
         </section>
 
-        <section id="article6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第6条（投稿コンテンツ）
           </h2>
           <ol className="list-decimal list-inside text-gray-700 space-y-2">
@@ -127,8 +92,8 @@ export function Terms() {
           </ol>
         </section>
 
-        <section id="article7">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第7条（免責事項）
           </h2>
           <ol className="list-decimal list-inside text-gray-700 space-y-2">
@@ -139,8 +104,8 @@ export function Terms() {
           </ol>
         </section>
 
-        <section id="article8">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第8条（サービスの変更・終了）
           </h2>
           <p className="text-gray-700 leading-relaxed">
@@ -148,8 +113,8 @@ export function Terms() {
           </p>
         </section>
 
-        <section id="article9">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第9条（規約の変更）
           </h2>
           <p className="text-gray-700 leading-relaxed">
@@ -157,8 +122,8 @@ export function Terms() {
           </p>
         </section>
 
-        <section id="article10">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-200">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 pl-4 border-l-4 border-rose-500">
             第10条（準拠法・管轄）
           </h2>
           <p className="text-gray-700 leading-relaxed">
@@ -168,7 +133,7 @@ export function Terms() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-green-600 hover:underline text-sm">
+        <Link to="/" className="text-rose-500 hover:underline text-sm">
           トップページに戻る
         </Link>
       </div>

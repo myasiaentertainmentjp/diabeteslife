@@ -38,8 +38,8 @@ export function Login() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn size={32} className="text-green-600" />
+          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LogIn size={32} className="text-rose-500" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">ログイン</h1>
           <p className="text-gray-600">
@@ -67,7 +67,7 @@ export function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
                   placeholder="example@email.com"
                   required
                 />
@@ -85,7 +85,7 @@ export function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
                   placeholder="パスワードを入力"
                   required
                 />
@@ -104,13 +104,13 @@ export function Login() {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-500"
                 />
                 <span className="ml-2 text-sm text-gray-600">ログイン状態を保持</span>
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-green-600 hover:underline"
+                className="text-sm text-rose-500 hover:underline"
               >
                 パスワードを忘れた方
               </Link>
@@ -119,7 +119,7 @@ export function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
             >
               {loading ? 'ログイン中...' : 'ログイン'}
             </button>
@@ -128,7 +128,7 @@ export function Login() {
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
               アカウントをお持ちでないですか？{' '}
-              <Link to="/register" className="text-green-600 hover:underline font-medium">
+              <Link to="/register" className="text-rose-500 hover:underline font-medium">
                 新規登録
               </Link>
             </p>

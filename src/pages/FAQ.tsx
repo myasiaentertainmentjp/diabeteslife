@@ -110,12 +110,12 @@ function AccordionItem({ item, isOpen, onClick }: { item: FAQItem; isOpen: boole
         className="w-full flex items-center justify-between gap-4 px-4 py-4 text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-start gap-3">
-          <span className="text-green-600 font-bold shrink-0">Q.</span>
+          <span className="text-rose-500 font-bold shrink-0">Q.</span>
           <span className="font-medium text-gray-900">{item.question}</span>
         </div>
         <ChevronDown
           size={20}
-          className={`text-gray-400 shrink-0 transition-transform duration-200 ${
+          className={`text-rose-500 shrink-0 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -126,7 +126,7 @@ function AccordionItem({ item, isOpen, onClick }: { item: FAQItem; isOpen: boole
         }`}
       >
         <div className="px-4 pb-4 flex items-start gap-3">
-          <span className="text-emerald-600 font-bold shrink-0">A.</span>
+          <span className="text-rose-500 font-bold shrink-0">A.</span>
           <span className="text-gray-700 leading-relaxed">{item.answer}</span>
         </div>
       </div>
@@ -158,8 +158,8 @@ export function FAQ() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-          <HelpCircle size={24} className="text-green-600" />
+        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+          <HelpCircle size={24} className="text-rose-500" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">よくある質問</h1>
@@ -167,34 +167,15 @@ export function FAQ() {
         </div>
       </div>
 
-      {/* Table of Contents */}
-      <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-8">
-        <h2 className="font-bold text-gray-900 mb-4">目次</h2>
-        <nav>
-          <ul className="space-y-2">
-            {faqData.map((category) => (
-              <li key={category.id}>
-                <a
-                  href={`#${category.id}`}
-                  className="text-green-600 hover:underline text-sm"
-                >
-                  {category.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      <div className="space-y-6">
+      <div className="space-y-4">
         {faqData.map((category, categoryIndex) => (
           <div
             key={category.id}
             id={category.id}
-            className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+            className="bg-white rounded-xl shadow-sm overflow-hidden"
           >
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="font-bold text-gray-900">{category.name}</h2>
+            <div className="px-4 py-3 bg-rose-50 border-b border-rose-100">
+              <h2 className="font-bold text-rose-700">{category.name}</h2>
             </div>
             <div>
               {category.items.map((item, itemIndex) => (
@@ -210,20 +191,20 @@ export function FAQ() {
         ))}
       </div>
 
-      <div className="mt-8 p-6 bg-green-50 rounded-xl text-center">
+      <div className="mt-8 p-6 bg-rose-50 rounded-xl text-center">
         <p className="text-gray-700 mb-4">
           お探しの回答が見つかりませんでしたか？
         </p>
         <Link
           to="/contact"
-          className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center justify-center px-6 py-3 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors"
         >
           お問い合わせフォームへ
         </Link>
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-green-600 hover:underline text-sm">
+        <Link to="/" className="text-rose-500 hover:underline text-sm">
           トップページに戻る
         </Link>
       </div>

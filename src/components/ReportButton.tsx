@@ -77,8 +77,8 @@ export function ReportButton({ targetType, targetId, className = '' }: ReportBut
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             {submitted ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle size={32} className="text-green-600" />
+                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle size={32} className="text-rose-500" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
                   通報を受け付けました
@@ -118,7 +118,7 @@ export function ReportButton({ targetType, targetId, className = '' }: ReportBut
                           key={r}
                           className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                             reason === r
-                              ? 'border-green-500 bg-green-50'
+                              ? 'border-rose-500 bg-rose-50'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
@@ -128,7 +128,7 @@ export function ReportButton({ targetType, targetId, className = '' }: ReportBut
                             value={r}
                             checked={reason === r}
                             onChange={(e) => setReason(e.target.value as ReportReason)}
-                            className="text-green-600 focus:ring-green-500"
+                            className="text-rose-500 focus:ring-rose-500"
                           />
                           <span className="text-sm text-gray-700">
                             {REPORT_REASON_LABELS[r]}
@@ -145,7 +145,7 @@ export function ReportButton({ targetType, targetId, className = '' }: ReportBut
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none"
                       rows={3}
                       placeholder="詳しい状況を教えてください..."
                       maxLength={500}

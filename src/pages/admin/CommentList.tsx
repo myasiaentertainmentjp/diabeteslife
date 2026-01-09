@@ -107,7 +107,7 @@ export function AdminCommentList() {
 
   function getStatusBadge(status: CommentStatus) {
     const styles = {
-      visible: 'bg-green-100 text-green-700',
+      visible: 'bg-rose-100 text-rose-600',
       hidden: 'bg-red-100 text-red-700',
     }
     return (
@@ -126,7 +126,7 @@ export function AdminCommentList() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as CommentStatus | '')}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
         >
           <option value="">全状態</option>
           {STATUSES.map((status) => (
@@ -139,7 +139,7 @@ export function AdminCommentList() {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <Loader2 size={32} className="animate-spin text-green-600" />
+          <Loader2 size={32} className="animate-spin text-rose-500" />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -194,7 +194,7 @@ export function AdminCommentList() {
                         ) : (
                           <button
                             onClick={() => toggleVisibility(comment)}
-                            className="p-1.5 text-green-600 rounded hover:bg-green-50 transition-colors"
+                            className="p-1.5 text-rose-500 rounded hover:bg-rose-50 transition-colors"
                             title="表示する"
                           >
                             <Eye size={16} />

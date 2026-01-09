@@ -6,7 +6,7 @@ import { Calendar, ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-r
 
 const ITEMS_PER_PAGE = 10
 
-const categories: (ArticleCategory | 'all')[] = ['all', 'health', 'lifestyle', 'food', 'exercise', 'medical', 'other']
+const categories: (ArticleCategory | 'all')[] = ['all', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function ArticleList() {
   const [articles, setArticles] = useState<Article[]>([])
@@ -83,7 +83,7 @@ export function ArticleList() {
             }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category
-                ? 'bg-green-600 text-white'
+                ? 'bg-rose-500 text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
@@ -95,7 +95,7 @@ export function ArticleList() {
       {/* Article List */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <Loader2 size={32} className="animate-spin text-green-600" />
+          <Loader2 size={32} className="animate-spin text-rose-500" />
         </div>
       ) : articles.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
@@ -111,7 +111,7 @@ export function ArticleList() {
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
               {/* Thumbnail */}
-              <div className="aspect-video bg-gray-200 relative">
+              <div className="bg-gray-200 relative" style={{ aspectRatio: '1.91 / 1' }}>
                 {article.thumbnail_url ? (
                   <img
                     src={article.thumbnail_url}
@@ -123,7 +123,7 @@ export function ArticleList() {
                     <FileText size={48} className="text-gray-400" />
                   </div>
                 )}
-                <span className="absolute top-3 left-3 px-2 py-1 text-xs font-medium bg-green-600 text-white rounded">
+                <span className="absolute top-3 left-3 px-2 py-1 text-xs font-medium bg-rose-500 text-white rounded">
                   {ARTICLE_CATEGORY_LABELS[article.category]}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export function ArticleList() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-10 h-10 rounded-lg font-medium transition-colors ${
                         currentPage === page
-                          ? 'bg-green-600 text-white'
+                          ? 'bg-rose-500 text-white'
                           : 'text-gray-600 hover:bg-gray-100'
                       }`}
                     >

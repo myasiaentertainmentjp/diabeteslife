@@ -17,9 +17,6 @@ import {
   Plus,
   Edit2,
   Trash2,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   X,
 } from 'lucide-react'
 
@@ -50,6 +47,8 @@ export function HbA1cRecords() {
   useEffect(() => {
     if (user) {
       fetchRecords()
+    } else {
+      setLoading(false)
     }
   }, [user])
 
@@ -81,7 +80,7 @@ export function HbA1cRecords() {
     }))
   }
 
-  function getFeedback(): { message: string; type: 'up' | 'down' | 'same' } | null {
+  function getFeedback(): { message: string; emoji: string; type: 'up' | 'down' | 'same' } | null {
     if (records.length < 2) return null
 
     const latest = records[0].value
@@ -89,15 +88,17 @@ export function HbA1cRecords() {
     const diff = latest - previous
 
     if (Math.abs(diff) < 0.1) {
-      return { message: '前回と同じ値を維持しています', type: 'same' }
+      return { message: '安定していますね！この調子で！', emoji: '💪', type: 'same' }
     } else if (diff < 0) {
       return {
-        message: `前回より ${Math.abs(diff).toFixed(1)}% 改善しました！`,
+        message: `素晴らしい！${Math.abs(diff).toFixed(1)}%改善しました！`,
+        emoji: '🎉',
         type: 'down',
       }
     } else {
       return {
-        message: `前回より ${diff.toFixed(1)}% 上昇しています`,
+        message: '少し上がりましたが、一緒に頑張りましょう！',
+        emoji: '😊',
         type: 'up',
       }
     }
@@ -197,7 +198,7 @@ export function HbA1cRecords() {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 size={24} className="animate-spin text-green-600" />
+        <Loader2 size={24} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -256,17 +257,11 @@ export function HbA1cRecords() {
             feedback.type === 'down'
               ? 'bg-green-50 text-green-700'
               : feedback.type === 'up'
-              ? 'bg-orange-50 text-orange-700'
-              : 'bg-gray-50 text-gray-700'
+              ? 'bg-amber-50 text-amber-700'
+              : 'bg-blue-50 text-blue-700'
           }`}
         >
-          {feedback.type === 'down' ? (
-            <TrendingDown size={20} />
-          ) : feedback.type === 'up' ? (
-            <TrendingUp size={20} />
-          ) : (
-            <Minus size={20} />
-          )}
+          <span className="text-2xl">{feedback.emoji}</span>
           <span className="font-medium">{feedback.message}</span>
         </div>
       )}
@@ -275,7 +270,7 @@ export function HbA1cRecords() {
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 transition-colors"
         >
           <Plus size={18} />
           <span>新しい記録を追加</span>
@@ -312,7 +307,7 @@ export function HbA1cRecords() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, record_month: e.target.value }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                 required
               />
             </div>
@@ -330,7 +325,7 @@ export function HbA1cRecords() {
                   setFormData((prev) => ({ ...prev, value: e.target.value }))
                 }
                 placeholder="例: 6.5"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                 required
               />
             </div>
@@ -347,7 +342,7 @@ export function HbA1cRecords() {
               }
               placeholder="メモを入力..."
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
             />
           </div>
 
@@ -358,7 +353,7 @@ export function HbA1cRecords() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, is_public: e.target.checked }))
               }
-              className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+              className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500"
             />
             <span className="text-sm text-gray-700">この記録を公開する</span>
           </label>
@@ -373,7 +368,7 @@ export function HbA1cRecords() {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 disabled:opacity-50 transition-colors"
             >
               {saving && <Loader2 size={16} className="animate-spin" />}
               <span>{editingId ? '更新する' : '記録する'}</span>
@@ -424,7 +419,7 @@ export function HbA1cRecords() {
                       <span
                         className={`font-medium ${
                           record.value <= 7
-                            ? 'text-green-600'
+                            ? 'text-rose-500'
                             : record.value <= 8
                             ? 'text-orange-600'
                             : 'text-red-600'
@@ -438,7 +433,7 @@ export function HbA1cRecords() {
                     </td>
                     <td className="px-4 py-3">
                       {record.is_public ? (
-                        <span className="text-green-600">公開</span>
+                        <span className="text-rose-500">公開</span>
                       ) : (
                         <span className="text-gray-400">非公開</span>
                       )}
@@ -447,7 +442,7 @@ export function HbA1cRecords() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleEdit(record)}
-                          className="p-1 text-gray-400 hover:text-green-600"
+                          className="p-1 text-gray-400 hover:text-rose-500"
                           title="編集"
                         >
                           <Edit2 size={16} />

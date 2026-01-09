@@ -45,8 +45,8 @@ export function HbA1cChart({ records, showFeedback = false }: HbA1cChartProps) {
       return {
         type: 'improvement',
         message: `素晴らしい！${absDiff}%改善しました！`,
-        color: 'text-green-600',
-        bgColor: 'bg-green-50',
+        color: 'text-rose-500',
+        bgColor: 'bg-rose-50',
       }
     } else if (diff > 0.1) {
       return {
@@ -126,7 +126,7 @@ export function HbA1cChart({ records, showFeedback = false }: HbA1cChartProps) {
       {/* Legend */}
       <div className="flex justify-center gap-6 mt-4 text-xs text-gray-500">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-0.5 bg-green-500" style={{ borderStyle: 'dashed' }}></div>
+          <div className="w-4 h-0.5 bg-rose-500" style={{ borderStyle: 'dashed' }}></div>
           <span>目標値 6.5%</span>
         </div>
         <div className="flex items-center gap-2">

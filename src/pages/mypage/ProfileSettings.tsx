@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { compressImage, uploadToSupabaseStorage } from '../../lib/imageUpload'
 import {
   DiabetesType,
   TreatmentType,
@@ -19,7 +20,7 @@ import {
   PREFECTURES,
   ExternalLink,
 } from '../../types/database'
-import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User } from 'lucide-react'
 
 const DIABETES_TYPES: NonNullable<DiabetesType>[] = [
   'type1',
@@ -31,16 +32,18 @@ const DIABETES_TYPES: NonNullable<DiabetesType>[] = [
 
 const TREATMENT_TYPES: TreatmentType[] = [
   'insulin',
+  'insulin_pump',
   'oral_medication',
-  'diet_only',
-  'pump',
-  'cgm',
+  'glp1',
+  'diet_therapy',
+  'exercise_therapy',
+  'observation',
 ]
 
 const AGE_GROUPS: AgeGroup[] = ['10s', '20s', '30s', '40s', '50s', '60s', '70s_plus', 'private']
 const GENDERS: Gender[] = ['male', 'female', 'other', 'private']
 const ILLNESS_DURATIONS: IllnessDuration[] = ['less_than_1', '1_to_3', '3_to_5', '5_to_10', '10_plus']
-const DEVICE_TYPES: DeviceType[] = ['libre', 'libre2', 'dexcom', 'pump', 'cgm', 'none']
+const DEVICE_TYPES: DeviceType[] = ['libre', 'dexcom', 'insulin_pump', 'meter_only', 'none', 'other']
 const YES_NO_PRIVATES: YesNoPrivate[] = ['yes', 'no', 'private']
 
 const currentYear = new Date().getFullYear()
@@ -72,14 +75,59 @@ export function ProfileSettings() {
   const [isPregnant, setIsPregnant] = useState<YesNoPrivate>('private')
   const [externalLinks, setExternalLinks] = useState<ExternalLink[]>([])
 
-  // Privacy toggles
-  const [isTagsPublic, setIsTagsPublic] = useState(false)
-  const [isAgePublic, setIsAgePublic] = useState(false)
-  const [isGenderPublic, setIsGenderPublic] = useState(false)
-  const [isPrefecturePublic, setIsPrefecturePublic] = useState(false)
-  const [isIllnessDurationPublic, setIsIllnessDurationPublic] = useState(false)
-  const [isDevicesPublic, setIsDevicesPublic] = useState(false)
-  const [isHba1cPublic, setIsHba1cPublic] = useState(false)
+  // Privacy toggles (using new naming convention)
+  const [ageGroupPublic, setAgeGroupPublic] = useState(false)
+  const [genderPublic, setGenderPublic] = useState(false)
+  const [prefecturePublic, setPrefecturePublic] = useState(false)
+  const [illnessDurationPublic, setIllnessDurationPublic] = useState(true) // default: true
+  const [treatmentPublic, setTreatmentPublic] = useState(true) // default: true
+  const [devicePublic, setDevicePublic] = useState(true) // default: true
+  const [bioPublic, setBioPublic] = useState(true) // default: true
+  const [hba1cPublic, setHba1cPublic] = useState(false)
+  const [linksPublic, setLinksPublic] = useState(true) // default: true
+
+  // Avatar upload state
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('画像ファイルを選択してください')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('ファイルサイズは5MB以下にしてください')
+      return
+    }
+
+    setAvatarUploading(true)
+    setAvatarError(null)
+
+    try {
+      // Compress image (thumbnail size for avatar)
+      const compressedFile = await compressImage(file, 'thumbnail')
+
+      // Upload to Supabase Storage
+      const url = await uploadToSupabaseStorage(compressedFile, 'avatars')
+      setAvatarUrl(url)
+    } catch (err) {
+      console.error('Avatar upload error:', err)
+      setAvatarError(err instanceof Error ? err.message : 'アップロードに失敗しました')
+    } finally {
+      setAvatarUploading(false)
+      // Reset input
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = ''
+      }
+    }
+  }
 
   useEffect(() => {
     fetchProfile()
@@ -115,12 +163,15 @@ export function ProfileSettings() {
         setOnDialysis(userProfileData.on_dialysis || 'private')
         setIsPregnant(userProfileData.is_pregnant || 'private')
         setExternalLinks(userProfileData.external_links || [])
-        setIsAgePublic(userProfileData.is_age_public || false)
-        setIsGenderPublic(userProfileData.is_gender_public || false)
-        setIsPrefecturePublic(userProfileData.is_prefecture_public || false)
-        setIsIllnessDurationPublic(userProfileData.is_illness_duration_public || false)
-        setIsDevicesPublic(userProfileData.is_devices_public || false)
-        setIsHba1cPublic(userProfileData.is_hba1c_public || false)
+        setAgeGroupPublic(userProfileData.age_group_public ?? false)
+        setGenderPublic(userProfileData.gender_public ?? false)
+        setPrefecturePublic(userProfileData.prefecture_public ?? false)
+        setIllnessDurationPublic(userProfileData.illness_duration_public ?? true)
+        setTreatmentPublic(userProfileData.treatment_public ?? true)
+        setDevicePublic(userProfileData.device_public ?? true)
+        setBioPublic(userProfileData.bio_public ?? true)
+        setHba1cPublic(userProfileData.hba1c_public ?? false)
+        setLinksPublic(userProfileData.links_public ?? true)
       }
 
       // Also try profiles table for other fields
@@ -139,7 +190,6 @@ export function ProfileSettings() {
         }
         setAvatarUrl(profileData.avatar_url || '')
         setTreatments(profileData.treatments || [])
-        setIsTagsPublic(profileData.is_tags_public || false)
       }
 
       // Try users table for display_name
@@ -224,12 +274,16 @@ export function ProfileSettings() {
         on_dialysis: onDialysis,
         is_pregnant: isPregnant,
         external_links: externalLinks.filter((l) => l.title && l.url),
-        is_age_public: isAgePublic,
-        is_gender_public: isGenderPublic,
-        is_prefecture_public: isPrefecturePublic,
-        is_illness_duration_public: isIllnessDurationPublic,
-        is_devices_public: isDevicesPublic,
-        is_hba1c_public: isHba1cPublic,
+        // Privacy flags (new naming convention)
+        age_group_public: ageGroupPublic,
+        gender_public: genderPublic,
+        prefecture_public: prefecturePublic,
+        illness_duration_public: illnessDurationPublic,
+        treatment_public: treatmentPublic,
+        device_public: devicePublic,
+        bio_public: bioPublic,
+        hba1c_public: hba1cPublic,
+        links_public: linksPublic,
       }
 
       const { error: upsertError } = await supabase
@@ -248,7 +302,6 @@ export function ProfileSettings() {
         diabetes_type: diabetesType,
         treatments: treatments.length > 0 ? treatments : null,
         diagnosis_year: diagnosisYear,
-        is_tags_public: isTagsPublic,
         updated_at: new Date().toISOString(),
       }
 
@@ -271,7 +324,7 @@ export function ProfileSettings() {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 size={24} className="animate-spin text-green-600" />
+        <Loader2 size={24} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -292,48 +345,79 @@ export function ProfileSettings() {
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="表示名を入力"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           />
         </div>
 
-        {/* Avatar URL */}
+        {/* Avatar Upload */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            アバターURL
+            アバター画像
           </label>
-          <input
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://example.com/avatar.jpg"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-          {avatarUrl && (
-            <div className="mt-2">
-              <img
-                src={avatarUrl}
-                alt="アバタープレビュー"
-                className="w-16 h-16 rounded-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
+          <div className="flex items-center gap-4">
+            {/* Avatar Preview */}
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-rose-100 flex items-center justify-center">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="アバター"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <User size={32} className="text-rose-400" />
+                )}
+              </div>
+              {avatarUploading && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <Loader2 size={24} className="animate-spin text-white" />
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Upload Button */}
+            <div className="flex-1">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                id="avatar-upload"
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg cursor-pointer transition-colors text-sm"
+              >
+                <Camera size={16} />
+                <span>画像を選択</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                JPG, PNG, GIF（5MB以下）
+              </p>
+              {avatarError && (
+                <p className="text-xs text-red-500 mt-1">{avatarError}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Bio */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            自己紹介
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">自己紹介</label>
+            <PrivacyToggle value={bioPublic} onChange={setBioPublic} />
+          </div>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="自己紹介を入力..."
             rows={3}
             maxLength={500}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
           />
           <p className="mt-1 text-xs text-gray-500 text-right">{bio.length}/500</p>
         </div>
@@ -347,12 +431,12 @@ export function ProfileSettings() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">年代</label>
-            <PrivacyToggle value={isAgePublic} onChange={setIsAgePublic} />
+            <PrivacyToggle value={ageGroupPublic} onChange={setAgeGroupPublic} />
           </div>
           <select
             value={ageGroup || ''}
             onChange={(e) => setAgeGroup(e.target.value as AgeGroup || null)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           >
             <option value="">未設定</option>
             {AGE_GROUPS.filter(a => a !== 'private').map((age) => (
@@ -367,12 +451,12 @@ export function ProfileSettings() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">性別</label>
-            <PrivacyToggle value={isGenderPublic} onChange={setIsGenderPublic} />
+            <PrivacyToggle value={genderPublic} onChange={setGenderPublic} />
           </div>
           <select
             value={gender || ''}
             onChange={(e) => setGender(e.target.value as Gender || null)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           >
             <option value="">未設定</option>
             {GENDERS.filter(g => g !== 'private').map((g) => (
@@ -387,12 +471,12 @@ export function ProfileSettings() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">都道府県</label>
-            <PrivacyToggle value={isPrefecturePublic} onChange={setIsPrefecturePublic} />
+            <PrivacyToggle value={prefecturePublic} onChange={setPrefecturePublic} />
           </div>
           <select
             value={prefecture || ''}
             onChange={(e) => setPrefecture(e.target.value || null)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           >
             <option value="">未設定</option>
             {PREFECTURES.map((pref) => (
@@ -418,7 +502,7 @@ export function ProfileSettings() {
               <label
                 key={type}
                 className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  diabetesType === type ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  diabetesType === type ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
@@ -426,14 +510,14 @@ export function ProfileSettings() {
                   name="diabetesType"
                   checked={diabetesType === type}
                   onChange={() => setDiabetesType(type)}
-                  className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">{DIABETES_TYPE_LABELS[type]}</span>
               </label>
             ))}
             <label
               className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                diabetesType === null ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                diabetesType === null ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <input
@@ -441,7 +525,7 @@ export function ProfileSettings() {
                 name="diabetesType"
                 checked={diabetesType === null}
                 onChange={() => setDiabetesType(null)}
-                className="w-4 h-4 text-green-600 focus:ring-green-500"
+                className="w-4 h-4 text-rose-500 focus:ring-rose-500"
               />
               <span className="text-sm text-gray-500">未設定</span>
             </label>
@@ -452,12 +536,12 @@ export function ProfileSettings() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">罹患期間</label>
-            <PrivacyToggle value={isIllnessDurationPublic} onChange={setIsIllnessDurationPublic} />
+            <PrivacyToggle value={illnessDurationPublic} onChange={setIllnessDurationPublic} />
           </div>
           <select
             value={illnessDuration || ''}
             onChange={(e) => setIllnessDuration(e.target.value as IllnessDuration || null)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           >
             <option value="">未設定</option>
             {ILLNESS_DURATIONS.map((duration) => (
@@ -478,7 +562,7 @@ export function ProfileSettings() {
             onChange={(e) =>
               setDiagnosisYear(e.target.value ? Number(e.target.value) : null)
             }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           >
             <option value="">未設定</option>
             {DIAGNOSIS_YEARS.map((year) => (
@@ -491,22 +575,23 @@ export function ProfileSettings() {
 
         {/* Treatments */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            治療方法（複数選択可）
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">治療方法（複数選択可）</label>
+            <PrivacyToggle value={treatmentPublic} onChange={setTreatmentPublic} />
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {TREATMENT_TYPES.map((treatment) => (
               <label
                 key={treatment}
                 className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  treatments.includes(treatment) ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  treatments.includes(treatment) ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={treatments.includes(treatment)}
                   onChange={() => handleTreatmentChange(treatment)}
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">
                   {TREATMENT_TYPE_LABELS[treatment]}
@@ -520,21 +605,21 @@ export function ProfileSettings() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">使用デバイス（複数選択可）</label>
-            <PrivacyToggle value={isDevicesPublic} onChange={setIsDevicesPublic} />
+            <PrivacyToggle value={devicePublic} onChange={setDevicePublic} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             {DEVICE_TYPES.map((device) => (
               <label
                 key={device}
                 className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  devices.includes(device) ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  devices.includes(device) ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={devices.includes(device)}
                   onChange={() => handleDeviceChange(device)}
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">
                   {DEVICE_TYPE_LABELS[device]}
@@ -559,7 +644,7 @@ export function ProfileSettings() {
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  hasComplications === option ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  hasComplications === option ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
@@ -567,7 +652,7 @@ export function ProfileSettings() {
                   name="hasComplications"
                   checked={hasComplications === option}
                   onChange={() => setHasComplications(option)}
-                  className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
               </label>
@@ -585,7 +670,7 @@ export function ProfileSettings() {
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  onDialysis === option ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  onDialysis === option ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
@@ -593,7 +678,7 @@ export function ProfileSettings() {
                   name="onDialysis"
                   checked={onDialysis === option}
                   onChange={() => setOnDialysis(option)}
-                  className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
               </label>
@@ -611,7 +696,7 @@ export function ProfileSettings() {
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  isPregnant === option ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  isPregnant === option ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <input
@@ -619,7 +704,7 @@ export function ProfileSettings() {
                   name="isPregnant"
                   checked={isPregnant === option}
                   onChange={() => setIsPregnant(option)}
-                  className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
                 <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
               </label>
@@ -630,7 +715,10 @@ export function ProfileSettings() {
 
       {/* External Links Section */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">外部リンク</h3>
+        <div className="flex items-center justify-between mb-4 pb-2 border-b">
+          <h3 className="text-lg font-semibold text-gray-900">外部リンク</h3>
+          <PrivacyToggle value={linksPublic} onChange={setLinksPublic} />
+        </div>
 
         <div className="space-y-3">
           {externalLinks.map((link, index) => (
@@ -640,14 +728,14 @@ export function ProfileSettings() {
                 value={link.title}
                 onChange={(e) => updateExternalLink(index, 'title', e.target.value)}
                 placeholder="タイトル（例: X、ブログ）"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
               />
               <input
                 type="url"
                 value={link.url}
                 onChange={(e) => updateExternalLink(index, 'url', e.target.value)}
                 placeholder="https://..."
-                className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
               />
               <button
                 type="button"
@@ -663,7 +751,7 @@ export function ProfileSettings() {
             <button
               type="button"
               onClick={addExternalLink}
-              className="flex items-center gap-2 px-4 py-2 text-green-600 border border-green-300 rounded-lg hover:bg-green-50 transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 text-rose-500 border border-rose-300 rounded-lg hover:bg-rose-50 transition-colors text-sm"
             >
               <Plus size={16} />
               <span>リンクを追加</span>
@@ -672,23 +760,16 @@ export function ProfileSettings() {
         </div>
       </section>
 
-      {/* Privacy Settings Section */}
+      {/* HbA1c Privacy Settings */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">公開設定</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">HbA1c記録の公開設定</h3>
 
         <div className="space-y-4">
           <PrivacySettingRow
-            label="タグを公開"
-            description="糖尿病タイプや治療方法を投稿時に表示します"
-            value={isTagsPublic}
-            onChange={setIsTagsPublic}
-          />
-
-          <PrivacySettingRow
             label="HbA1cグラフを公開"
-            description="プロフィールページでHbA1cの推移を表示します"
-            value={isHba1cPublic}
-            onChange={setIsHba1cPublic}
+            description="プロフィールページでHbA1cの推移グラフと記録を表示します"
+            value={hba1cPublic}
+            onChange={setHba1cPublic}
           />
         </div>
       </section>
@@ -705,7 +786,7 @@ export function ProfileSettings() {
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 px-6 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 disabled:opacity-50 transition-colors"
         >
           {saving ? (
             <Loader2 size={18} className="animate-spin" />
@@ -734,7 +815,7 @@ function PrivacyToggle({
       type="button"
       onClick={() => onChange(!value)}
       className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full transition-colors ${
-        value ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+        value ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-500'
       }`}
     >
       {value ? <Eye size={12} /> : <EyeOff size={12} />}
@@ -770,7 +851,7 @@ function PrivacySettingRow({
         />
         <div
           className={`w-11 h-6 rounded-full transition-colors ${
-            value ? 'bg-green-600' : 'bg-gray-300'
+            value ? 'bg-rose-500' : 'bg-gray-300'
           }`}
         >
           <div

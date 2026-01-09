@@ -1,7 +1,7 @@
-export type ThreadCategory = 'health' | 'lifestyle' | 'work' | 'food' | 'exercise' | 'other'
-export type ArticleCategory = 'health' | 'lifestyle' | 'food' | 'exercise' | 'medical' | 'other'
+export type ThreadCategory = 'food_recipe' | 'treatment' | 'exercise_lifestyle' | 'mental_concerns' | 'complications_prevention' | 'chat_other'
+export type ArticleCategory = ThreadCategory
 export type DiabetesType = 'type1' | 'type2' | 'gestational' | 'prediabetes' | 'family' | null
-export type TreatmentType = 'insulin' | 'oral_medication' | 'diet_only' | 'pump' | 'cgm'
+export type TreatmentType = 'insulin' | 'insulin_pump' | 'oral_medication' | 'glp1' | 'diet_therapy' | 'exercise_therapy' | 'observation'
 export type UserRole = 'user' | 'admin'
 export type ThreadStatus = 'normal' | 'hidden' | 'locked'
 export type ThreadMode = 'normal' | 'diary'
@@ -9,11 +9,12 @@ export type CommentStatus = 'visible' | 'hidden'
 export type AgeGroup = '10s' | '20s' | '30s' | '40s' | '50s' | '60s' | '70s_plus' | 'private'
 export type Gender = 'male' | 'female' | 'other' | 'private'
 export type IllnessDuration = 'less_than_1' | '1_to_3' | '3_to_5' | '5_to_10' | '10_plus'
-export type DeviceType = 'libre' | 'libre2' | 'dexcom' | 'pump' | 'cgm' | 'none'
+export type DeviceType = 'libre' | 'dexcom' | 'insulin_pump' | 'meter_only' | 'none' | 'other'
 export type YesNoPrivate = 'yes' | 'no' | 'private'
 export type ReportReason = 'spam' | 'harassment' | 'medical_misinformation' | 'other'
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed'
 export type ReportTargetType = 'thread' | 'comment' | 'diary_entry' | 'user'
+export type AdminNotificationType = 'new_comment' | 'new_thread' | 'report'
 
 // Legacy aliases
 export type UserTag = DiabetesType
@@ -39,6 +40,7 @@ export interface Database {
           has_complications: boolean
           is_tags_public: boolean
           is_frozen: boolean
+          is_dummy: boolean
           created_at: string
           updated_at: string
         }
@@ -58,6 +60,7 @@ export interface Database {
           has_complications?: boolean
           is_tags_public?: boolean
           is_frozen?: boolean
+          is_dummy?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -77,6 +80,7 @@ export interface Database {
           has_complications?: boolean
           is_tags_public?: boolean
           is_frozen?: boolean
+          is_dummy?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -124,6 +128,8 @@ export interface Database {
           category: ArticleCategory
           tags: string[] | null
           is_published: boolean
+          is_featured: boolean
+          featured_order: number
           view_count: number
           published_at: string | null
           created_at: string
@@ -140,6 +146,8 @@ export interface Database {
           category: ArticleCategory
           tags?: string[] | null
           is_published?: boolean
+          is_featured?: boolean
+          featured_order?: number
           view_count?: number
           published_at?: string | null
           created_at?: string
@@ -156,6 +164,8 @@ export interface Database {
           category?: ArticleCategory
           tags?: string[] | null
           is_published?: boolean
+          is_featured?: boolean
+          featured_order?: number
           view_count?: number
           published_at?: string | null
           created_at?: string
@@ -335,6 +345,7 @@ export interface Database {
           role: UserRole
           display_name: string | null
           avatar_url: string | null
+          is_dummy: boolean
           created_at: string
           updated_at: string
         }
@@ -344,6 +355,7 @@ export interface Database {
           role?: UserRole
           display_name?: string | null
           avatar_url?: string | null
+          is_dummy?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -353,6 +365,7 @@ export interface Database {
           role?: UserRole
           display_name?: string | null
           avatar_url?: string | null
+          is_dummy?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -388,6 +401,15 @@ export interface SearchLog {
   created_at: string
 }
 
+// Popular keywords (manual)
+export interface PopularKeyword {
+  id: string
+  keyword: string
+  display_order: number
+  is_active: boolean
+  created_at: string
+}
+
 // Thread with user profile
 export interface ThreadWithUser extends Thread {
   profiles: Pick<Profile, 'display_name' | 'diabetes_type' | 'treatments'>
@@ -401,23 +423,26 @@ export interface ThreadCommentWithUser extends ThreadComment {
 
 // Category labels
 export const THREAD_CATEGORY_LABELS: Record<ThreadCategory, string> = {
-  health: '健康',
-  lifestyle: '生活',
-  work: '仕事',
-  food: '食事',
-  exercise: '運動',
-  other: 'その他',
+  food_recipe: '食事・レシピ',
+  treatment: '治療・通院',
+  exercise_lifestyle: '運動・生活',
+  mental_concerns: 'メンタル・悩み',
+  complications_prevention: '合併症・予防',
+  chat_other: '雑談・その他',
+}
+
+// Category colors for badges
+export const THREAD_CATEGORY_COLORS: Record<ThreadCategory, string> = {
+  food_recipe: 'bg-orange-100 text-orange-700',
+  treatment: 'bg-blue-100 text-blue-700',
+  exercise_lifestyle: 'bg-green-100 text-green-700',
+  mental_concerns: 'bg-pink-100 text-pink-700',
+  complications_prevention: 'bg-red-100 text-red-700',
+  chat_other: 'bg-gray-100 text-gray-700',
 }
 
 // Article category labels
-export const ARTICLE_CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  health: '健康',
-  lifestyle: '生活',
-  food: '食事',
-  exercise: '運動',
-  medical: '医療',
-  other: 'その他',
-}
+export const ARTICLE_CATEGORY_LABELS: Record<ArticleCategory, string> = THREAD_CATEGORY_LABELS
 
 // Diabetes type labels
 export const DIABETES_TYPE_LABELS: Record<NonNullable<DiabetesType>, string> = {
@@ -440,20 +465,24 @@ export const DIABETES_TYPE_SHORT_LABELS: Record<NonNullable<DiabetesType>, strin
 // Treatment type labels
 export const TREATMENT_TYPE_LABELS: Record<TreatmentType, string> = {
   insulin: 'インスリン注射',
+  insulin_pump: 'インスリンポンプ',
   oral_medication: '経口薬（飲み薬）',
-  diet_only: '食事療法のみ',
-  pump: 'インスリンポンプ',
-  cgm: 'CGM/FGM使用',
+  glp1: 'GLP-1受容体作動薬（注射）',
+  diet_therapy: '食事療法',
+  exercise_therapy: '運動療法',
+  observation: '経過観察中',
 }
 
 // Legacy aliases
 export const USER_TAG_LABELS = DIABETES_TYPE_SHORT_LABELS
 export const TREATMENT_TAG_LABELS: Record<TreatmentType, string> = {
   insulin: 'インスリン',
+  insulin_pump: 'ポンプ',
   oral_medication: '経口薬',
-  diet_only: '食事療法',
-  pump: 'ポンプ',
-  cgm: 'CGM',
+  glp1: 'GLP-1',
+  diet_therapy: '食事療法',
+  exercise_therapy: '運動療法',
+  observation: '経過観察',
 }
 
 // Thread status labels
@@ -513,11 +542,11 @@ export const ILLNESS_DURATION_LABELS: Record<IllnessDuration, string> = {
 // Device type labels
 export const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
   libre: 'FreeStyleリブレ',
-  libre2: 'FreeStyleリブレ2',
   dexcom: 'Dexcom',
-  pump: 'インスリンポンプ',
-  cgm: 'その他CGM',
-  none: '使用なし',
+  insulin_pump: 'インスリンポンプ',
+  meter_only: '血糖測定器のみ',
+  none: '使用していない',
+  other: 'その他',
 }
 
 // Yes/No/Private labels
@@ -561,6 +590,7 @@ export interface DiaryEntry {
   user_id: string
   content: string
   image_url: string | null
+  image_urls: string[]
   created_at: string
   updated_at: string
 }
@@ -585,6 +615,21 @@ export interface ExternalLink {
   url: string
 }
 
+// Admin notification interface
+export interface AdminNotification {
+  id: string
+  type: AdminNotificationType
+  thread_id: string
+  comment_id: string | null
+  user_id: string
+  message: string
+  is_read: boolean
+  created_at: string
+  // Joined data
+  threads?: Pick<Thread, 'id' | 'title'>
+  users?: { display_name: string | null; is_dummy: boolean }
+}
+
 // Extended user profile interface
 export interface ExtendedUserProfile {
   user_id: string
@@ -595,15 +640,20 @@ export interface ExtendedUserProfile {
   gender: Gender | null
   prefecture: string | null
   illness_duration: IllnessDuration | null
-  devices: DeviceType[]
+  treatment_methods: TreatmentType[] | null
+  device: DeviceType | null
   has_complications: YesNoPrivate
   on_dialysis: YesNoPrivate
   is_pregnant: YesNoPrivate
   external_links: ExternalLink[]
-  is_age_public: boolean
-  is_gender_public: boolean
-  is_prefecture_public: boolean
-  is_illness_duration_public: boolean
-  is_devices_public: boolean
-  is_hba1c_public: boolean
+  // Public flags - default values noted in comments
+  age_group_public: boolean      // default: false
+  gender_public: boolean         // default: false
+  prefecture_public: boolean     // default: false
+  illness_duration_public: boolean // default: true
+  treatment_public: boolean      // default: true
+  device_public: boolean         // default: true
+  bio_public: boolean            // default: true
+  hba1c_public: boolean          // default: false
+  links_public: boolean          // default: true
 }

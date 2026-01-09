@@ -29,7 +29,7 @@ interface ReportWithDetails extends Report {
 const STATUS_COLORS: Record<ReportStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
   reviewed: 'bg-blue-100 text-blue-700',
-  resolved: 'bg-green-100 text-green-700',
+  resolved: 'bg-rose-100 text-rose-600',
   dismissed: 'bg-gray-100 text-gray-600',
 }
 
@@ -213,8 +213,8 @@ export function ReportList() {
           onClick={() => setFilterStatus('resolved')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterStatus === 'resolved'
-              ? 'bg-green-500 text-white'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'
+              ? 'bg-rose-500 text-white'
+              : 'bg-rose-100 text-rose-600 hover:bg-rose-200'
           }`}
         >
           対応済み
@@ -235,7 +235,7 @@ export function ReportList() {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <Loader2 size={32} className="animate-spin text-green-600" />
+            <Loader2 size={32} className="animate-spin text-rose-500" />
           </div>
         ) : reports.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
@@ -281,7 +281,7 @@ export function ReportList() {
                           {targetLink && (
                             <Link
                               to={targetLink}
-                              className="text-green-600 hover:underline text-xs"
+                              className="text-rose-500 hover:underline text-xs"
                               target="_blank"
                             >
                               <Eye size={14} />
@@ -304,7 +304,7 @@ export function ReportList() {
                       <td className="px-4 py-3">
                         <Link
                           to={`/users/${report.reporter_id}`}
-                          className="text-gray-700 hover:text-green-600"
+                          className="text-gray-700 hover:text-rose-500"
                         >
                           {report.reporter?.display_name || report.reporter?.email || '匿名'}
                         </Link>
@@ -331,7 +331,7 @@ export function ReportList() {
                               <button
                                 onClick={() => updateReportStatus(report.id, 'resolved')}
                                 disabled={updating === report.id}
-                                className="p-1.5 text-green-600 rounded hover:bg-green-50 transition-colors disabled:opacity-50"
+                                className="p-1.5 text-rose-500 rounded hover:bg-rose-50 transition-colors disabled:opacity-50"
                                 title="対応済みにする"
                               >
                                 <CheckCircle size={16} />
@@ -351,7 +351,7 @@ export function ReportList() {
                               <button
                                 onClick={() => updateReportStatus(report.id, 'resolved')}
                                 disabled={updating === report.id}
-                                className="p-1.5 text-green-600 rounded hover:bg-green-50 transition-colors disabled:opacity-50"
+                                className="p-1.5 text-rose-500 rounded hover:bg-rose-50 transition-colors disabled:opacity-50"
                                 title="対応済みにする"
                               >
                                 {updating === report.id ? (

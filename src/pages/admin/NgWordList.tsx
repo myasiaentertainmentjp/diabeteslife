@@ -96,12 +96,12 @@ export function AdminNgWordList() {
             value={newWord}
             onChange={(e) => setNewWord(e.target.value)}
             placeholder="NGワードを入力..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
           />
           <button
             type="submit"
             disabled={adding}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:opacity-50 transition-colors"
           >
             {adding ? (
               <Loader2 size={18} className="animate-spin" />
@@ -116,7 +116,7 @@ export function AdminNgWordList() {
       {/* Word List */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <Loader2 size={32} className="animate-spin text-green-600" />
+          <Loader2 size={32} className="animate-spin text-rose-500" />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">

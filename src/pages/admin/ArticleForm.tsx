@@ -9,7 +9,7 @@ import { ImageUploader } from '../../components/ImageUploader'
 import { compressImage, uploadToSupabaseStorage } from '../../lib/imageUpload'
 import { Loader2, Save, ArrowLeft, Eye, EyeOff, Wand2 } from 'lucide-react'
 
-const CATEGORIES: ArticleCategory[] = ['health', 'lifestyle', 'food', 'exercise', 'medical', 'other']
+const CATEGORIES: ArticleCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 interface FormData {
   title: string
@@ -24,7 +24,7 @@ interface FormData {
 const initialFormData: FormData = {
   title: '',
   slug: '',
-  category: 'health',
+  category: 'food_recipe',
   tags: '',
   thumbnail_url: '',
   content: '',
@@ -170,9 +170,10 @@ export function ArticleForm() {
       updated_at: now,
     }
 
-    // Add created_at only for new articles
+    // Add created_at and author_id only for new articles
     if (!isEdit) {
       articleData.created_at = now
+      articleData.author_id = user?.id || null
     }
 
     console.log('Article data to be sent:', JSON.stringify(articleData, null, 2))
@@ -235,7 +236,7 @@ export function ArticleForm() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -265,7 +266,7 @@ export function ArticleForm() {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
               placeholder="記事のタイトル"
             />
           </div>
@@ -280,7 +281,7 @@ export function ArticleForm() {
                 type="text"
                 value={formData.slug}
                 onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                 placeholder="article-slug"
               />
               <button
@@ -303,7 +304,7 @@ export function ArticleForm() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, category: e.target.value as ArticleCategory }))
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -320,7 +321,7 @@ export function ArticleForm() {
               type="text"
               value={formData.tags}
               onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
               placeholder="タグ1, タグ2, タグ3（カンマ区切り）"
             />
           </div>
@@ -342,7 +343,7 @@ export function ArticleForm() {
               <button
                 type="button"
                 onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center gap-1 text-sm text-green-600 hover:underline"
+                className="flex items-center gap-1 text-sm text-rose-500 hover:underline"
               >
                 {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
                 {showPreview ? '編集に戻る' : 'プレビュー'}
@@ -381,7 +382,7 @@ export function ArticleForm() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, is_published: e.target.checked }))
                 }
-                className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500"
               />
               <span className="text-sm font-medium text-gray-700">公開する</span>
             </label>
@@ -400,7 +401,7 @@ export function ArticleForm() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:opacity-50 transition-colors"
           >
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             <span>{isEdit ? '更新する' : '作成する'}</span>

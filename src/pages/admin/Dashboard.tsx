@@ -49,12 +49,12 @@ export function Dashboard() {
     setLoading(true)
 
     try {
-      // Fetch counts
+      // Fetch counts - use simpler queries without filters that might fail
       const [usersResult, threadsResult, commentsResult, articlesResult] = await Promise.all([
         supabase.from('users').select('id', { count: 'exact', head: true }),
         supabase.from('threads').select('id', { count: 'exact', head: true }),
         supabase.from('comments').select('id', { count: 'exact', head: true }),
-        supabase.from('articles').select('id', { count: 'exact', head: true }).eq('is_published', true),
+        supabase.from('articles').select('id', { count: 'exact', head: true }),
       ])
 
       setStats({
@@ -64,31 +64,68 @@ export function Dashboard() {
         totalArticles: articlesResult.count || 0,
       })
 
-      // Fetch recent threads with error handling
+      // Fetch recent threads (without joins)
       try {
         const { data: threads } = await supabase
           .from('threads')
-          .select(`id, title, category, created_at, user_id, users:user_id(display_name)`)
+          .select('id, title, category, created_at, user_id')
           .order('created_at', { ascending: false })
           .limit(5)
 
-        if (threads) {
-          setRecentThreads(threads as unknown as RecentThread[])
+        if (threads && threads.length > 0) {
+          // Fetch user names separately
+          const userIds = [...new Set(threads.map(t => t.user_id))]
+          const { data: usersData } = await supabase
+            .from('users')
+            .select('id, display_name')
+            .in('id', userIds)
+
+          const usersMap = new Map(usersData?.map(u => [u.id, u]) || [])
+          const threadsWithUsers = threads.map(thread => ({
+            ...thread,
+            users: usersMap.get(thread.user_id) || { display_name: null }
+          }))
+
+          setRecentThreads(threadsWithUsers as RecentThread[])
         }
       } catch (e) {
         console.error('Error fetching recent threads:', e)
       }
 
-      // Fetch recent comments with error handling
+      // Fetch recent comments (without joins)
       try {
         const { data: comments } = await supabase
           .from('comments')
-          .select(`id, content, created_at, thread_id, user_id, users:user_id(display_name), threads:thread_id(title)`)
+          .select('id, body, created_at, thread_id, user_id')
           .order('created_at', { ascending: false })
           .limit(5)
 
-        if (comments) {
-          setRecentComments(comments as unknown as RecentComment[])
+        if (comments && comments.length > 0) {
+          // Fetch user names and thread titles separately
+          const userIds = [...new Set(comments.map(c => c.user_id))]
+          const threadIds = [...new Set(comments.map(c => c.thread_id).filter(Boolean))]
+
+          const [usersData, threadsData] = await Promise.all([
+            supabase.from('users').select('id, display_name').in('id', userIds),
+            threadIds.length > 0
+              ? supabase.from('threads').select('id, title').in('id', threadIds)
+              : Promise.resolve({ data: [] })
+          ])
+
+          const usersMap = new Map(usersData.data?.map(u => [u.id, u]) || [])
+          const threadsMap = new Map(threadsData.data?.map(t => [t.id, t]) || [])
+
+          const commentsWithData = comments.map(comment => ({
+            id: comment.id,
+            content: comment.body || '',
+            created_at: comment.created_at,
+            thread_id: comment.thread_id,
+            user_id: comment.user_id,
+            users: usersMap.get(comment.user_id) || { display_name: null },
+            threads: comment.thread_id ? threadsMap.get(comment.thread_id) || { title: '削除済み' } : { title: '削除済み' }
+          }))
+
+          setRecentComments(commentsWithData as RecentComment[])
         }
       } catch (e) {
         console.error('Error fetching recent comments:', e)
@@ -118,14 +155,14 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
 
   const statCards = [
     { label: '総ユーザー数', value: stats.totalUsers, icon: Users, color: 'bg-blue-500' },
-    { label: '総スレッド数', value: stats.totalThreads, icon: MessageSquare, color: 'bg-green-500' },
+    { label: '総スレッド数', value: stats.totalThreads, icon: MessageSquare, color: 'bg-rose-500' },
     { label: '総コメント数', value: stats.totalComments, icon: FileText, color: 'bg-orange-500' },
     { label: '公開記事数', value: stats.totalArticles, icon: BookOpen, color: 'bg-purple-500' },
   ]
@@ -159,7 +196,7 @@ export function Dashboard() {
             <h2 className="font-bold text-gray-900">最新スレッド</h2>
             <Link
               to="/admin/threads"
-              className="flex items-center gap-1 text-sm text-green-600 hover:underline"
+              className="flex items-center gap-1 text-sm text-rose-500 hover:underline"
             >
               すべて見る
               <ArrowRight size={14} />
@@ -197,7 +234,7 @@ export function Dashboard() {
             <h2 className="font-bold text-gray-900">最新コメント</h2>
             <Link
               to="/admin/comments"
-              className="flex items-center gap-1 text-sm text-green-600 hover:underline"
+              className="flex items-center gap-1 text-sm text-rose-500 hover:underline"
             >
               すべて見る
               <ArrowRight size={14} />

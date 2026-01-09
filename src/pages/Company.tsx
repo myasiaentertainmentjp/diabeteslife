@@ -30,7 +30,7 @@ export function Company() {
           <h2 className="text-sm font-bold text-gray-700 mb-2">メール</h2>
           <a
             href="mailto:diabetes@myasia.jp"
-            className="text-green-600 hover:underline"
+            className="text-rose-500 hover:underline"
           >
             diabetes@myasia.jp
           </a>

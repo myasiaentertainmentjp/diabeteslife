@@ -2,27 +2,30 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ThreadWithUser, THREAD_CATEGORY_LABELS, ThreadCategory } from '../types/database'
+import { ThreadWithUser, THREAD_CATEGORY_LABELS, ThreadCategory, Article } from '../types/database'
 import { PopularKeywords } from '../components/PopularKeywords'
-import { Search, MessageSquare, PenSquare, ChevronRight, Loader2 } from 'lucide-react'
+import { HeroSlider } from '../components/HeroSlider'
+import { Search, MessageSquare, PenSquare, ChevronRight, Loader2, FileText } from 'lucide-react'
 
 type TabType = 'popular' | 'new'
 
-const categories: ThreadCategory[] = ['health', 'lifestyle', 'work', 'food', 'exercise', 'other']
+const categories: ThreadCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
   const [threads, setThreads] = useState<ThreadWithUser[]>([])
   const [popularThreads, setPopularThreads] = useState<ThreadWithUser[]>([])
+  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
 
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // 初回マウント時にサイドバーの人気トピックを取得
+  // 初回マウント時にサイドバーのデータを取得
   useEffect(() => {
     fetchPopularThreads()
+    fetchFeaturedArticles()
   }, [])
 
   // タブ切り替え時（初回含む）にメインコンテンツを取得
@@ -33,25 +36,28 @@ export function Home() {
   async function fetchThreads() {
     setLoading(true)
 
+    // 10秒タイムアウト
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
-      let query = supabase
+      const queryPromise = supabase
         .from('threads')
-        .select('*')
+        .select('id, title, category, created_at, user_id')
+        .order('created_at', { ascending: false })
         .limit(10)
 
-      if (activeTab === 'popular') {
-        query = query.order('comments_count', { ascending: false })
-      } else {
-        query = query.order('created_at', { ascending: false })
-      }
+      const result = await Promise.race([queryPromise, timeoutPromise])
 
-      const { data, error } = await query
-
-      if (error) {
-        console.error('Error fetching threads:', error)
+      if (result === null) {
+        console.warn('Fetch threads timeout')
+        setThreads([])
+      } else if (result.error) {
+        console.error('Error fetching threads:', result.error)
         setThreads([])
       } else {
-        setThreads((data || []) as unknown as ThreadWithUser[])
+        setThreads((result.data || []) as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching threads:', error)
@@ -62,24 +68,64 @@ export function Home() {
   }
 
   async function fetchPopularThreads() {
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
     try {
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('threads')
-        .select('*')
+        .select('id, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
-        .order('comments_count', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(5)
 
-      if (error) {
-        console.error('Error fetching popular threads:', error)
-      } else if (data) {
-        setPopularThreads(data as unknown as ThreadWithUser[])
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch popular threads timeout')
+        setPopularThreads([])
+      } else if (result.error) {
+        console.error('Error fetching popular threads:', result.error)
+        setPopularThreads([])
+      } else {
+        setPopularThreads((result.data || []) as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching popular threads:', error)
+      setPopularThreads([])
+    }
+  }
+
+  async function fetchFeaturedArticles() {
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 10000)
+    })
+
+    try {
+      const queryPromise = supabase
+        .from('articles')
+        .select('id, title, slug, thumbnail_url, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch articles timeout')
+        setFeaturedArticles([])
+      } else if (result.error) {
+        console.error('Error fetching featured articles:', result.error)
+        setFeaturedArticles([])
+      } else {
+        setFeaturedArticles((result.data || []) as Article[])
+      }
+    } catch (error) {
+      console.error('Error fetching featured articles:', error)
+      setFeaturedArticles([])
     }
   }
 
@@ -109,25 +155,23 @@ export function Home() {
   }
 
   return (
-    <div className="bg-green-50 min-h-screen">
-      {/* Sub Header */}
+    <div className="bg-rose-50 min-h-screen">
+      {/* Hero Slider */}
+      <HeroSlider />
+
+      {/* Search Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <p className="text-gray-600 text-base">
-              糖尿病患者とその家族のためのコミュニティサイト
-            </p>
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="キーワードで検索"
-                className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-              />
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </form>
-          </div>
+          <form onSubmit={handleSearch} className="relative max-w-md mx-auto">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="キーワードで検索..."
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none shadow-sm"
+            />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+          </form>
         </div>
       </div>
 
@@ -142,7 +186,7 @@ export function Home() {
                 onClick={() => setActiveTab('popular')}
                 className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
                   activeTab === 'popular'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-rose-500 text-white'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -152,7 +196,7 @@ export function Home() {
                 onClick={() => setActiveTab('new')}
                 className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
                   activeTab === 'new'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-rose-500 text-white'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -164,7 +208,7 @@ export function Home() {
             <div className="bg-white rounded-lg shadow-sm">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
-                  <Loader2 size={28} className="animate-spin text-green-600" />
+                  <Loader2 size={28} className="animate-spin text-rose-500" />
                 </div>
               ) : threads.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -186,10 +230,6 @@ export function Home() {
                             </h3>
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <MessageSquare size={14} />
-                              {thread.comments_count}
-                            </span>
                             <span className="hidden sm:inline">
                               {formatDate(thread.created_at)}
                             </span>
@@ -205,7 +245,7 @@ export function Home() {
               <div className="px-4 py-3 border-t border-gray-100">
                 <Link
                   to="/threads"
-                  className="flex items-center justify-center gap-1 text-green-600 hover:text-green-700 text-sm font-medium"
+                  className="flex items-center justify-center gap-1 text-rose-500 hover:text-rose-600 text-sm font-medium"
                 >
                   <span>もっと見る</span>
                   <ChevronRight size={16} />
@@ -220,7 +260,7 @@ export function Home() {
             {user ? (
               <Link
                 to="/threads/new"
-                className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium shadow-sm"
               >
                 <PenSquare size={18} />
                 <span>トピックを投稿する</span>
@@ -228,7 +268,7 @@ export function Home() {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium shadow-sm"
               >
                 <PenSquare size={18} />
                 <span>ログインして投稿する</span>
@@ -252,7 +292,7 @@ export function Home() {
                         to={`/threads/${thread.id}`}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
-                        <span className="text-green-600 font-bold text-sm">
+                        <span className="text-rose-500 font-bold text-sm">
                           {index + 1}
                         </span>
                         <span className="text-gray-700 text-sm line-clamp-2">
@@ -270,30 +310,42 @@ export function Home() {
               <div className="px-4 py-3 border-b border-gray-100">
                 <h2 className="font-bold text-gray-800">おすすめ記事</h2>
               </div>
-              <div className="p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-12 bg-gray-200 rounded shrink-0" />
-                  <p className="text-sm text-gray-700 line-clamp-2">
-                    糖尿病の基礎知識 - 初めての方へ
-                  </p>
+              {featuredArticles.length === 0 ? (
+                <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                  <FileText size={24} className="mx-auto mb-2 text-gray-300" />
+                  <p>おすすめ記事がありません</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-12 bg-gray-200 rounded shrink-0" />
-                  <p className="text-sm text-gray-700 line-clamp-2">
-                    血糖値を安定させる食事のコツ
-                  </p>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {featuredArticles.map((article) => (
+                    <Link
+                      key={article.id}
+                      to={`/articles/${article.slug}`}
+                      className="flex items-start gap-3 group"
+                    >
+                      {article.thumbnail_url ? (
+                        <img
+                          src={article.thumbnail_url}
+                          alt={article.title}
+                          className="w-20 object-cover rounded shrink-0"
+                          style={{ aspectRatio: '1.91 / 1' }}
+                        />
+                      ) : (
+                        <div className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center" style={{ aspectRatio: '1.91 / 1' }}>
+                          <FileText size={16} className="text-gray-400" />
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-700 line-clamp-2 group-hover:text-rose-500 transition-colors">
+                        {article.title}
+                      </p>
+                    </Link>
+                  ))}
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-12 bg-gray-200 rounded shrink-0" />
-                  <p className="text-sm text-gray-700 line-clamp-2">
-                    運動療法の始め方ガイド
-                  </p>
-                </div>
-              </div>
+              )}
               <div className="px-4 py-3 border-t border-gray-100">
                 <Link
                   to="/articles"
-                  className="flex items-center gap-1 text-green-600 hover:text-green-700 text-sm font-medium"
+                  className="flex items-center gap-1 text-rose-500 hover:text-rose-600 text-sm font-medium"
                 >
                   <span>記事一覧</span>
                   <ChevronRight size={16} />

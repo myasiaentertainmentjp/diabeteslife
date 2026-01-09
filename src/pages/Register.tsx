@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export function Register() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const { signUp } = useAuth()
@@ -36,40 +36,16 @@ export function Register() {
       setError(error.message)
       setLoading(false)
     } else {
-      setSuccess(true)
-      setLoading(false)
+      navigate('/register/complete')
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={32} className="text-emerald-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">登録完了</h1>
-          <p className="text-gray-600 mb-6">
-            確認メールを送信しました。
-            メール内のリンクをクリックして、登録を完了してください。
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-          >
-            ログインページへ
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <UserPlus size={32} className="text-green-600" />
+          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UserPlus size={32} className="text-rose-500" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">新規会員登録</h1>
           <p className="text-gray-600">
@@ -97,7 +73,7 @@ export function Register() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
                   placeholder="ニックネームを入力"
                   required
                 />
@@ -115,7 +91,7 @@ export function Register() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
                   placeholder="example@email.com"
                   required
                 />
@@ -133,7 +109,7 @@ export function Register() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
                   placeholder="6文字以上"
                   required
                   minLength={6}
@@ -152,7 +128,7 @@ export function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
             >
               {loading ? '登録中...' : '会員登録'}
             </button>
@@ -161,7 +137,7 @@ export function Register() {
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
               すでにアカウントをお持ちですか？{' '}
-              <Link to="/login" className="text-green-600 hover:underline font-medium">
+              <Link to="/login" className="text-rose-500 hover:underline font-medium">
                 ログイン
               </Link>
             </p>
@@ -170,9 +146,9 @@ export function Register() {
 
         <p className="mt-6 text-center text-xs text-gray-500">
           登録することで、
-          <Link to="/terms" className="text-green-600 hover:underline">利用規約</Link>
+          <Link to="/terms" className="text-rose-500 hover:underline">利用規約</Link>
           および
-          <Link to="/privacy" className="text-green-600 hover:underline">プライバシーポリシー</Link>
+          <Link to="/privacy" className="text-rose-500 hover:underline">プライバシーポリシー</Link>
           に同意したものとみなされます。
         </p>
       </div>

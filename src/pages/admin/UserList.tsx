@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { AppUser, UserRole, USER_ROLE_LABELS } from '../../types/database'
-import { Loader2, Shield, ShieldOff } from 'lucide-react'
+import { Loader2, Shield, ShieldOff, Bot } from 'lucide-react'
 
 export function AdminUserList() {
   const { user: currentUser } = useAuth()
@@ -26,7 +26,7 @@ export function AdminUserList() {
         console.error('Error fetching users:', error)
         showToast('ユーザーの取得に失敗しました', 'error')
       } else if (data) {
-        setUsers(data as unknown as AppUser[])
+        setUsers(data as AppUser[])
       }
     } catch (error) {
       console.error('Error fetching users:', error)
@@ -61,6 +61,26 @@ export function AdminUserList() {
     }
   }
 
+  async function toggleDummy(userId: string, currentIsDummy: boolean) {
+    const { error } = await supabase
+      .from('users')
+      .update({ is_dummy: !currentIsDummy, updated_at: new Date().toISOString() } as never)
+      .eq('id', userId)
+
+    if (error) {
+      console.error('Error updating dummy status:', error)
+      showToast('更新に失敗しました', 'error')
+    } else {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, is_dummy: !currentIsDummy } : u))
+      )
+      showToast(
+        currentIsDummy ? 'ダミーユーザーを解除しました' : 'ダミーユーザーに設定しました',
+        'success'
+      )
+    }
+  }
+
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('ja-JP')
   }
@@ -80,7 +100,7 @@ export function AdminUserList() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 size={32} className="animate-spin text-green-600" />
+        <Loader2 size={32} className="animate-spin text-rose-500" />
       </div>
     )
   }
@@ -97,6 +117,7 @@ export function AdminUserList() {
                 <th className="px-4 py-3 text-left font-medium text-gray-600">表示名</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">メール</th>
                 <th className="px-4 py-3 text-center font-medium text-gray-600">役割</th>
+                <th className="px-4 py-3 text-center font-medium text-gray-600">ダミー</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">登録日</th>
                 <th className="px-4 py-3 text-right font-medium text-gray-600">操作</th>
               </tr>
@@ -108,24 +129,50 @@ export function AdminUserList() {
                   <tr
                     key={user.id}
                     className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} ${
-                      isCurrentUser ? 'bg-green-50/50' : ''
-                    }`}
+                      isCurrentUser ? 'bg-rose-50/50' : ''
+                    } ${user.is_dummy ? 'bg-blue-50/50' : ''}`}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">
-                        {user.display_name || 'ユーザー'}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">
+                          {user.display_name || 'ユーザー'}
+                        </span>
                         {isCurrentUser && (
-                          <span className="ml-2 text-xs text-green-600">(自分)</span>
+                          <span className="text-xs text-rose-500">(自分)</span>
+                        )}
+                        {user.is_dummy && (
+                          <Bot size={14} className="text-blue-500" />
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{user.email}</td>
                     <td className="px-4 py-3 text-center">{getRoleBadge(user.role)}</td>
+                    <td className="px-4 py-3 text-center">
+                      {user.is_dummy ? (
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                          ダミー
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(user.created_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         {!isCurrentUser && (
                           <>
+                            <button
+                              onClick={() => toggleDummy(user.id, user.is_dummy)}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs border rounded transition-colors ${
+                                user.is_dummy
+                                  ? 'text-blue-600 border-blue-200 hover:bg-blue-50'
+                                  : 'text-gray-600 border-gray-200 hover:bg-gray-50'
+                              }`}
+                              title={user.is_dummy ? 'ダミー解除' : 'ダミーに設定'}
+                            >
+                              <Bot size={14} />
+                              <span>{user.is_dummy ? 'ダミー解除' : 'ダミーに'}</span>
+                            </button>
                             {user.role === 'user' ? (
                               <button
                                 onClick={() => updateRole(user.id, 'admin')}

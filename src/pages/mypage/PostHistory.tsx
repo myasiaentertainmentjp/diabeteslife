@@ -19,6 +19,10 @@ export function PostHistory() {
     if (user) {
       fetchThreads()
       fetchComments()
+    } else {
+      // Reset loading states when user is not available
+      setLoadingThreads(false)
+      setLoadingComments(false)
     }
   }, [user])
 
@@ -92,7 +96,7 @@ export function PostHistory() {
           onClick={() => setActiveTab('threads')}
           className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             activeTab === 'threads'
-              ? 'bg-green-100 text-green-700'
+              ? 'bg-rose-100 text-rose-600'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
@@ -106,7 +110,7 @@ export function PostHistory() {
           onClick={() => setActiveTab('comments')}
           className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             activeTab === 'comments'
-              ? 'bg-green-100 text-green-700'
+              ? 'bg-rose-100 text-rose-600'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
@@ -123,7 +127,7 @@ export function PostHistory() {
         <div>
           {loadingThreads ? (
             <div className="flex justify-center py-8">
-              <Loader2 size={24} className="animate-spin text-green-600" />
+              <Loader2 size={24} className="animate-spin text-rose-500" />
             </div>
           ) : threads.length > 0 ? (
             <div className="space-y-3">
@@ -136,7 +140,7 @@ export function PostHistory() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">
+                        <span className="text-xs px-2 py-0.5 bg-rose-100 text-rose-600 rounded">
                           {THREAD_CATEGORY_LABELS[thread.category]}
                         </span>
                         <span className="flex items-center gap-1 text-xs text-gray-500">
@@ -166,7 +170,7 @@ export function PostHistory() {
               <p>まだスレッドを投稿していません</p>
               <Link
                 to="/threads/new"
-                className="inline-block mt-3 text-green-600 hover:underline text-sm"
+                className="inline-block mt-3 text-rose-500 hover:underline text-sm"
               >
                 最初のスレッドを投稿する
               </Link>
@@ -180,7 +184,7 @@ export function PostHistory() {
         <div>
           {loadingComments ? (
             <div className="flex justify-center py-8">
-              <Loader2 size={24} className="animate-spin text-green-600" />
+              <Loader2 size={24} className="animate-spin text-rose-500" />
             </div>
           ) : comments.length > 0 ? (
             <div className="space-y-3">
@@ -193,7 +197,7 @@ export function PostHistory() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       {comment.threads && (
-                        <div className="text-xs text-green-600 mb-1 truncate">
+                        <div className="text-xs text-rose-500 mb-1 truncate">
                           スレッド: {comment.threads.title}
                         </div>
                       )}
@@ -218,7 +222,7 @@ export function PostHistory() {
               <p>まだコメントを投稿していません</p>
               <Link
                 to="/threads"
-                className="inline-block mt-3 text-green-600 hover:underline text-sm"
+                className="inline-block mt-3 text-rose-500 hover:underline text-sm"
               >
                 スレッドを見る
               </Link>

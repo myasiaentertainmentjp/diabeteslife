@@ -138,21 +138,21 @@ export function ImageUploader({
           onDrop={handleDrop}
           className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
             isDragging
-              ? 'border-green-500 bg-green-50'
-              : 'border-gray-300 hover:border-green-400 hover:bg-gray-50'
+              ? 'border-rose-500 bg-rose-50'
+              : 'border-gray-300 hover:border-rose-400 hover:bg-gray-50'
           }`}
         >
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
-              <Loader2 size={32} className="animate-spin text-green-600" />
+              <Loader2 size={32} className="animate-spin text-rose-500" />
               <p className="text-sm text-gray-600">アップロード中...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
               {isDragging ? (
                 <>
-                  <Upload size={32} className="text-green-600" />
-                  <p className="text-sm text-green-600 font-medium">ドロップしてアップロード</p>
+                  <Upload size={32} className="text-rose-500" />
+                  <p className="text-sm text-rose-500 font-medium">ドロップしてアップロード</p>
                 </>
               ) : (
                 <>
@@ -184,7 +184,7 @@ export function ImageUploader({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="https://example.com/image.jpg"
-            className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+            className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
           />
         </details>
       </div>
