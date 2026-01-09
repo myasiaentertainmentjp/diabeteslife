@@ -42,18 +42,18 @@ export function Contact() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <Mail size={24} className="text-rose-500" />
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-xl">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail size={32} className="text-rose-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">お問い合わせ</h1>
+          <p className="text-gray-600 text-sm">ご質問・ご要望をお聞かせください</p>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">お問い合わせ</h1>
-        </div>
-      </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               <AlertCircle size={20} />
@@ -151,14 +151,15 @@ export function Contact() {
                 <span>送信する</span>
               </>
             )}
-          </button>
-        </form>
-      </div>
+            </button>
+          </form>
+        </div>
 
-      <div className="mt-8 text-center">
-        <Link to="/" className="text-rose-500 hover:underline text-sm">
-          トップページに戻る
-        </Link>
+        <div className="mt-6 text-center">
+          <Link to="/" className="text-rose-500 hover:underline text-sm">
+            トップページに戻る
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -116,11 +116,11 @@ export function Header() {
       </div>
 
       {/* Row 2: Tagline and Search */}
-      <div className="bg-rose-300">
+      <div className="bg-rose-400/90 backdrop-blur-sm shadow-sm">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-10">
             {/* Tagline */}
-            <p className="text-white text-xs md:text-sm">
+            <p className="text-white text-xs md:text-sm drop-shadow-sm">
               糖尿病患者とその家族のためのコミュニティサイト
             </p>
 

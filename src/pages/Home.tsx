@@ -180,32 +180,38 @@ export function Home() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Column - Main Content */}
           <div className="flex-1">
-            {/* Tabs */}
-            <div className="flex mb-4">
+            {/* Tabs - Full width 2-column */}
+            <div className="flex mb-0">
               <button
                 onClick={() => setActiveTab('popular')}
-                className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                className={`flex-1 py-4 text-base font-medium transition-colors relative ${
                   activeTab === 'popular'
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                    ? 'bg-rose-400 text-white'
+                    : 'bg-blue-50 text-cyan-600 hover:bg-blue-100'
                 }`}
               >
                 今日の人気トピック
+                {activeTab === 'popular' && (
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-rose-400" />
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('new')}
-                className={`px-6 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                className={`flex-1 py-4 text-base font-medium transition-colors relative ${
                   activeTab === 'new'
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                    ? 'bg-rose-400 text-white'
+                    : 'bg-blue-50 text-cyan-600 hover:bg-blue-100'
                 }`}
               >
                 新着トピック
+                {activeTab === 'new' && (
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-rose-400" />
+                )}
               </button>
             </div>
 
             {/* Thread List */}
-            <div className="bg-white rounded-lg shadow-sm">
+            <div className="bg-white rounded-b-lg shadow-sm pt-2">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Loader2 size={28} className="animate-spin text-rose-500" />
