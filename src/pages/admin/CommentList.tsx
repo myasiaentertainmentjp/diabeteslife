@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../contexts/ToastContext'
-import { ThreadComment, CommentStatus, COMMENT_STATUS_LABELS } from '../../types/database'
+import { CommentStatus, COMMENT_STATUS_LABELS } from '../../types/database'
 import { Loader2, Eye, EyeOff, Trash2 } from 'lucide-react'
 
-interface CommentWithRelations extends ThreadComment {
+interface CommentWithRelations {
+  id: string
+  thread_id: string
+  user_id: string
+  content?: string
+  body?: string
+  status: CommentStatus
+  created_at: string
   users?: { display_name: string | null; email: string }
   threads?: { id: string; title: string }
 }
@@ -30,9 +37,10 @@ export function AdminCommentList() {
     })
 
     try {
+      // まずコメントを取得
       let query = supabase
         .from('comments')
-        .select(`*, users:user_id(display_name, email), threads:thread_id(id, title)`)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -46,16 +54,51 @@ export function AdminCommentList() {
         console.warn('Fetch comments timeout')
         showToast('コメントの取得がタイムアウトしました', 'error')
         setComments([])
-      } else if (result.error) {
+        return
+      }
+
+      if (result.error) {
         console.error('Error fetching comments:', result.error)
-        // Don't show toast for table not found - just show empty state
         if (!result.error.message.includes('Could not find')) {
           showToast('コメントの取得に失敗しました', 'error')
         }
         setComments([])
-      } else if (result.data) {
-        setComments(result.data as unknown as CommentWithRelations[])
+        return
       }
+
+      if (!result.data || result.data.length === 0) {
+        setComments([])
+        return
+      }
+
+      // ユーザー情報を取得
+      const userIds = [...new Set(result.data.map((c: any) => c.user_id))]
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, display_name, email')
+        .in('id', userIds)
+
+      const usersMap = new Map(usersData?.map((u: any) => [u.id, u]) || [])
+
+      // スレッド情報を取得
+      const threadIds = [...new Set(result.data.map((c: any) => c.thread_id).filter(Boolean))]
+      let threadsMap = new Map()
+      if (threadIds.length > 0) {
+        const { data: threadsData } = await supabase
+          .from('threads')
+          .select('id, title')
+          .in('id', threadIds)
+        threadsMap = new Map(threadsData?.map((t: any) => [t.id, t]) || [])
+      }
+
+      // データを結合
+      const commentsWithRelations = result.data.map((comment: any) => ({
+        ...comment,
+        users: usersMap.get(comment.user_id) || null,
+        threads: threadsMap.get(comment.thread_id) || null,
+      }))
+
+      setComments(commentsWithRelations as CommentWithRelations[])
     } catch (error) {
       console.error('Error fetching comments:', error)
       setComments([])
