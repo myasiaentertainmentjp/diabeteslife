@@ -2,9 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base font size for older users */
+html {
+  font-size: 17px; /* 標準16pxより少し大きめ */
+}
+
 /* Green theme base background */
 body {
   background-color: #f0fdf4; /* rose-50 */
+  line-height: 1.7; /* 読みやすさ向上 */
+}
+
+/* モバイルでも読みやすいサイズを維持 */
+@media (max-width: 640px) {
+  html {
+    font-size: 16px;
+  }
 }
 
 @keyframes slide-in {
