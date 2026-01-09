@@ -123,16 +123,16 @@ export function ArticleList() {
               to={`/articles/${article.slug}`}
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
-              {/* Thumbnail */}
-              <div className="bg-gray-200 relative" style={{ aspectRatio: '1.91 / 1' }}>
+              {/* Thumbnail - note.com style 1.91:1 aspect ratio */}
+              <div className="relative w-full overflow-hidden bg-gray-200" style={{ paddingBottom: '52.36%' }}>
                 {article.thumbnail_url ? (
                   <img
                     src={article.thumbnail_url}
                     alt={article.title}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                     <FileText size={48} className="text-gray-400" />
                   </div>
                 )}

@@ -157,13 +157,13 @@ export function ArticleDetail() {
 
       {/* Article Header */}
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {/* Thumbnail */}
+        {/* Thumbnail - note.com style 1.91:1 aspect ratio */}
         {article.thumbnail_url && (
-          <div className="bg-gray-200" style={{ aspectRatio: '1.91 / 1' }}>
+          <div className="relative w-full overflow-hidden bg-gray-200" style={{ paddingBottom: '52.36%' }}>
             <img
               src={article.thumbnail_url}
               alt={article.title}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </div>
         )}
@@ -222,15 +222,15 @@ export function ArticleDetail() {
                 to={`/articles/${related.slug}`}
                 className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="bg-gray-200" style={{ aspectRatio: '1.91 / 1' }}>
+                <div className="relative w-full overflow-hidden bg-gray-200" style={{ paddingBottom: '52.36%' }}>
                   {related.thumbnail_url ? (
                     <img
                       src={related.thumbnail_url}
                       alt={related.title}
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                       <FileText size={32} className="text-gray-400" />
                     </div>
                   )}
