@@ -42,15 +42,14 @@ export function Contact() {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail size={32} className="text-rose-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">お問い合わせ</h1>
-          <p className="text-gray-600 text-sm">ご質問・ご要望をお聞かせください</p>
+    <div className="max-w-xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Mail size={32} className="text-rose-500" />
         </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">お問い合わせ</h1>
+        <p className="text-gray-600 text-sm">ご質問・ご要望をお聞かせください</p>
+      </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -155,11 +154,10 @@ export function Contact() {
           </form>
         </div>
 
-        <div className="mt-6 text-center">
-          <Link to="/" className="text-rose-500 hover:underline text-sm">
-            トップページに戻る
-          </Link>
-        </div>
+      <div className="mt-6 text-center">
+        <Link to="/" className="text-rose-500 hover:underline text-sm">
+          トップページに戻る
+        </Link>
       </div>
     </div>
   )
