@@ -16,6 +16,11 @@ export function Header() {
   // Current path for login redirect
   const currentPath = location.pathname + location.search
 
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [location.pathname])
+
   // Fetch unread notification count
   useEffect(() => {
     if (!user) {

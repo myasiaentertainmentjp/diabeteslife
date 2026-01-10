@@ -1175,21 +1175,14 @@ export function ThreadDetail() {
                   </p>
                 </form>
               ) : (
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm">
-                    コメントするには
-                    <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1 font-medium">
-                      ログイン
-                    </Link>
-                    してください
-                  </div>
-                  <button
-                    disabled
-                    className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
-                  >
-                    <Send size={18} />
-                  </button>
-                </div>
+                <Link
+                  to="/login"
+                  state={{ from: currentPath }}
+                  className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                >
+                  <Send size={18} className="text-gray-400" />
+                  <span><span className="text-rose-500 font-medium">ログイン</span>してコメントする</span>
+                </Link>
               )}
             </div>
           </>
