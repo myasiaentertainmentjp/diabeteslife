@@ -3,8 +3,8 @@ import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile, UserRole } from '../types/database'
 
-// Session restoration timeout (5 seconds)
-const SESSION_TIMEOUT = 5000
+// Session restoration timeout (3 seconds)
+const SESSION_TIMEOUT = 3000
 
 // Extended profile that includes role from users table
 interface UserProfile extends Partial<Profile> {
@@ -149,10 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }, SESSION_TIMEOUT)
 
-        // Get session with timeout
+        // Get session with timeout (2 seconds)
         const { data, error } = await withTimeout(
           supabase.auth.getSession(),
-          SESSION_TIMEOUT - 500, // Slightly less than hard timeout
+          2000,
           'Session restoration timeout'
         )
 
@@ -279,13 +279,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     )
 
-    // Final safety net - force loading to false after 8 seconds no matter what
+    // Final safety net - force loading to false after 5 seconds no matter what
     const safetyTimeoutId = setTimeout(() => {
       if (mounted && loading) {
         console.warn('[Auth] Safety timeout triggered - forcing loading to false')
         setLoading(false)
       }
-    }, 8000)
+    }, 5000)
 
     return () => {
       mounted = false
