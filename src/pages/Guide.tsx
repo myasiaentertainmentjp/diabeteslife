@@ -21,7 +21,7 @@ export function Guide() {
           <BookOpen size={24} className="text-rose-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dライフの使い方</h1>
+          <h1 className="text-2xl font-bold text-gray-900">使い方</h1>
           <p className="text-gray-600 text-sm">はじめての方へ</p>
         </div>
       </div>
