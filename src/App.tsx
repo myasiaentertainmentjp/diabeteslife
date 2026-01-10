@@ -30,6 +30,9 @@ import { Contact } from './pages/Contact'
 import { ContactComplete } from './pages/ContactComplete'
 import { FAQ } from './pages/FAQ'
 
+// Help pages
+import { ThreadModes } from './pages/help/ThreadModes'
+
 // Error pages
 import { NotFound, Forbidden, ServerError } from './pages/errors'
 
@@ -106,6 +109,7 @@ function App() {
               <Route path="contact" element={<Contact />} />
               <Route path="contact/complete" element={<ContactComplete />} />
               <Route path="faq" element={<FAQ />} />
+              <Route path="help/thread-modes" element={<ThreadModes />} />
 
               {/* Error pages */}
               <Route path="403" element={<Forbidden />} />

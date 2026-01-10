@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
-import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare, HelpCircle } from 'lucide-react'
 
 const categories: ThreadCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
@@ -132,9 +132,20 @@ export function ThreadNew() {
 
           {/* Mode Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              スレッドタイプ
-            </label>
+            <div className="flex items-center gap-2 mb-3">
+              <label className="text-sm font-medium text-gray-700">
+                スレッドタイプ
+              </label>
+              <a
+                href="/help/thread-modes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-rose-500 transition-colors"
+                title="通常モードと日記モードの違いを見る"
+              >
+                <HelpCircle size={16} />
+              </a>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
