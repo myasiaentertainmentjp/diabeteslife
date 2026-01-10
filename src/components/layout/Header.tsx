@@ -158,25 +158,12 @@ export function Header() {
               {loading ? (
                 <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
               ) : user ? (
-                <>
-                  <Link
-                    to="/notifications"
-                    className="relative p-1.5 text-white"
-                  >
-                    <Bell size={20} />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-white text-rose-500 text-[10px] font-bold rounded-full flex items-center justify-center px-0.5">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </Link>
-                  <Link
-                    to="/mypage"
-                    className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
-                  >
-                    マイページ
-                  </Link>
-                </>
+                <Link
+                  to="/mypage"
+                  className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
+                >
+                  マイページ
+                </Link>
               ) : (
                 <Link
                   to="/login"
