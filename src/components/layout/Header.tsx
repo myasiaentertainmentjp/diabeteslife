@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, User, LogIn, LogOut, Settings, Shield, Search, Loader2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -9,6 +9,10 @@ export function Header() {
   const [isSearching, setIsSearching] = useState(false)
   const { user, profile, signOut, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Current path for login redirect
+  const currentPath = location.pathname + location.search
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -77,6 +81,7 @@ export function Header() {
                 <>
                   <Link
                     to="/login"
+                    state={{ from: currentPath }}
                     className="text-white hover:text-rose-100 text-sm font-medium transition-colors"
                   >
                     ログイン
@@ -105,6 +110,7 @@ export function Header() {
               ) : (
                 <Link
                   to="/login"
+                  state={{ from: currentPath }}
                   className="text-white text-sm font-medium"
                 >
                   ログイン
@@ -247,6 +253,7 @@ export function Header() {
               <>
                 <Link
                   to="/login"
+                  state={{ from: currentPath }}
                   className="flex items-center gap-1 justify-center border border-rose-500 text-rose-500 rounded-lg hover:bg-rose-50 font-medium transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >

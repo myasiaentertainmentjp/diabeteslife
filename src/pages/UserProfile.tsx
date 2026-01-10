@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import {
   LineChart,
   Line,
@@ -39,6 +40,8 @@ import {
   Activity,
   ExternalLink as ExternalLinkIcon,
   Lock,
+  Send,
+  Trash2,
 } from 'lucide-react'
 
 interface UserData {
@@ -76,6 +79,19 @@ interface HbA1cRecord {
   value: number
 }
 
+interface ProfileComment {
+  id: string
+  profile_user_id: string
+  commenter_id: string
+  body: string
+  created_at: string
+  commenter?: {
+    id: string
+    display_name: string | null
+    avatar_url: string | null
+  }
+}
+
 function getLinkIcon(url: string): string {
   const lowerUrl = url.toLowerCase()
   if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) return '𝕏'
@@ -97,11 +113,17 @@ function PrivateBadge() {
 
 export function UserProfile() {
   const { userId } = useParams<{ userId: string }>()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, isAdmin } = useAuth()
+  const { showToast } = useToast()
+  const location = useLocation()
+  const currentPath = location.pathname
   const [userData, setUserData] = useState<UserData | null>(null)
   const [profileData, setProfileData] = useState<UserProfileData | null>(null)
   const [threads, setThreads] = useState<Thread[]>([])
   const [hba1cRecords, setHba1cRecords] = useState<HbA1cRecord[]>([])
+  const [profileComments, setProfileComments] = useState<ProfileComment[]>([])
+  const [commentBody, setCommentBody] = useState('')
+  const [submittingComment, setSubmittingComment] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const isOwnProfile = currentUser?.id === userId
@@ -161,10 +183,105 @@ export function UserProfile() {
       if (userThreads) {
         setThreads(userThreads as Thread[])
       }
+
+      // Fetch profile comments
+      await fetchProfileComments()
     } catch (error) {
       console.error('Error fetching user data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchProfileComments() {
+    try {
+      const { data: comments, error } = await supabase
+        .from('profile_comments')
+        .select('*')
+        .eq('profile_user_id', userId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching profile comments:', error)
+        return
+      }
+
+      if (!comments || comments.length === 0) {
+        setProfileComments([])
+        return
+      }
+
+      // Fetch commenter info
+      const commenterIds = [...new Set(comments.map(c => c.commenter_id))]
+      const { data: commenters } = await supabase
+        .from('users')
+        .select('id, display_name, avatar_url')
+        .in('id', commenterIds)
+
+      const commenterMap = new Map(commenters?.map(u => [u.id, u]) || [])
+
+      const commentsWithCommenters = comments.map(comment => ({
+        ...comment,
+        commenter: commenterMap.get(comment.commenter_id) || null
+      }))
+
+      setProfileComments(commentsWithCommenters as ProfileComment[])
+    } catch (error) {
+      console.error('Error fetching profile comments:', error)
+    }
+  }
+
+  async function submitProfileComment(e: React.FormEvent) {
+    e.preventDefault()
+    if (!currentUser || !commentBody.trim()) return
+
+    setSubmittingComment(true)
+    try {
+      const { error } = await supabase
+        .from('profile_comments')
+        .insert({
+          profile_user_id: userId,
+          commenter_id: currentUser.id,
+          body: commentBody.trim()
+        })
+
+      if (error) {
+        console.error('Error submitting comment:', error)
+        showToast('コメントの投稿に失敗しました', 'error')
+        return
+      }
+
+      setCommentBody('')
+      showToast('コメントを投稿しました', 'success')
+      await fetchProfileComments()
+    } catch (error) {
+      console.error('Error submitting comment:', error)
+      showToast('コメントの投稿に失敗しました', 'error')
+    } finally {
+      setSubmittingComment(false)
+    }
+  }
+
+  async function deleteProfileComment(commentId: string) {
+    if (!confirm('このコメントを削除しますか？')) return
+
+    try {
+      const { error } = await supabase
+        .from('profile_comments')
+        .delete()
+        .eq('id', commentId)
+
+      if (error) {
+        console.error('Error deleting comment:', error)
+        showToast('コメントの削除に失敗しました', 'error')
+        return
+      }
+
+      showToast('コメントを削除しました', 'success')
+      setProfileComments(prev => prev.filter(c => c.id !== commentId))
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      showToast('コメントの削除に失敗しました', 'error')
     }
   }
 
@@ -445,6 +562,99 @@ export function UserProfile() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Profile Comments */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-3">
+        <div className="px-4 py-3 border-b border-gray-100 bg-rose-50">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={16} className="text-rose-500" />
+            <h2 className="text-sm font-semibold text-gray-900">コメント</h2>
+            <span className="text-xs text-gray-500">({profileComments.length})</span>
+          </div>
+        </div>
+
+        {/* Comment Form */}
+        {currentUser ? (
+          <form onSubmit={submitProfileComment} className="px-4 py-3 border-b border-gray-100">
+            <div className="flex gap-2">
+              <textarea
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                placeholder="コメントを入力..."
+                rows={2}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+              />
+              <button
+                type="submit"
+                disabled={submittingComment || !commentBody.trim()}
+                className="self-end px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {submittingComment ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="px-4 py-3 border-b border-gray-100 text-center text-sm text-gray-500">
+            <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline">ログイン</Link>してコメントする
+          </div>
+        )}
+
+        {/* Comments List */}
+        {profileComments.length === 0 ? (
+          <div className="px-4 py-6 text-center text-gray-500 text-sm">
+            まだコメントがありません
+          </div>
+        ) : (
+          <div className="px-4 py-3">
+            {profileComments.map((comment, index) => {
+              const canDelete = currentUser && (
+                currentUser.id === comment.commenter_id || // Comment author
+                currentUser.id === userId || // Profile owner
+                isAdmin // Admin
+              )
+
+              return (
+                <div key={comment.id} className="py-2">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs text-gray-400 font-mono shrink-0 pt-0.5">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          to={`/users/${comment.commenter_id}`}
+                          className="text-sm font-medium text-rose-600 hover:underline"
+                        >
+                          {comment.commenter?.display_name || '匿名'}
+                        </Link>
+                        <span className="text-xs text-gray-400">
+                          {formatShortDate(comment.created_at)}
+                        </span>
+                        {canDelete && (
+                          <button
+                            onClick={() => deleteProfileComment(comment.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            title="削除"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">
+                        {comment.body}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

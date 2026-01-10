@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Loader2, User, Activity, FileText } from 'lucide-react'
 import { ProfileSettings } from './mypage/ProfileSettings'
@@ -17,13 +17,14 @@ const TABS: { id: TabType; label: string; icon: React.ReactNode }[] = [
 export function MyPage() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState<TabType>('profile')
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login')
+      navigate('/login', { state: { from: location.pathname } })
     }
-  }, [user, authLoading, navigate])
+  }, [user, authLoading, navigate, location.pathname])
 
   if (authLoading) {
     return (

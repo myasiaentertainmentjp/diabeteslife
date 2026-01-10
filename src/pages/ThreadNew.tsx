@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
@@ -17,12 +17,13 @@ export function ThreadNew() {
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login')
+      navigate('/login', { state: { from: location.pathname } })
     }
-  }, [user, authLoading, navigate])
+  }, [user, authLoading, navigate, location.pathname])
 
   async function checkNgWords(text: string): Promise<boolean> {
     const { data, error } = await supabase

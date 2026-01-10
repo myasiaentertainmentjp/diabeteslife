@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
@@ -12,6 +12,10 @@ export function Login() {
 
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Get redirect path from state or default to home
+  const from = location.state?.from || '/'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,7 +34,8 @@ export function Login() {
       }
       setLoading(false)
     } else {
-      navigate('/')
+      // Redirect to the page user was viewing before login
+      navigate(from, { replace: true })
     }
   }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -54,6 +54,8 @@ export function ThreadDetail() {
 
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const currentPath = location.pathname
 
   useEffect(() => {
     if (id) {
@@ -900,7 +902,7 @@ export function ThreadDetail() {
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 text-center">
                 <p className="text-gray-600 text-sm">
                   コメントするには
-                  <Link to="/login" className="text-rose-500 hover:underline mx-1">
+                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1">
                     ログイン
                   </Link>
                   してください
