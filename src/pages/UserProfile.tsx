@@ -44,6 +44,7 @@ import {
   Trash2,
   Ban,
   UserX,
+  HelpCircle,
 } from 'lucide-react'
 
 interface UserData {
@@ -151,6 +152,7 @@ export function UserProfile() {
   const [profileComments, setProfileComments] = useState<ProfileComment[]>([])
   const [commentBody, setCommentBody] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const [showCommentTooltip, setShowCommentTooltip] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // Block feature state
@@ -728,6 +730,23 @@ export function UserProfile() {
             <MessageSquare size={16} className="text-rose-500" />
             <h2 className="text-sm font-semibold text-gray-900">コメント</h2>
             <span className="text-xs text-gray-500">({profileComments.length})</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowCommentTooltip(!showCommentTooltip)}
+                onMouseEnter={() => setShowCommentTooltip(true)}
+                onMouseLeave={() => setShowCommentTooltip(false)}
+                className="text-gray-400 hover:text-rose-500 transition-colors"
+              >
+                <HelpCircle size={14} />
+              </button>
+              {showCommentTooltip && (
+                <div className="absolute left-0 top-6 z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg">
+                  あなたのプロフィールに届いた応援メッセージやコメントが表示されます
+                  <div className="absolute -top-1 left-2 w-2 h-2 bg-gray-800 rotate-45" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
