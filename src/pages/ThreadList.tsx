@@ -39,7 +39,7 @@ export function ThreadList() {
     try {
       let query = supabase
         .from('threads')
-        .select('id, user_id, title, category, comments_count, created_at', { count: 'exact' })
+        .select('id, thread_number, user_id, title, category, comments_count, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {
@@ -190,7 +190,7 @@ export function ThreadList() {
           {threads.map((thread) => (
             <Link
               key={thread.id}
-              to={`/threads/${thread.id}`}
+              to={`/threads/${(thread as any).thread_number || thread.id}`}
               className="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between gap-4">

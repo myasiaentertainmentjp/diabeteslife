@@ -95,7 +95,7 @@ function App() {
               <Route path="reset-password" element={<ResetPassword />} />
               <Route path="threads" element={<ThreadList />} />
               <Route path="threads/new" element={<ThreadNew />} />
-              <Route path="threads/:id" element={<ThreadDetail />} />
+              <Route path="threads/:threadNumber" element={<ThreadDetail />} />
               <Route path="articles" element={<ArticleList />} />
               <Route path="articles/:slug" element={<ArticleDetail />} />
               <Route path="mypage" element={<MyPage />} />

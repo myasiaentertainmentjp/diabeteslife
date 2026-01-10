@@ -176,6 +176,7 @@ export interface Database {
       threads: {
         Row: {
           id: string
+          thread_number: number
           user_id: string
           title: string
           content: string
@@ -187,6 +188,7 @@ export interface Database {
         }
         Insert: {
           id?: string
+          thread_number?: number
           user_id: string
           title: string
           content: string
@@ -198,6 +200,7 @@ export interface Database {
         }
         Update: {
           id?: string
+          thread_number?: number
           user_id?: string
           title?: string
           content?: string

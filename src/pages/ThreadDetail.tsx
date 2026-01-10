@@ -32,7 +32,7 @@ interface DiaryEntryWithUser extends DiaryEntry {
 }
 
 export function ThreadDetail() {
-  const { id } = useParams<{ id: string }>()
+  const { threadNumber } = useParams<{ threadNumber: string }>()
   const [thread, setThread] = useState<ThreadWithAuthor | null>(null)
   const [comments, setComments] = useState<ThreadCommentWithUser[]>([])
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryWithUser[]>([])
@@ -60,10 +60,10 @@ export function ThreadDetail() {
   const currentPath = location.pathname
 
   useEffect(() => {
-    if (id) {
+    if (threadNumber) {
       fetchData()
     }
-  }, [id])
+  }, [threadNumber])
 
   async function fetchData() {
     setLoading(true)
@@ -76,11 +76,13 @@ export function ThreadDetail() {
 
     try {
       const threadData = await fetchThread()
-      await fetchComments()
-      // Fetch diary entries and thread reaction if diary mode
-      if (threadData?.mode === 'diary') {
-        await fetchDiaryEntries()
-        await fetchThreadReaction()
+      if (threadData?.id) {
+        await fetchComments(threadData.id)
+        // Fetch diary entries and thread reaction if diary mode
+        if (threadData?.mode === 'diary') {
+          await fetchDiaryEntries(threadData.id)
+          await fetchThreadReaction(threadData.id)
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -91,15 +93,23 @@ export function ThreadDetail() {
   }
 
   async function fetchThread(): Promise<ThreadWithAuthor | null> {
-    if (!id) return null
+    if (!threadNumber) return null
 
     try {
+      // Check if threadNumber is a number or UUID
+      const isNumeric = /^\d+$/.test(threadNumber)
+
       // First get the thread data
-      const { data: threadData, error: threadError } = await supabase
-        .from('threads')
-        .select('*')
-        .eq('id', id)
-        .single()
+      let query = supabase.from('threads').select('*')
+
+      if (isNumeric) {
+        query = query.eq('thread_number', parseInt(threadNumber, 10))
+      } else {
+        // Fallback to UUID for backwards compatibility
+        query = query.eq('id', threadNumber)
+      }
+
+      const { data: threadData, error: threadError } = await query.single()
 
       if (threadError) {
         console.error('Error fetching thread:', threadError)
@@ -131,15 +141,15 @@ export function ThreadDetail() {
     }
   }
 
-  async function fetchComments() {
-    if (!id) return
+  async function fetchComments(threadId: string) {
+    if (!threadId) return
 
     try {
       // Get comments
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
-        .eq('thread_id', id)
+        .eq('thread_id', threadId)
         .order('created_at', { ascending: true })
 
       if (commentsError) {
@@ -178,14 +188,14 @@ export function ThreadDetail() {
     }
   }
 
-  async function fetchDiaryEntries() {
-    if (!id) return
+  async function fetchDiaryEntries(threadId: string) {
+    if (!threadId) return
 
     try {
       const { data: entriesData, error: entriesError } = await supabase
         .from('diary_entries')
         .select('*')
-        .eq('thread_id', id)
+        .eq('thread_id', threadId)
         .order('created_at', { ascending: false })
 
       if (entriesError) {
@@ -249,14 +259,14 @@ export function ThreadDetail() {
     }
   }
 
-  async function fetchThreadReaction() {
-    if (!id) return
+  async function fetchThreadReaction(threadId: string) {
+    if (!threadId) return
 
     try {
       const { data: reactionsData } = await supabase
         .from('thread_reactions')
         .select('user_id')
-        .eq('thread_id', id)
+        .eq('thread_id', threadId)
 
       setThreadReaction({
         count: reactionsData?.length || 0,
@@ -319,7 +329,7 @@ export function ThreadDetail() {
             type: 'like',
             title: `${userData?.display_name || '匿名'}さんがいいねしました`,
             message: entry.content?.substring(0, 50) || '',
-            link: `/threads/${id}`,
+            link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
           } as never)
         }
       }
@@ -327,14 +337,14 @@ export function ThreadDetail() {
   }
 
   async function toggleThreadReaction() {
-    if (!user || !id) return
+    if (!user || !thread?.id) return
 
     if (threadReaction.hasReacted) {
       // Remove reaction
       await supabase
         .from('thread_reactions')
         .delete()
-        .eq('thread_id', id)
+        .eq('thread_id', thread.id)
         .eq('user_id', user.id)
 
       setThreadReaction(prev => ({ count: prev.count - 1, hasReacted: false }))
@@ -342,7 +352,7 @@ export function ThreadDetail() {
       // Add reaction
       await supabase
         .from('thread_reactions')
-        .insert({ thread_id: id, user_id: user.id } as never)
+        .insert({ thread_id: thread.id, user_id: user.id } as never)
 
       setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
 
@@ -369,7 +379,7 @@ export function ThreadDetail() {
             type: 'like',
             title: `${userData?.display_name || '匿名'}さんがいいねしました`,
             message: thread.title?.substring(0, 50) || '',
-            link: `/threads/${id}`,
+            link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
           } as never)
         }
       }
@@ -420,7 +430,7 @@ export function ThreadDetail() {
 
   async function handleSubmitDiaryEntry(e: React.FormEvent) {
     e.preventDefault()
-    if (!user || !diaryContent.trim() || !id || !thread) return
+    if (!user || !diaryContent.trim() || !thread?.id) return
     if (thread.user_id !== user.id) return // Only thread owner can post
 
     setDiaryError('')
@@ -443,7 +453,7 @@ export function ThreadDetail() {
     const { error: insertError } = await supabase
       .from('diary_entries')
       .insert({
-        thread_id: id,
+        thread_id: thread.id,
         user_id: user.id,
         content: diaryContent.trim(),
         image_url: imageUrls[0] || null, // First image as main image
@@ -457,7 +467,7 @@ export function ThreadDetail() {
       setDiaryContent('')
       setDiaryImages([])
       setShowDiaryForm(false)
-      fetchDiaryEntries()
+      fetchDiaryEntries(thread.id)
     }
 
     setSubmittingDiary(false)
@@ -483,7 +493,7 @@ export function ThreadDetail() {
 
   async function handleSubmitComment(e: React.FormEvent) {
     e.preventDefault()
-    if (!user || !commentContent.trim() || !id) return
+    if (!user || !commentContent.trim() || !thread?.id) return
 
     setError('')
     setSubmitting(true)
@@ -499,7 +509,7 @@ export function ThreadDetail() {
     const { error: insertError } = await supabase
       .from('comments')
       .insert({
-        thread_id: id,
+        thread_id: thread.id,
         user_id: user.id,
         body: commentContent,
       } as never)
@@ -509,13 +519,13 @@ export function ThreadDetail() {
       console.error('Error posting comment:', insertError)
     } else {
       setCommentContent('')
-      fetchComments()
+      fetchComments(thread.id)
       // Update thread comments count
       if (thread) {
         await supabase
           .from('threads')
           .update({ comments_count: thread.comments_count + 1 } as never)
-          .eq('id', id)
+          .eq('id', thread.id)
         setThread({ ...thread, comments_count: thread.comments_count + 1 })
 
         // Get current user's display name
@@ -537,7 +547,7 @@ export function ThreadDetail() {
           const { data: newComment } = await supabase
             .from('comments')
             .select('id')
-            .eq('thread_id', id)
+            .eq('thread_id', thread.id)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -547,7 +557,7 @@ export function ThreadDetail() {
             .from('admin_notifications')
             .insert({
               type: 'new_comment',
-              thread_id: id,
+              thread_id: thread.id,
               comment_id: newComment?.id || null,
               user_id: user.id,
               message: `${currentUserData?.display_name || '匿名'}さんが「${thread.title}」にコメントしました`,
@@ -587,7 +597,7 @@ export function ThreadDetail() {
               type: 'thread_comment',
               title: `${currentUserData?.display_name || '匿名'}さんがコメントしました`,
               message: commentContent.substring(0, 100),
-              link: `/threads/${id}`,
+              link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
             } as never)
           }
         }
@@ -619,7 +629,7 @@ export function ThreadDetail() {
                   type: 'reply',
                   title: `${currentUserData?.display_name || '匿名'}さんが返信しました`,
                   message: commentContent.substring(0, 100),
-                  link: `/threads/${id}`,
+                  link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
                 } as never)
               }
             }

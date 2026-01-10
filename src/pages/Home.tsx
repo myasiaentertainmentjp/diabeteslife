@@ -44,7 +44,7 @@ export function Home() {
     try {
       const queryPromise = supabase
         .from('threads')
-        .select('id, title, category, created_at, user_id')
+        .select('id, thread_number, title, category, created_at, user_id')
         .order('created_at', { ascending: false })
         .limit(10)
 
@@ -78,7 +78,7 @@ export function Home() {
 
       const queryPromise = supabase
         .from('threads')
-        .select('id, title, category, created_at, user_id')
+        .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(5)
@@ -226,7 +226,7 @@ export function Home() {
                   {threads.map((thread) => (
                     <li key={thread.id}>
                       <Link
-                        to={`/threads/${thread.id}`}
+                        to={`/threads/${(thread as any).thread_number || thread.id}`}
                         className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
                         <div className="flex items-center justify-between gap-4">
@@ -295,7 +295,7 @@ export function Home() {
                   {popularThreads.map((thread, index) => (
                     <li key={thread.id}>
                       <Link
-                        to={`/threads/${thread.id}`}
+                        to={`/threads/${(thread as any).thread_number || thread.id}`}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
                         <span className="text-rose-500 font-bold text-sm">

@@ -91,8 +91,8 @@ export function ThreadNew() {
       console.error('Error creating thread:', insertError)
       setSubmitting(false)
     } else {
-      const threadData = data as { id: string }
-      navigate(`/threads/${threadData.id}`)
+      const threadData = data as { id: string; thread_number: number }
+      navigate(`/threads/${threadData.thread_number || threadData.id}`)
     }
   }
 

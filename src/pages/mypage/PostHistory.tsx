@@ -134,7 +134,7 @@ export function PostHistory() {
               {threads.map((thread) => (
                 <Link
                   key={thread.id}
-                  to={`/threads/${thread.id}`}
+                  to={`/threads/${(thread as any).thread_number || thread.id}`}
                   className="block bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
