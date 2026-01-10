@@ -112,13 +112,13 @@ export function ArticleDetail() {
         <div className="text-center py-12">
           <FileText size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="text-gray-600 mb-4">記事が見つかりませんでした</p>
-          <Link
-            to="/articles"
+          <button
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 text-rose-500 hover:underline"
           >
             <ArrowLeft size={20} />
-            <span>記事一覧に戻る</span>
-          </Link>
+            <span>前のページに戻る</span>
+          </button>
         </div>
       </div>
     )
@@ -147,13 +147,13 @@ export function ArticleDetail() {
       </Helmet>
 
       {/* Back Link */}
-      <Link
-        to="/articles"
+      <button
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
       >
         <ArrowLeft size={20} />
-        <span>記事一覧に戻る</span>
-      </Link>
+        <span>前のページに戻る</span>
+      </button>
 
       {/* Article Header */}
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">

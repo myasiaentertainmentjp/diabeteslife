@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export function ContactComplete() {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
@@ -15,12 +17,12 @@ export function ContactComplete() {
         <p className="text-sm text-gray-500 mb-8">
           ※返信は入力いただいたメールアドレス宛にお送りします。
         </p>
-        <Link
-          to="/"
+        <button
+          onClick={() => navigate('/')}
           className="inline-flex items-center justify-center w-full px-6 py-3 bg-rose-500 text-white font-semibold rounded-lg hover:bg-rose-600 transition-colors"
         >
           トップページへ戻る
-        </Link>
+        </button>
       </div>
     </div>
   )

@@ -1,6 +1,52 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Type } from 'lucide-react'
+
+type FontSize = 'small' | 'medium' | 'large'
+
+const FONT_SIZES: { key: FontSize; label: string; desktop: string; mobile: string }[] = [
+  { key: 'small', label: '小', desktop: '15px', mobile: '14px' },
+  { key: 'medium', label: '中', desktop: '17px', mobile: '16px' },
+  { key: 'large', label: '大', desktop: '19px', mobile: '18px' },
+]
+
+function applyFontSize(size: FontSize) {
+  const config = FONT_SIZES.find(f => f.key === size) || FONT_SIZES[1]
+  const isMobile = window.innerWidth < 640
+  document.documentElement.style.fontSize = isMobile ? config.mobile : config.desktop
+}
+
+// Initialize font size on page load
+if (typeof window !== 'undefined') {
+  const saved = localStorage.getItem('fontSize') as FontSize | null
+  if (saved && FONT_SIZES.some(f => f.key === saved)) {
+    applyFontSize(saved)
+  }
+}
 
 export function Footer() {
+  const [fontSize, setFontSize] = useState<FontSize>('medium')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('fontSize') as FontSize | null
+    if (saved && FONT_SIZES.some(f => f.key === saved)) {
+      setFontSize(saved)
+    }
+
+    // Re-apply on resize
+    function handleResize() {
+      applyFontSize(fontSize)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [fontSize])
+
+  function handleFontSizeChange(size: FontSize) {
+    setFontSize(size)
+    localStorage.setItem('fontSize', size)
+    applyFontSize(size)
+  }
+
   return (
     <footer className="bg-gray-800 text-gray-300">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -34,6 +80,27 @@ export function Footer() {
             お問い合わせ
           </Link>
         </nav>
+
+        {/* Font Size Toggle */}
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <Type size={14} className="text-gray-500" />
+          <span className="text-xs text-gray-500">文字サイズ</span>
+          <div className="flex border border-gray-600 rounded overflow-hidden">
+            {FONT_SIZES.map((size) => (
+              <button
+                key={size.key}
+                onClick={() => handleFontSizeChange(size.key)}
+                className={`px-3 py-1 text-xs transition-colors ${
+                  fontSize === size.key
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {size.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Copyright */}
         <div className="mt-6 pt-6 border-t border-gray-700 text-center">

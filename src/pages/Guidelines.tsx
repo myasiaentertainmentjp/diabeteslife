@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { CheckCircle, XCircle, Flag, AlertTriangle, HelpCircle } from 'lucide-react'
 
 export function Guidelines() {
+  const navigate = useNavigate()
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">コミュニティガイドライン</h1>
@@ -163,9 +165,12 @@ export function Guidelines() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-rose-500 hover:underline text-sm">
-          トップページに戻る
-        </Link>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-rose-500 hover:underline text-sm"
+        >
+          前のページに戻る
+        </button>
       </div>
     </div>
   )

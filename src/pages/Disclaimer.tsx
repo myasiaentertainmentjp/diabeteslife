@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Phone, Stethoscope, Users, FileWarning } from 'lucide-react'
 
 export function Disclaimer() {
+  const navigate = useNavigate()
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">医療情報に関する免責事項</h1>
@@ -116,9 +118,12 @@ export function Disclaimer() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-rose-500 hover:underline text-sm">
-          トップページに戻る
-        </Link>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-rose-500 hover:underline text-sm"
+        >
+          前のページに戻る
+        </button>
       </div>
     </div>
   )

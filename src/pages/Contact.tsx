@@ -158,9 +158,12 @@ export function Contact() {
         </div>
 
       <div className="mt-6 text-center">
-        <Link to="/" className="text-rose-500 hover:underline text-sm">
-          トップページに戻る
-        </Link>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-rose-500 hover:underline text-sm"
+        >
+          前のページに戻る
+        </button>
       </div>
     </div>
   )

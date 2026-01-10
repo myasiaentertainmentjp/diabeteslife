@@ -462,9 +462,12 @@ export function UserProfile() {
         <div className="text-center py-12">
           <User size={48} className="mx-auto mb-4 text-gray-300" />
           <p className="text-gray-600 mb-4">ユーザーが見つかりませんでした</p>
-          <Link to="/" className="text-rose-500 hover:underline">
-            トップページに戻る
-          </Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-rose-500 hover:underline"
+          >
+            前のページに戻る
+          </button>
         </div>
       </div>
     )

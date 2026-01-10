@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ChevronDown, HelpCircle } from 'lucide-react'
 
 interface FAQItem {
@@ -135,6 +135,7 @@ function AccordionItem({ item, isOpen, onClick }: { item: FAQItem; isOpen: boole
 }
 
 export function FAQ() {
+  const navigate = useNavigate()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -204,9 +205,12 @@ export function FAQ() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/" className="text-rose-500 hover:underline text-sm">
-          トップページに戻る
-        </Link>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-rose-500 hover:underline text-sm"
+        >
+          前のページに戻る
+        </button>
       </div>
     </div>
   )

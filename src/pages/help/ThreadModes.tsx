@@ -1,28 +1,22 @@
-import { Link } from 'react-router-dom'
-import { MessageSquare, BookOpen, HelpCircle, ArrowLeft } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { MessageSquare, BookOpen, ArrowLeft } from 'lucide-react'
 
 export function ThreadModes() {
+  const navigate = useNavigate()
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Back Link */}
-      <Link
-        to="/threads/new"
+      <button
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
       >
         <ArrowLeft size={20} />
-        <span>スレッド作成に戻る</span>
-      </Link>
+        <span>前のページに戻る</span>
+      </button>
 
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <HelpCircle size={24} className="text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">スレッドタイプについて</h1>
-          <p className="text-gray-600 text-sm">通常モードと日記モードの違い</p>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">スレッドタイプについて</h1>
+      <p className="text-gray-600 text-sm mb-6">通常モードと日記モードの違い</p>
 
       {/* Normal Mode */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
