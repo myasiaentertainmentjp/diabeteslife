@@ -1,18 +1,63 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, User, LogIn, LogOut, Settings, Shield, Search, Loader2 } from 'lucide-react'
+import { Menu, X, User, LogIn, LogOut, Settings, Shield, Search, Loader2, Bell } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const { user, profile, signOut, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   // Current path for login redirect
   const currentPath = location.pathname + location.search
+
+  // Fetch unread notification count
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0)
+      return
+    }
+
+    async function fetchUnreadCount() {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user!.id)
+        .eq('is_read', false)
+
+      if (!error && count !== null) {
+        setUnreadCount(count)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Subscribe to realtime notifications
+    const channel = supabase
+      .channel('notifications-header')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchUnreadCount()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -71,6 +116,18 @@ export function Header() {
                     </Link>
                   )}
                   <Link
+                    to="/notifications"
+                    className="relative p-2 text-white hover:text-rose-100 transition-colors"
+                    title="通知"
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-white text-rose-500 text-xs font-bold rounded-full flex items-center justify-center px-1">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
                     to="/mypage"
                     className="flex items-center gap-1 px-3 py-1.5 bg-white text-rose-500 rounded hover:bg-rose-50 transition-colors text-sm font-medium"
                   >
@@ -97,16 +154,29 @@ export function Header() {
             </div>
 
             {/* Mobile Auth (right) */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center gap-2">
               {loading ? (
                 <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
               ) : user ? (
-                <Link
-                  to="/mypage"
-                  className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
-                >
-                  マイページ
-                </Link>
+                <>
+                  <Link
+                    to="/notifications"
+                    className="relative p-1.5 text-white"
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-white text-rose-500 text-[10px] font-bold rounded-full flex items-center justify-center px-0.5">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
+                    to="/mypage"
+                    className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
+                  >
+                    マイページ
+                  </Link>
+                </>
               ) : (
                 <Link
                   to="/login"
@@ -231,6 +301,20 @@ export function Header() {
                     <span>管理画面</span>
                   </Link>
                 )}
+
+                <Link
+                  to="/notifications"
+                  className="flex items-center gap-2 px-4 py-2 border border-rose-200 text-rose-500 rounded-lg hover:bg-rose-50 transition-colors text-sm font-medium justify-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Bell size={16} />
+                  <span>通知</span>
+                  {unreadCount > 0 && (
+                    <span className="ml-1 min-w-[20px] h-[20px] bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
 
                 <Link
                   to="/mypage"

@@ -18,6 +18,7 @@ import { ProfileSettings } from './pages/mypage/ProfileSettings'
 import { HbA1cRecords } from './pages/mypage/HbA1cRecords'
 import { Search } from './pages/Search'
 import { UserProfile } from './pages/UserProfile'
+import { Notifications } from './pages/Notifications'
 
 // Static pages
 import { Company } from './pages/Company'
@@ -98,6 +99,7 @@ function App() {
               <Route path="mypage/hba1c" element={<MyPageWrapper><HbA1cRecords /></MyPageWrapper>} />
               <Route path="search" element={<Search />} />
               <Route path="users/:userId" element={<UserProfile />} />
+              <Route path="notifications" element={<Notifications />} />
 
               {/* Static pages */}
               <Route path="company" element={<Company />} />

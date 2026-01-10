@@ -20,7 +20,7 @@ import {
   PREFECTURES,
   ExternalLink,
 } from '../../types/database'
-import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle } from 'lucide-react'
+import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const DIABETES_TYPES: NonNullable<DiabetesType>[] = [
@@ -99,6 +99,12 @@ export function ProfileSettings() {
   const [bioPublic, setBioPublic] = useState(true) // default: true
   const [hba1cPublic, setHba1cPublic] = useState(false)
   const [linksPublic, setLinksPublic] = useState(true) // default: true
+
+  // Notification settings
+  const [notifyThreadComment, setNotifyThreadComment] = useState(true)
+  const [notifyReply, setNotifyReply] = useState(true)
+  const [notifyLikes, setNotifyLikes] = useState(true)
+  const [notifyProfileComment, setNotifyProfileComment] = useState(true)
 
   // Avatar upload state
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -233,6 +239,20 @@ export function ProfileSettings() {
         if (!displayName) setDisplayName(userData.display_name || '')
         if (!avatarUrl) setAvatarUrl(userData.avatar_url || '')
       }
+
+      // Fetch notification settings
+      const { data: notifSettings } = await supabase
+        .from('notification_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (notifSettings) {
+        setNotifyThreadComment(notifSettings.thread_comment ?? true)
+        setNotifyReply(notifSettings.reply ?? true)
+        setNotifyLikes(notifSettings.likes ?? true)
+        setNotifyProfileComment(notifSettings.profile_comment ?? true)
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -331,6 +351,17 @@ export function ProfileSettings() {
         .from('profiles')
         .update(profileData as never)
         .eq('id', user.id)
+
+      // Upsert notification settings
+      await supabase
+        .from('notification_settings')
+        .upsert({
+          user_id: user.id,
+          thread_comment: notifyThreadComment,
+          reply: notifyReply,
+          likes: notifyLikes,
+          profile_comment: notifyProfileComment,
+        } as never, { onConflict: 'user_id' })
 
       setSaved(true)
       refreshProfile()
@@ -890,6 +921,45 @@ export function ProfileSettings() {
             description="プロフィールページでHbA1cの推移グラフと記録を表示します"
             value={hba1cPublic}
             onChange={setHba1cPublic}
+          />
+        </div>
+      </section>
+
+      {/* Notification Settings */}
+      <section>
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b">
+          <Bell size={20} className="text-rose-500" />
+          <h3 className="text-lg font-semibold text-gray-900">通知設定</h3>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          各種アクティビティの通知のオン/オフを設定できます。
+        </p>
+
+        <div className="space-y-4">
+          <PrivacySettingRow
+            label="スレッドへのコメント"
+            description="自分のスレッドに新しいコメントが付いたときに通知"
+            value={notifyThreadComment}
+            onChange={setNotifyThreadComment}
+          />
+          <PrivacySettingRow
+            label="コメントへの返信"
+            description="自分のコメントに返信が付いたときに通知"
+            value={notifyReply}
+            onChange={setNotifyReply}
+          />
+          <PrivacySettingRow
+            label="いいね"
+            description="スレッドや日記にいいねされたときに通知"
+            value={notifyLikes}
+            onChange={setNotifyLikes}
+          />
+          <PrivacySettingRow
+            label="プロフィールコメント"
+            description="プロフィールに応援コメントが付いたときに通知"
+            value={notifyProfileComment}
+            onChange={setNotifyProfileComment}
           />
         </div>
       </section>

@@ -294,6 +294,35 @@ export function ThreadDetail() {
         ...prev,
         [entryId]: { count: (prev[entryId]?.count || 0) + 1, hasReacted: true }
       }))
+
+      // Create notification for diary entry owner (if not self)
+      const entry = diaryEntries.find(e => e.id === entryId)
+      if (entry && entry.user_id !== user.id) {
+        // Check notification settings
+        const { data: notifSettings } = await supabase
+          .from('notification_settings')
+          .select('likes')
+          .eq('user_id', entry.user_id)
+          .single()
+
+        const shouldNotify = notifSettings?.likes ?? true
+
+        if (shouldNotify) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('display_name')
+            .eq('id', user.id)
+            .single()
+
+          await supabase.from('notifications').insert({
+            user_id: entry.user_id,
+            type: 'like',
+            title: `${userData?.display_name || '匿名'}さんがいいねしました`,
+            message: entry.content?.substring(0, 50) || '',
+            link: `/threads/${id}`,
+          } as never)
+        }
+      }
     }
   }
 
@@ -316,6 +345,34 @@ export function ThreadDetail() {
         .insert({ thread_id: id, user_id: user.id } as never)
 
       setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
+
+      // Create notification for thread owner (if not self)
+      if (thread && thread.user_id !== user.id) {
+        // Check notification settings
+        const { data: notifSettings } = await supabase
+          .from('notification_settings')
+          .select('likes')
+          .eq('user_id', thread.user_id)
+          .single()
+
+        const shouldNotify = notifSettings?.likes ?? true
+
+        if (shouldNotify) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('display_name')
+            .eq('id', user.id)
+            .single()
+
+          await supabase.from('notifications').insert({
+            user_id: thread.user_id,
+            type: 'like',
+            title: `${userData?.display_name || '匿名'}さんがいいねしました`,
+            message: thread.title?.substring(0, 50) || '',
+            link: `/threads/${id}`,
+          } as never)
+        }
+      }
     }
   }
 
@@ -510,6 +567,63 @@ export function ThreadDetail() {
           }).catch((e) => {
             console.error('Failed to send comment notification:', e)
           })
+        }
+
+        // Create in-app notification for thread owner (if not self and not dummy)
+        if (thread.user_id !== user.id && !authorProfile?.is_dummy) {
+          // Check notification settings
+          const { data: notifSettings } = await supabase
+            .from('notification_settings')
+            .select('thread_comment')
+            .eq('user_id', thread.user_id)
+            .single()
+
+          // Default to true if no settings found
+          const shouldNotify = notifSettings?.thread_comment ?? true
+
+          if (shouldNotify) {
+            await supabase.from('notifications').insert({
+              user_id: thread.user_id,
+              type: 'thread_comment',
+              title: `${currentUserData?.display_name || '匿名'}さんがコメントしました`,
+              message: commentContent.substring(0, 100),
+              link: `/threads/${id}`,
+            } as never)
+          }
+        }
+
+        // Handle reply notifications - detect >>N patterns
+        const replyMatches = commentContent.match(/>>(\d+)/g)
+        if (replyMatches) {
+          const repliedNumbers = [...new Set(replyMatches.map(m => parseInt(m.replace('>>', ''))))]
+
+          for (const num of repliedNumbers) {
+            // num 1 = OP (thread owner), already notified above
+            if (num === 1) continue
+
+            // Get the comment that was replied to (comments are 0-indexed, but display is 2-indexed)
+            const repliedComment = comments[num - 2]
+            if (repliedComment && repliedComment.user_id !== user.id) {
+              // Check notification settings
+              const { data: notifSettings } = await supabase
+                .from('notification_settings')
+                .select('reply')
+                .eq('user_id', repliedComment.user_id)
+                .single()
+
+              const shouldNotify = notifSettings?.reply ?? true
+
+              if (shouldNotify) {
+                await supabase.from('notifications').insert({
+                  user_id: repliedComment.user_id,
+                  type: 'reply',
+                  title: `${currentUserData?.display_name || '匿名'}さんが返信しました`,
+                  message: commentContent.substring(0, 100),
+                  link: `/threads/${id}`,
+                } as never)
+              }
+            }
+          }
         }
       }
     }

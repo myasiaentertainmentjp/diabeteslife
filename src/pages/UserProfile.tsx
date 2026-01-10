@@ -292,6 +292,35 @@ export function UserProfile() {
         return
       }
 
+      // Create notification for profile owner (if not self)
+      if (userId && currentUser.id !== userId) {
+        // Get commenter's display name
+        const { data: commenterData } = await supabase
+          .from('users')
+          .select('display_name')
+          .eq('id', currentUser.id)
+          .single()
+
+        // Check notification settings
+        const { data: notifSettings } = await supabase
+          .from('notification_settings')
+          .select('profile_comment')
+          .eq('user_id', userId)
+          .single()
+
+        const shouldNotify = notifSettings?.profile_comment ?? true
+
+        if (shouldNotify) {
+          await supabase.from('notifications').insert({
+            user_id: userId,
+            type: 'profile_comment',
+            title: `${commenterData?.display_name || '匿名'}さんが応援コメントしました`,
+            message: commentBody.trim().substring(0, 100),
+            link: `/users/${userId}`,
+          } as never)
+        }
+      }
+
       setCommentBody('')
       showToast('コメントを投稿しました', 'success')
       await fetchProfileComments()
