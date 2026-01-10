@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { CheckCircle, XCircle, Flag, AlertTriangle, HelpCircle } from 'lucide-react'
 
 export function Guidelines() {
