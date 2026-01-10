@@ -24,6 +24,9 @@ export function Footer() {
           <Link to="/guide" className="hover:text-white transition-colors">
             使い方
           </Link>
+          <Link to="/help/thread-modes" className="hover:text-white transition-colors">
+            スレッドタイプ
+          </Link>
           <Link to="/faq" className="hover:text-white transition-colors">
             よくある質問
           </Link>
