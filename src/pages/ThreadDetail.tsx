@@ -875,14 +875,11 @@ export function ThreadDetail() {
                         ref={commentTextareaRef}
                         value={commentContent}
                         onChange={(e) => setCommentContent(e.target.value)}
-                        placeholder="コメントを入力...&#10;返信は >>1 のように番号を入れてください"
+                        placeholder="コメントを入力..."
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
                         rows={3}
                         required
                       />
-                      <p className="text-xs text-gray-400 mt-1">
-                        返信するには <span className="text-rose-400">{'>>'}</span>番号 を入力（例: {'>>'}1, {'>>'}3-5）
-                      </p>
                     </div>
                     <button
                       type="submit"
