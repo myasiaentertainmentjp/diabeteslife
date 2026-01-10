@@ -774,37 +774,31 @@ export function ThreadDetail() {
                 まだコメントはありません
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className="px-6 py-4 space-y-6">
                 {comments.map((comment, index) => (
                   <div
                     key={comment.id}
                     id={`comment-${index + 1}`}
-                    className="px-6 py-4 transition-colors duration-500"
+                    className="transition-colors duration-500 rounded-lg"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="shrink-0 w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-rose-500">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
-                          <Link
-                            to={`/users/${comment.user_id}`}
-                            className="font-medium text-gray-700 hover:text-rose-500 hover:underline"
-                          >
-                            {comment.profiles?.display_name || '匿名'}
-                          </Link>
-                          <span className="text-gray-400 text-xs">
-                            {formatDate(comment.created_at)}
-                          </span>
-                          <ReportButton targetType="comment" targetId={comment.id} />
-                        </div>
-                        <p className="text-gray-700 whitespace-pre-wrap">
-                          {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length)}
-                        </p>
-                      </div>
+                    {/* 5ch風ヘッダー: 番号 名前 日時 */}
+                    <div className="flex flex-wrap items-baseline gap-2 text-sm mb-1">
+                      <span className="font-bold text-rose-500">{index + 1}:</span>
+                      <Link
+                        to={`/users/${comment.user_id}`}
+                        className="font-medium text-gray-800 hover:text-rose-500 hover:underline"
+                      >
+                        {comment.profiles?.display_name || '匿名'}
+                      </Link>
+                      <span className="text-gray-400 text-xs">
+                        {formatDate(comment.created_at)}
+                      </span>
+                      <ReportButton targetType="comment" targetId={comment.id} />
                     </div>
+                    {/* コメント本文 */}
+                    <p className="text-gray-700 whitespace-pre-wrap pl-0 md:pl-4">
+                      {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -821,18 +815,23 @@ export function ThreadDetail() {
                     </div>
                   )}
                   <div className="flex gap-3">
-                    <textarea
-                      value={commentContent}
-                      onChange={(e) => setCommentContent(e.target.value)}
-                      placeholder="コメントを入力..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
-                      rows={3}
-                      required
-                    />
+                    <div className="flex-1">
+                      <textarea
+                        value={commentContent}
+                        onChange={(e) => setCommentContent(e.target.value)}
+                        placeholder="コメントを入力...&#10;返信は >>1 のように番号を入れてください"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
+                        rows={3}
+                        required
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        返信するには <span className="text-rose-400">{'>>'}</span>番号 を入力（例: {'>>'}1, {'>>'}3-5）
+                      </p>
+                    </div>
                     <button
                       type="submit"
                       disabled={submitting || !commentContent.trim()}
-                      className="self-end px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
+                      className="self-start px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <Loader2 size={20} className="animate-spin" />
