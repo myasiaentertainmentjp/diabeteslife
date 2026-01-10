@@ -1044,7 +1044,7 @@ export function ThreadDetail() {
 
       {/* Comments Section header - integrated for normal mode */}
       {thread.mode !== 'diary' && (
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <div className="px-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <MessageSquare size={20} className="text-gray-600" />
             <h2 className="font-semibold text-gray-800">
@@ -1125,7 +1125,7 @@ export function ThreadDetail() {
             )}
 
             {/* Comment Form */}
-            <div className="px-4 md:px-6 py-4 bg-gray-50">
+            <div className="px-4 md:px-6 py-4">
               {user ? (
                 <form onSubmit={handleSubmitComment}>
                   {error && (
