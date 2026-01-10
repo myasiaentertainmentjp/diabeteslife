@@ -73,7 +73,13 @@ export function ProfileSettings() {
   const [hasComplications, setHasComplications] = useState<YesNoPrivate>('private')
   const [onDialysis, setOnDialysis] = useState<YesNoPrivate>('private')
   const [isPregnant, setIsPregnant] = useState<YesNoPrivate>('private')
-  const [externalLinks, setExternalLinks] = useState<ExternalLink[]>([])
+  // SNS links (fixed fields)
+  const [xUrl, setXUrl] = useState('')
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [youtubeUrl, setYoutubeUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
+  const [customLinkTitle, setCustomLinkTitle] = useState('')
+  const [customLinkUrl, setCustomLinkUrl] = useState('')
 
   // Privacy toggles (using new naming convention)
   const [ageGroupPublic, setAgeGroupPublic] = useState(false)
@@ -162,7 +168,23 @@ export function ProfileSettings() {
         setHasComplications(userProfileData.has_complications || 'private')
         setOnDialysis(userProfileData.on_dialysis || 'private')
         setIsPregnant(userProfileData.is_pregnant || 'private')
-        setExternalLinks(userProfileData.external_links || [])
+        // Parse external_links into SNS fields
+        const links = userProfileData.external_links || []
+        links.forEach((link: ExternalLink) => {
+          const url = link.url?.toLowerCase() || ''
+          if (url.includes('twitter.com') || url.includes('x.com')) {
+            setXUrl(link.url)
+          } else if (url.includes('instagram.com')) {
+            setInstagramUrl(link.url)
+          } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            setYoutubeUrl(link.url)
+          } else if (url.includes('tiktok.com')) {
+            setTiktokUrl(link.url)
+          } else if (!customLinkUrl) {
+            setCustomLinkTitle(link.title || '')
+            setCustomLinkUrl(link.url)
+          }
+        })
         setAgeGroupPublic(userProfileData.age_group_public ?? false)
         setGenderPublic(userProfileData.gender_public ?? false)
         setPrefecturePublic(userProfileData.prefecture_public ?? false)
@@ -226,20 +248,6 @@ export function ProfileSettings() {
     )
   }
 
-  function addExternalLink() {
-    setExternalLinks((prev) => [...prev, { title: '', url: '' }])
-  }
-
-  function updateExternalLink(index: number, field: 'title' | 'url', value: string) {
-    setExternalLinks((prev) =>
-      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link))
-    )
-  }
-
-  function removeExternalLink(index: number) {
-    setExternalLinks((prev) => prev.filter((_, i) => i !== index))
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!user) return
@@ -273,7 +281,13 @@ export function ProfileSettings() {
         has_complications: hasComplications,
         on_dialysis: onDialysis,
         is_pregnant: isPregnant,
-        external_links: externalLinks.filter((l) => l.title && l.url),
+        external_links: [
+          ...(xUrl ? [{ title: 'X', url: xUrl }] : []),
+          ...(instagramUrl ? [{ title: 'Instagram', url: instagramUrl }] : []),
+          ...(youtubeUrl ? [{ title: 'YouTube', url: youtubeUrl }] : []),
+          ...(tiktokUrl ? [{ title: 'TikTok', url: tiktokUrl }] : []),
+          ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
+        ],
         // Privacy flags (new naming convention)
         age_group_public: ageGroupPublic,
         gender_public: genderPublic,
@@ -716,47 +730,96 @@ export function ProfileSettings() {
       {/* External Links Section */}
       <section>
         <div className="flex items-center justify-between mb-4 pb-2 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">外部リンク</h3>
+          <h3 className="text-lg font-semibold text-gray-900">SNS・外部リンク</h3>
           <PrivacyToggle value={linksPublic} onChange={setLinksPublic} />
         </div>
 
-        <div className="space-y-3">
-          {externalLinks.map((link, index) => (
-            <div key={index} className="flex gap-2">
+        <div className="space-y-4">
+          {/* X (Twitter) */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center bg-black text-white rounded-lg text-lg font-bold">
+              𝕏
+            </div>
+            <input
+              type="url"
+              value={xUrl}
+              onChange={(e) => setXUrl(e.target.value)}
+              placeholder="https://x.com/username"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* Instagram */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white rounded-lg">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </div>
+            <input
+              type="url"
+              value={instagramUrl}
+              onChange={(e) => setInstagramUrl(e.target.value)}
+              placeholder="https://instagram.com/username"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* YouTube */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center bg-red-600 text-white rounded-lg">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+            </div>
+            <input
+              type="url"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="https://youtube.com/@channel"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* TikTok */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center bg-black text-white rounded-lg">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+              </svg>
+            </div>
+            <input
+              type="url"
+              value={tiktokUrl}
+              onChange={(e) => setTiktokUrl(e.target.value)}
+              placeholder="https://tiktok.com/@username"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* Custom Link */}
+          <div className="pt-2 border-t border-gray-200">
+            <p className="text-sm text-gray-600 mb-2">自由リンク（ブログなど）</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 flex items-center justify-center bg-gray-500 text-white rounded-lg">
+                <LinkIcon size={20} />
+              </div>
               <input
                 type="text"
-                value={link.title}
-                onChange={(e) => updateExternalLink(index, 'title', e.target.value)}
-                placeholder="タイトル（例: X、ブログ）"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                value={customLinkTitle}
+                onChange={(e) => setCustomLinkTitle(e.target.value)}
+                placeholder="タイトル"
+                className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
               />
               <input
                 type="url"
-                value={link.url}
-                onChange={(e) => updateExternalLink(index, 'url', e.target.value)}
+                value={customLinkUrl}
+                onChange={(e) => setCustomLinkUrl(e.target.value)}
                 placeholder="https://..."
-                className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
               />
-              <button
-                type="button"
-                onClick={() => removeExternalLink(index)}
-                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <Trash2 size={18} />
-              </button>
             </div>
-          ))}
-
-          {externalLinks.length < 5 && (
-            <button
-              type="button"
-              onClick={addExternalLink}
-              className="flex items-center gap-2 px-4 py-2 text-rose-500 border border-rose-300 rounded-lg hover:bg-rose-50 transition-colors text-sm"
-            >
-              <Plus size={16} />
-              <span>リンクを追加</span>
-            </button>
-          )}
+          </div>
         </div>
       </section>
 
