@@ -8,6 +8,8 @@ import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { RegisterComplete } from './pages/RegisterComplete'
+import { ForgotPassword } from './pages/ForgotPassword'
+import { ResetPassword } from './pages/ResetPassword'
 import { ThreadList } from './pages/ThreadList'
 import { ThreadDetail } from './pages/ThreadDetail'
 import { ThreadNew } from './pages/ThreadNew'
@@ -89,6 +91,8 @@ function App() {
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
               <Route path="register/complete" element={<RegisterComplete />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="reset-password" element={<ResetPassword />} />
               <Route path="threads" element={<ThreadList />} />
               <Route path="threads/new" element={<ThreadNew />} />
               <Route path="threads/:id" element={<ThreadDetail />} />

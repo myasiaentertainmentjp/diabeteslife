@@ -742,7 +742,7 @@ export function UserProfile() {
               </button>
               {showCommentTooltip && (
                 <div className="absolute left-0 top-6 z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg">
-                  あなたのプロフィールに届いた応援メッセージやコメントが表示されます
+                  このユーザーへのコメントや応援メッセージを送れます
                   <div className="absolute -top-1 left-2 w-2 h-2 bg-gray-800 rotate-45" />
                 </div>
               )}
