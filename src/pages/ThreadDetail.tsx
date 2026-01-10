@@ -1175,31 +1175,20 @@ export function ThreadDetail() {
                   </p>
                 </form>
               ) : (
-                <div className="relative">
-                  <div className="flex gap-2 items-start opacity-50">
-                    <textarea
-                      disabled
-                      placeholder="コメントを入力..."
-                      className="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-400 resize-none cursor-not-allowed text-base leading-tight"
-                      rows={1}
-                      style={{ height: '42px' }}
-                    />
-                    <button
-                      disabled
-                      className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-rose-400 text-white rounded-lg cursor-not-allowed"
-                    >
-                      <Send size={18} />
-                    </button>
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                    コメントするには
+                    <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1 font-medium">
+                      ログイン
+                    </Link>
+                    してください
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="text-gray-600 text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm">
-                      コメントするには
-                      <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1 font-medium">
-                        ログイン
-                      </Link>
-                      してください
-                    </p>
-                  </div>
+                  <button
+                    disabled
+                    className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
+                  >
+                    <Send size={18} />
+                  </button>
                 </div>
               )}
             </div>

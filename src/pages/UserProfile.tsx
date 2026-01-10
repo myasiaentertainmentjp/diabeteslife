@@ -793,28 +793,17 @@ export function UserProfile() {
               </div>
             </form>
           ) : (
-            <div className="relative">
-              <div className="flex gap-2 items-start opacity-50">
-                <textarea
-                  disabled
-                  placeholder="コメントを入力..."
-                  rows={1}
-                  style={{ height: '38px' }}
-                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none bg-white cursor-not-allowed leading-tight"
-                />
-                <button
-                  disabled
-                  className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-rose-400 text-white rounded-lg cursor-not-allowed"
-                >
-                  <Send size={16} />
-                </button>
+            <div className="flex gap-2 items-center">
+              <div className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline font-medium">ログイン</Link>
+                してコメントする
               </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-gray-600 text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm">
-                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline font-medium">ログイン</Link>
-                  してコメントする
-                </p>
-              </div>
+              <button
+                disabled
+                className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
+              >
+                <Send size={16} />
+              </button>
             </div>
           )}
         </div>
