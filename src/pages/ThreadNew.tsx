@@ -135,42 +135,42 @@ export function ThreadNew() {
             <label className="block text-sm font-medium text-gray-700 mb-3">
               スレッドタイプ
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setMode('normal')}
-                className={`p-4 border-2 rounded-lg text-left transition-all ${
+                className={`p-3 border-2 rounded-lg text-left transition-all ${
                   mode === 'normal'
                     ? 'border-rose-500 bg-rose-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare size={24} className={mode === 'normal' ? 'text-rose-500' : 'text-gray-400'} />
-                  <span className={`font-medium ${mode === 'normal' ? 'text-rose-600' : 'text-gray-700'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageSquare size={20} className={`flex-shrink-0 ${mode === 'normal' ? 'text-rose-500' : 'text-gray-400'}`} />
+                  <span className={`font-medium whitespace-nowrap ${mode === 'normal' ? 'text-rose-600' : 'text-gray-700'}`}>
                     通常モード
                   </span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 leading-relaxed">
                   誰でも投稿・コメントできます。質問や議論に最適。
                 </p>
               </button>
               <button
                 type="button"
                 onClick={() => setMode('diary')}
-                className={`p-4 border-2 rounded-lg text-left transition-all ${
+                className={`p-3 border-2 rounded-lg text-left transition-all ${
                   mode === 'diary'
                     ? 'border-rose-500 bg-rose-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <BookOpen size={24} className={mode === 'diary' ? 'text-rose-500' : 'text-gray-400'} />
-                  <span className={`font-medium ${mode === 'diary' ? 'text-rose-600' : 'text-gray-700'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen size={20} className={`flex-shrink-0 ${mode === 'diary' ? 'text-rose-500' : 'text-gray-400'}`} />
+                  <span className={`font-medium whitespace-nowrap ${mode === 'diary' ? 'text-rose-600' : 'text-gray-700'}`}>
                     日記モード
                   </span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 leading-relaxed">
                   あなただけが投稿できます。食事記録や経過報告に。
                 </p>
               </button>

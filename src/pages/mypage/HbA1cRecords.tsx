@@ -301,15 +301,34 @@ export function HbA1cRecords() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 測定月
               </label>
-              <input
-                type="month"
-                value={formData.record_month}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, record_month: e.target.value }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                required
-              />
+              <div className="flex gap-2">
+                <select
+                  value={formData.record_month.split('-')[0]}
+                  onChange={(e) => {
+                    const month = formData.record_month.split('-')[1] || '01'
+                    setFormData((prev) => ({ ...prev, record_month: `${e.target.value}-${month}` }))
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                  required
+                >
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map((year) => (
+                    <option key={year} value={year}>{year}年</option>
+                  ))}
+                </select>
+                <select
+                  value={formData.record_month.split('-')[1] || '01'}
+                  onChange={(e) => {
+                    const year = formData.record_month.split('-')[0]
+                    setFormData((prev) => ({ ...prev, record_month: `${year}-${e.target.value}` }))
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                  required
+                >
+                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((month) => (
+                    <option key={month} value={month}>{parseInt(month)}月</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

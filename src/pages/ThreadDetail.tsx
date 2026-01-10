@@ -451,9 +451,18 @@ export function ThreadDetail() {
     setHoveredComment(commentNumber)
   }
 
-  // Get comment by number for popup
-  function getCommentByNumber(num: number) {
-    return comments[num - 1]
+  // Get comment by number for popup (1 = OP, 2+ = comments)
+  function getCommentByNumber(num: number): { user_id: string; profiles?: { display_name: string | null }; body?: string; content?: string } | null {
+    if (num === 1 && thread) {
+      // Return thread OP as "comment 1"
+      return {
+        user_id: thread.user_id,
+        profiles: thread.profiles,
+        body: (thread as any).body || thread.content,
+      }
+    }
+    // Comments start from 2
+    return comments[num - 2] || null
   }
 
   // Parse comment text and convert >>N patterns to clickable anchor links with hover
@@ -571,41 +580,50 @@ export function ThreadDetail() {
         <span>前のページに戻る</span>
       </button>
 
-      {/* Thread Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
-              {THREAD_CATEGORY_LABELS[thread.category]}
-            </span>
-            {thread.mode === 'diary' && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
-                <BookOpen size={12} />
-                {THREAD_MODE_LABELS.diary}
+      {/* Thread Card - Header + Content + Comments unified */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* Title Section */}
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
+                {THREAD_CATEGORY_LABELS[thread.category]}
               </span>
-            )}
+              {thread.mode === 'diary' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
+                  <BookOpen size={12} />
+                  {THREAD_MODE_LABELS.diary}
+                </span>
+              )}
+            </div>
+            <ReportButton targetType="thread" targetId={thread.id} />
           </div>
-          <ReportButton targetType="thread" targetId={thread.id} />
+          <h1 className="text-xl font-bold text-gray-800">{thread.title}</h1>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">{thread.title}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link
-            to={`/users/${thread.user_id}`}
-            className="font-medium text-gray-700 hover:text-rose-500 hover:underline"
-          >
-            {thread.profiles?.display_name || '匿名'}
-          </Link>
-          <span className="text-gray-400">|</span>
-          <span>{formatDate(thread.created_at)}</span>
-        </div>
-        <div className="prose prose-gray max-w-none">
-          <p className="whitespace-pre-wrap text-gray-700">{(thread as any).body || thread.content}</p>
-        </div>
-      </div>
 
-      {/* Diary Entries Section (for diary mode) */}
+        {/* Original Post as 1: */}
+        <div className="px-6 py-5">
+          <div className="flex flex-wrap items-baseline gap-1 mb-2">
+            <span className="font-bold text-rose-500">1:</span>
+            <Link
+              to={`/users/${thread.user_id}`}
+              className="font-medium text-blue-600 hover:underline"
+            >
+              {thread.profiles?.display_name || '匿名'}
+            </Link>
+            <span className="text-gray-400 text-sm ml-2">
+              {formatDate(thread.created_at)}
+            </span>
+          </div>
+          <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
+            {(thread as any).body || thread.content}
+          </div>
+        </div>
+
+      {/* Diary Entries Section (for diary mode) - separate card */}
       {thread.mode === 'diary' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+        <>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden my-4">
           <div className="px-6 py-4 border-b border-gray-200 bg-purple-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -757,12 +775,9 @@ export function ThreadDetail() {
             </div>
           )}
         </div>
-      )}
-
-      {/* Comments Section */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          {thread.mode === 'diary' ? (
+        {/* Diary mode comments section - separate collapsible card */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mt-4">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <button
               onClick={() => setShowComments(!showComments)}
               className="w-full flex items-center justify-between"
@@ -779,15 +794,22 @@ export function ThreadDetail() {
                 <ChevronDown size={20} className="text-gray-500" />
               )}
             </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <MessageSquare size={20} className="text-gray-600" />
-              <h2 className="font-semibold text-gray-800">
-                コメント ({thread.comments_count})
-              </h2>
-            </div>
-          )}
+          </div>
         </div>
+        </>
+      )}
+
+      {/* Comments Section header - integrated for normal mode */}
+      {thread.mode !== 'diary' && (
+        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={20} className="text-gray-600" />
+            <h2 className="font-semibold text-gray-800">
+              コメント ({thread.comments_count})
+            </h2>
+          </div>
+        </div>
+      )}
 
         {/* Comments List - collapsible for diary mode */}
         {(thread.mode !== 'diary' || showComments) && (
@@ -801,12 +823,12 @@ export function ThreadDetail() {
                 {comments.map((comment, index) => (
                   <div
                     key={comment.id}
-                    id={`comment-${index + 1}`}
+                    id={`comment-${index + 2}`}
                     className="py-5 transition-colors duration-500"
                   >
-                    {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 */}
+                    {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 (スレ主=1なのでコメントは2から) */}
                     <div className="flex flex-wrap items-baseline gap-1 mb-2">
-                      <span className="font-bold text-rose-500">{index + 1}:</span>
+                      <span className="font-bold text-rose-500">{index + 2}:</span>
                       <Link
                         to={`/users/${comment.user_id}`}
                         className="font-medium text-blue-600 hover:underline"
@@ -818,7 +840,7 @@ export function ThreadDetail() {
                       </span>
                       {user && thread.mode !== 'diary' && (
                         <button
-                          onClick={() => handleReply(index + 1)}
+                          onClick={() => handleReply(index + 2)}
                           className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors ml-2"
                         >
                           <Reply size={12} />
@@ -829,7 +851,7 @@ export function ThreadDetail() {
                     </div>
                     {/* コメント本文 - インデント付き */}
                     <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
-                      {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length)}
+                      {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length + 1)}
                     </div>
                   </div>
                 ))}
@@ -851,7 +873,7 @@ export function ThreadDetail() {
                       {getCommentByNumber(hoveredComment)?.profiles?.display_name || '匿名'}
                     </div>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">
-                      {(getCommentByNumber(hoveredComment) as any)?.body ||
+                      {getCommentByNumber(hoveredComment)?.body ||
                        getCommentByNumber(hoveredComment)?.content || ''}
                     </p>
                   </div>
