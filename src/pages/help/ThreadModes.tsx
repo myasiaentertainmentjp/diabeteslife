@@ -101,7 +101,7 @@ export function ThreadModes() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-1">-</span>
-                <span>他のユーザーは<strong>コメントのみ</strong>可能（応援メッセージなど）</span>
+                <span>他のユーザーは<strong>コメント不可</strong>、リアクション（ハートなど）で応援のみ</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-1">-</span>
@@ -173,6 +173,11 @@ export function ThreadModes() {
               <tr>
                 <td className="px-4 py-3 text-gray-700">コメント</td>
                 <td className="px-4 py-3 text-center">誰でも可能</td>
+                <td className="px-4 py-3 text-center text-red-500">不可</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 text-gray-700">リアクション</td>
+                <td className="px-4 py-3 text-center">-</td>
                 <td className="px-4 py-3 text-center">誰でも可能</td>
               </tr>
               <tr>

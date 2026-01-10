@@ -15,7 +15,7 @@ import {
   DiaryEntry,
 } from '../types/database'
 import { ReportButton } from '../components/ReportButton'
-import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Reply } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Reply, Heart } from 'lucide-react'
 
 const SITE_URL = 'https://diabeteslife.jp'
 const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
@@ -48,6 +48,8 @@ export function ThreadDetail() {
   const [showDiaryForm, setShowDiaryForm] = useState(false)
   const [hoveredComment, setHoveredComment] = useState<number | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
+  const [diaryReactions, setDiaryReactions] = useState<Record<string, { count: number; hasReacted: boolean }>>({})
+  const [threadReaction, setThreadReaction] = useState<{ count: number; hasReacted: boolean }>({ count: 0, hasReacted: false })
 
   const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const MAX_DIARY_IMAGES = 4
@@ -75,9 +77,10 @@ export function ThreadDetail() {
     try {
       const threadData = await fetchThread()
       await fetchComments()
-      // Fetch diary entries if diary mode
+      // Fetch diary entries and thread reaction if diary mode
       if (threadData?.mode === 'diary') {
         await fetchDiaryEntries()
+        await fetchThreadReaction()
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -212,9 +215,107 @@ export function ThreadDetail() {
       }))
 
       setDiaryEntries(entriesWithUsers as unknown as DiaryEntryWithUser[])
+
+      // Fetch reactions for diary entries
+      await fetchDiaryReactions(entriesData.map(e => e.id))
     } catch (error) {
       console.error('Error fetching diary entries:', error)
       setDiaryEntries([])
+    }
+  }
+
+  async function fetchDiaryReactions(entryIds: string[]) {
+    if (entryIds.length === 0) return
+
+    try {
+      // Get reaction counts for each entry
+      const { data: reactionsData } = await supabase
+        .from('diary_reactions')
+        .select('diary_entry_id, user_id')
+        .in('diary_entry_id', entryIds)
+
+      // Count reactions per entry and check if current user reacted
+      const reactionMap: Record<string, { count: number; hasReacted: boolean }> = {}
+      entryIds.forEach(id => {
+        const entryReactions = reactionsData?.filter(r => r.diary_entry_id === id) || []
+        reactionMap[id] = {
+          count: entryReactions.length,
+          hasReacted: user ? entryReactions.some(r => r.user_id === user.id) : false,
+        }
+      })
+      setDiaryReactions(reactionMap)
+    } catch (error) {
+      console.error('Error fetching diary reactions:', error)
+    }
+  }
+
+  async function fetchThreadReaction() {
+    if (!id) return
+
+    try {
+      const { data: reactionsData } = await supabase
+        .from('thread_reactions')
+        .select('user_id')
+        .eq('thread_id', id)
+
+      setThreadReaction({
+        count: reactionsData?.length || 0,
+        hasReacted: user ? reactionsData?.some(r => r.user_id === user.id) || false : false,
+      })
+    } catch (error) {
+      console.error('Error fetching thread reaction:', error)
+    }
+  }
+
+  async function toggleDiaryReaction(entryId: string) {
+    if (!user) return
+
+    const current = diaryReactions[entryId] || { count: 0, hasReacted: false }
+
+    if (current.hasReacted) {
+      // Remove reaction
+      await supabase
+        .from('diary_reactions')
+        .delete()
+        .eq('diary_entry_id', entryId)
+        .eq('user_id', user.id)
+
+      setDiaryReactions(prev => ({
+        ...prev,
+        [entryId]: { count: prev[entryId].count - 1, hasReacted: false }
+      }))
+    } else {
+      // Add reaction
+      await supabase
+        .from('diary_reactions')
+        .insert({ diary_entry_id: entryId, user_id: user.id } as never)
+
+      setDiaryReactions(prev => ({
+        ...prev,
+        [entryId]: { count: (prev[entryId]?.count || 0) + 1, hasReacted: true }
+      }))
+    }
+  }
+
+  async function toggleThreadReaction() {
+    if (!user || !id) return
+
+    if (threadReaction.hasReacted) {
+      // Remove reaction
+      await supabase
+        .from('thread_reactions')
+        .delete()
+        .eq('thread_id', id)
+        .eq('user_id', user.id)
+
+      setThreadReaction(prev => ({ count: prev.count - 1, hasReacted: false }))
+    } else {
+      // Add reaction
+      await supabase
+        .from('thread_reactions')
+        .insert({ thread_id: id, user_id: user.id } as never)
+
+      setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
     }
   }
 
@@ -618,6 +719,25 @@ export function ThreadDetail() {
           <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
             {(thread as any).body || thread.content}
           </div>
+
+          {/* Heart reaction for diary mode OP */}
+          {thread.mode === 'diary' && (
+            <div className="mt-4 pl-4">
+              <button
+                onClick={toggleThreadReaction}
+                disabled={!user}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                  threadReaction.hasReacted
+                    ? 'bg-rose-100 text-rose-600'
+                    : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
+                } ${!user ? 'cursor-not-allowed opacity-60' : ''}`}
+                title={user ? (threadReaction.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
+              >
+                <Heart size={16} className={threadReaction.hasReacted ? 'fill-current' : ''} />
+                <span>{threadReaction.count > 0 ? threadReaction.count : '応援'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
       {/* Diary Entries Section (for diary mode) - separate card */}
@@ -769,32 +889,27 @@ export function ThreadDetail() {
                         ))}
                       </div>
                     )}
+                    {/* Heart reaction for diary entry */}
+                    <div className="mt-3">
+                      <button
+                        onClick={() => toggleDiaryReaction(entry.id)}
+                        disabled={!user}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                          diaryReactions[entry.id]?.hasReacted
+                            ? 'bg-rose-100 text-rose-600'
+                            : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
+                        } ${!user ? 'cursor-not-allowed opacity-60' : ''}`}
+                        title={user ? (diaryReactions[entry.id]?.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
+                      >
+                        <Heart size={16} className={diaryReactions[entry.id]?.hasReacted ? 'fill-current' : ''} />
+                        <span>{diaryReactions[entry.id]?.count > 0 ? diaryReactions[entry.id].count : '応援'}</span>
+                      </button>
+                    </div>
                   </div>
                 )
               })}
             </div>
           )}
-        </div>
-        {/* Diary mode comments section - separate collapsible card */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mt-4">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare size={20} className="text-gray-600" />
-                <h2 className="font-semibold text-gray-800">
-                  コメント ({thread.comments_count})
-                </h2>
-              </div>
-              {showComments ? (
-                <ChevronUp size={20} className="text-gray-500" />
-              ) : (
-                <ChevronDown size={20} className="text-gray-500" />
-              )}
-            </button>
-          </div>
         </div>
         </>
       )}
@@ -811,8 +926,8 @@ export function ThreadDetail() {
         </div>
       )}
 
-        {/* Comments List - collapsible for diary mode */}
-        {(thread.mode !== 'diary' || showComments) && (
+        {/* Comments List - only for normal mode */}
+        {thread.mode !== 'diary' && (
           <>
             {comments.length === 0 ? (
               <div className="px-6 py-8 text-center text-gray-500">

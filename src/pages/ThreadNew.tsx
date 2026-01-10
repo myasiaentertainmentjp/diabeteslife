@@ -182,7 +182,7 @@ export function ThreadNew() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  あなただけが投稿できます。食事記録や経過報告に。
+                  あなただけが投稿。他の人はリアクションで応援。
                 </p>
               </button>
             </div>
