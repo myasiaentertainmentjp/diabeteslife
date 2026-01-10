@@ -144,17 +144,11 @@ export function ThreadModes() {
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-4 py-3 text-left font-medium text-gray-600"></th>
-                <th className="px-4 py-3 text-center font-medium text-blue-600">
-                  <div className="flex items-center justify-center gap-1">
-                    <MessageSquare size={16} />
-                    通常モード
-                  </div>
+                <th className="px-4 py-3 text-center font-medium text-blue-600 whitespace-nowrap">
+                  通常モード
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-purple-600">
-                  <div className="flex items-center justify-center gap-1">
-                    <BookOpen size={16} />
-                    日記モード
-                  </div>
+                <th className="px-4 py-3 text-center font-medium text-purple-600 whitespace-nowrap">
+                  日記モード
                 </th>
               </tr>
             </thead>
