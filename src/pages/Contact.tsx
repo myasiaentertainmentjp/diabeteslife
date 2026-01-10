@@ -43,12 +43,15 @@ export function Contact() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Mail size={32} className="text-rose-500" />
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+          <Mail size={24} className="text-rose-500" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">お問い合わせ</h1>
-        <p className="text-gray-600 text-sm">ご質問・ご要望をお聞かせください</p>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">お問い合わせ</h1>
+          <p className="text-gray-600 text-sm">ご質問・ご要望をお聞かせください</p>
+        </div>
       </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">

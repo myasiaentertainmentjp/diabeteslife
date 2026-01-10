@@ -20,7 +20,8 @@ import {
   PREFECTURES,
   ExternalLink,
 } from '../../types/database'
-import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User } from 'lucide-react'
+import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const DIABETES_TYPES: NonNullable<DiabetesType>[] = [
   'type1',
@@ -50,11 +51,18 @@ const currentYear = new Date().getFullYear()
 const DIAGNOSIS_YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i)
 
 export function ProfileSettings() {
-  const { user, profile: authProfile, refreshProfile } = useAuth()
+  const { user, profile: authProfile, refreshProfile, signOut } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Account deletion state
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Basic profile fields
   const [displayName, setDisplayName] = useState('')
@@ -333,6 +341,55 @@ export function ProfileSettings() {
     }
 
     setSaving(false)
+  }
+
+  async function handleDeleteAccount() {
+    if (!user || deleteConfirmText !== '退会する') return
+
+    setDeleting(true)
+    setDeleteError(null)
+
+    try {
+      // Delete user data from various tables
+      // The order matters due to foreign key constraints
+
+      // Delete HbA1c records
+      await supabase.from('hba1c_records').delete().eq('user_id', user.id)
+
+      // Delete comments
+      await supabase.from('comments').delete().eq('user_id', user.id)
+
+      // Delete diary entries
+      await supabase.from('diary_entries').delete().eq('user_id', user.id)
+
+      // Delete threads
+      await supabase.from('threads').delete().eq('user_id', user.id)
+
+      // Delete profile comments (both as commenter and profile owner)
+      await supabase.from('profile_comments').delete().eq('commenter_id', user.id)
+      await supabase.from('profile_comments').delete().eq('profile_user_id', user.id)
+
+      // Delete reactions
+      await supabase.from('diary_reactions').delete().eq('user_id', user.id)
+      await supabase.from('thread_reactions').delete().eq('user_id', user.id)
+
+      // Delete user_profiles
+      await supabase.from('user_profiles').delete().eq('user_id', user.id)
+
+      // Delete profiles
+      await supabase.from('profiles').delete().eq('id', user.id)
+
+      // Delete from users table
+      await supabase.from('users').delete().eq('id', user.id)
+
+      // Sign out and redirect
+      await signOut()
+      navigate('/', { replace: true })
+    } catch (err) {
+      console.error('Error deleting account:', err)
+      setDeleteError('退会処理中にエラーが発生しました。お問い合わせください。')
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -861,6 +918,97 @@ export function ProfileSettings() {
           <span>{saved ? '保存しました' : '保存する'}</span>
         </button>
       </div>
+
+      {/* Account Deletion Section */}
+      <section className="mt-12 pt-8 border-t-2 border-red-200">
+        <h3 className="text-lg font-semibold text-red-600 mb-4">退会</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          退会すると、投稿したスレッド・コメント・HbA1c記録などすべてのデータが削除されます。この操作は取り消せません。
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowDeleteModal(true)}
+          className="flex items-center gap-2 px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg font-medium hover:bg-red-50 transition-colors"
+        >
+          <Trash2 size={18} />
+          <span>退会する</span>
+        </button>
+      </section>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle size={24} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">本当に退会しますか？</h3>
+                <p className="text-sm text-gray-500">この操作は取り消せません</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-700">
+                退会すると以下のデータがすべて削除されます：
+              </p>
+              <ul className="text-sm text-red-700 mt-2 space-y-1">
+                <li>• 投稿したスレッド・コメント</li>
+                <li>• HbA1c記録</li>
+                <li>• プロフィール情報</li>
+                <li>• その他すべてのデータ</li>
+              </ul>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                確認のため「退会する」と入力してください
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="退会する"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+
+            {deleteError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setDeleteConfirmText('')
+                  setDeleteError(null)
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== '退会する' || deleting}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Trash2 size={18} />
+                )}
+                <span>{deleting ? '処理中...' : '退会する'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }
