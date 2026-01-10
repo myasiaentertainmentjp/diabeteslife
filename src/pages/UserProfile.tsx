@@ -754,13 +754,13 @@ export function UserProfile() {
         <div className="px-4 py-3">
           {currentUser ? (
             <form onSubmit={submitProfileComment}>
-              <div className="flex gap-2 items-end">
+              <div className="flex gap-2 items-start">
                 <textarea
                   value={commentBody}
                   onChange={(e) => {
                     setCommentBody(e.target.value)
                     // Auto-resize textarea
-                    e.target.style.height = 'auto'
+                    e.target.style.height = '38px'
                     e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
                   }}
                   onKeyDown={(e) => {
@@ -776,13 +776,13 @@ export function UserProfile() {
                   }}
                   placeholder="コメントを入力..."
                   rows={1}
-                  style={{ minHeight: '40px', maxHeight: '150px' }}
-                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                  style={{ height: '38px', maxHeight: '150px' }}
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none leading-tight"
                 />
                 <button
                   type="submit"
                   disabled={submittingComment || !commentBody.trim()}
-                  className="shrink-0 w-10 h-10 flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                   {submittingComment ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -794,24 +794,24 @@ export function UserProfile() {
             </form>
           ) : (
             <div className="relative">
-              <div className="flex gap-2 items-end">
+              <div className="flex gap-2 items-start opacity-50">
                 <textarea
                   disabled
-                  placeholder=""
+                  placeholder="コメントを入力..."
                   rows={1}
-                  style={{ minHeight: '40px' }}
-                  className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none bg-gray-100 cursor-not-allowed"
+                  style={{ height: '38px' }}
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none bg-white cursor-not-allowed leading-tight"
                 />
                 <button
                   disabled
-                  className="shrink-0 w-10 h-10 flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
+                  className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-rose-400 text-white rounded-lg cursor-not-allowed"
                 >
                   <Send size={16} />
                 </button>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-                <p className="text-gray-500 text-sm">
-                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline">ログイン</Link>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-gray-600 text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm">
+                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline font-medium">ログイン</Link>
                   してコメントする
                 </p>
               </div>

@@ -85,7 +85,7 @@ export function Header() {
       <div className="bg-rose-400">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-14">
-            {/* Mobile Auth (left on mobile) */}
+            {/* Mobile Auth (left on mobile) - only show when logged in */}
             <div className="md:hidden flex items-center gap-2">
               {loading ? (
                 <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
@@ -97,13 +97,7 @@ export function Header() {
                   マイページ
                 </Link>
               ) : (
-                <Link
-                  to="/login"
-                  state={{ from: currentPath }}
-                  className="text-white text-sm font-medium"
-                >
-                  ログイン
-                </Link>
+                <div className="w-16" />
               )}
             </div>
 
