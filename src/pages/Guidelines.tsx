@@ -1,17 +1,10 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle, XCircle, Flag, AlertTriangle, HelpCircle, BookOpen } from 'lucide-react'
+import { CheckCircle, XCircle, Flag, AlertTriangle, HelpCircle } from 'lucide-react'
 
 export function Guidelines() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <BookOpen size={24} className="text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">コミュニティガイドライン</h1>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">コミュニティガイドライン</h1>
 
       {/* Values Section */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-4">

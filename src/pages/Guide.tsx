@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import {
-  BookOpen,
   MessageSquare,
   PenSquare,
   BookHeart,
@@ -15,16 +14,8 @@ import {
 export function Guide() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <BookOpen size={24} className="text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">使い方</h1>
-          <p className="text-gray-600 text-sm">はじめての方へ</p>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">使い方</h1>
+      <p className="text-gray-600 text-sm mb-6">はじめての方へ</p>
 
       {/* What is D-Life */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-4">

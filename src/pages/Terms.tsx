@@ -1,18 +1,10 @@
 import { Link } from 'react-router-dom'
-import { FileText } from 'lucide-react'
 
 export function Terms() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <FileText size={24} className="text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">利用規約</h1>
-          <p className="text-sm text-gray-500">最終更新日：2026年1月8日</p>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">利用規約</h1>
+      <p className="text-sm text-gray-500 mb-6">最終更新日：2026年1月8日</p>
 
       <div className="space-y-4">
         <section className="bg-white rounded-xl shadow-sm p-6">

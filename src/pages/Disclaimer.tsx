@@ -4,14 +4,7 @@ import { AlertTriangle, Phone, Stethoscope, Users, FileWarning } from 'lucide-re
 export function Disclaimer() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
-          <AlertTriangle size={24} className="text-rose-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">医療情報に関する免責事項</h1>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">医療情報に関する免責事項</h1>
 
       <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-8">
         <p className="text-rose-700 font-medium">
