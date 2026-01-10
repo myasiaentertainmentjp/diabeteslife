@@ -9,7 +9,7 @@ export function Terms() {
           <FileText size={24} className="text-rose-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dライフ利用規約</h1>
+          <h1 className="text-2xl font-bold text-gray-900">利用規約</h1>
           <p className="text-sm text-gray-500">最終更新日：2026年1月8日</p>
         </div>
       </div>

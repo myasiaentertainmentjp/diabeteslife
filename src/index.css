@@ -7,9 +7,9 @@ html {
   font-size: 17px; /* 標準16pxより少し大きめ */
 }
 
-/* Green theme base background */
+/* Rose theme base background */
 body {
-  background-color: #f0fdf4; /* rose-50 */
+  background-color: #fff1f2; /* rose-50 */
   line-height: 1.7; /* 読みやすさ向上 */
 }
 
@@ -42,7 +42,7 @@ body {
   color: #111827;
   margin: 2rem 0 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 3px solid #16A34A;
+  border-bottom: 3px solid #f43f5e;
 }
 
 .article-content h2 {
@@ -51,8 +51,8 @@ body {
   color: #111827;
   margin: 2.5rem 0 1rem;
   padding: 0.75rem 1rem;
-  background-color: #F0FDF4;
-  border-left: 4px solid #16A34A;
+  background-color: #fff1f2;
+  border-left: 4px solid #f43f5e;
   border-radius: 0 0.375rem 0.375rem 0;
 }
 
@@ -62,13 +62,13 @@ body {
   color: #111827;
   margin: 2rem 0 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #16A34A;
+  border-bottom: 2px solid #f43f5e;
 }
 
 .article-content h4 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #16A34A;
+  color: #e11d48;
   margin: 1.5rem 0 0.5rem;
 }
 
@@ -87,13 +87,13 @@ body {
 }
 
 .article-content a {
-  color: #16A34A;
+  color: #f43f5e;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .article-content a:hover {
-  color: #15803D;
+  color: #e11d48;
 }
 
 .article-content ul,
@@ -118,8 +118,8 @@ body {
 .article-content blockquote {
   margin: 1.5rem 0;
   padding: 1rem 1.25rem;
-  background-color: #F0FDF4;
-  border-left: 4px solid #22C55E;
+  background-color: #fff1f2;
+  border-left: 4px solid #fb7185;
   border-radius: 0 0.375rem 0.375rem 0;
   color: #374151;
   font-style: italic;

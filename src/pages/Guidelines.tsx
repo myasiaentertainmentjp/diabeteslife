@@ -9,7 +9,7 @@ export function Guidelines() {
           <BookOpen size={24} className="text-rose-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dライフ コミュニティガイドライン</h1>
+          <h1 className="text-2xl font-bold text-gray-900">コミュニティガイドライン</h1>
         </div>
       </div>
 
