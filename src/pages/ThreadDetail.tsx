@@ -797,29 +797,29 @@ export function ThreadDetail() {
                 まだコメントはありません
               </div>
             ) : (
-              <div className="px-6 py-4 space-y-6">
+              <div className="px-6 py-2">
                 {comments.map((comment, index) => (
                   <div
                     key={comment.id}
                     id={`comment-${index + 1}`}
-                    className="transition-colors duration-500 rounded-lg"
+                    className="py-5 transition-colors duration-500"
                   >
-                    {/* 5ch風ヘッダー: 番号 名前 日時 返信ボタン */}
-                    <div className="flex flex-wrap items-baseline gap-2 text-sm mb-1">
+                    {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 */}
+                    <div className="flex flex-wrap items-baseline gap-1 mb-2">
                       <span className="font-bold text-rose-500">{index + 1}:</span>
                       <Link
                         to={`/users/${comment.user_id}`}
-                        className="font-medium text-gray-800 hover:text-rose-500 hover:underline"
+                        className="font-medium text-blue-600 hover:underline"
                       >
                         {comment.profiles?.display_name || '匿名'}
                       </Link>
-                      <span className="text-gray-400 text-xs">
+                      <span className="text-gray-400 text-sm ml-2">
                         {formatDate(comment.created_at)}
                       </span>
                       {user && thread.mode !== 'diary' && (
                         <button
                           onClick={() => handleReply(index + 1)}
-                          className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                          className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors ml-2"
                         >
                           <Reply size={12} />
                           <span>返信</span>
@@ -827,10 +827,10 @@ export function ThreadDetail() {
                       )}
                       <ReportButton targetType="comment" targetId={comment.id} />
                     </div>
-                    {/* コメント本文 */}
-                    <p className="text-gray-700 whitespace-pre-wrap pl-0 md:pl-4">
+                    {/* コメント本文 - インデント付き */}
+                    <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
                       {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length)}
-                    </p>
+                    </div>
                   </div>
                 ))}
 
