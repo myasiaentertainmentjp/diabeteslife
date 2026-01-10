@@ -751,34 +751,47 @@ export function UserProfile() {
         </div>
 
         {/* Comment Form */}
-        {currentUser ? (
-          <form onSubmit={submitProfileComment} className="px-4 py-3 border-b border-gray-100">
-            <div className="flex gap-2">
+        <div className="px-4 py-3">
+          {currentUser ? (
+            <form onSubmit={submitProfileComment}>
+              <div className="flex gap-2">
+                <textarea
+                  value={commentBody}
+                  onChange={(e) => setCommentBody(e.target.value)}
+                  placeholder="コメントを入力..."
+                  rows={2}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingComment || !commentBody.trim()}
+                  className="self-end px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                >
+                  {submittingComment ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="relative">
               <textarea
-                value={commentBody}
-                onChange={(e) => setCommentBody(e.target.value)}
-                placeholder="コメントを入力..."
+                disabled
+                placeholder=""
                 rows={2}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none bg-gray-100 cursor-not-allowed"
               />
-              <button
-                type="submit"
-                disabled={submittingComment || !commentBody.trim()}
-                className="self-end px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                {submittingComment ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Send size={16} />
-                )}
-              </button>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-gray-500 text-sm">
+                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline">ログイン</Link>
+                  してコメントする
+                </p>
+              </div>
             </div>
-          </form>
-        ) : (
-          <div className="px-4 py-3 border-b border-gray-100 text-center text-sm text-gray-500">
-            <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline">ログイン</Link>してコメントする
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Comments List */}
         {profileComments.length === 0 ? (

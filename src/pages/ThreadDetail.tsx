@@ -1111,8 +1111,8 @@ export function ThreadDetail() {
             )}
 
             {/* Comment Form */}
-            {user ? (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 bg-gray-50">
+              {user ? (
                 <form onSubmit={handleSubmitComment}>
                   {error && (
                     <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -1145,18 +1145,26 @@ export function ThreadDetail() {
                     </button>
                   </div>
                 </form>
-              </div>
-            ) : (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 text-center">
-                <p className="text-gray-600 text-sm">
-                  コメントするには
-                  <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1">
-                    ログイン
-                  </Link>
-                  してください
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="relative">
+                  <textarea
+                    disabled
+                    placeholder=""
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-400 resize-none cursor-not-allowed"
+                    rows={3}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-gray-500 text-sm">
+                      コメントするには
+                      <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1">
+                        ログイン
+                      </Link>
+                      してください
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
