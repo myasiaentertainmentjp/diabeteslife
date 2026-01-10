@@ -15,6 +15,7 @@ import {
   DiaryEntry,
 } from '../types/database'
 import { ReportButton } from '../components/ReportButton'
+import { Sidebar } from '../components/Sidebar'
 import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Reply, Heart } from 'lucide-react'
 
 const SITE_URL = 'https://diabeteslife.jp'
@@ -779,7 +780,7 @@ export function ThreadDetail() {
   const ogUrl = `${SITE_URL}/threads/${thread.id}`
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <Helmet>
         <title>{thread.title} | Dライフ</title>
         <meta name="description" content={ogDescription} />
@@ -805,8 +806,11 @@ export function ThreadDetail() {
         <span>前のページに戻る</span>
       </button>
 
-      {/* Thread Card - Header + Content + Comments unified */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Thread Card - Header + Content + Comments unified */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {/* Title Section */}
         <div className="px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between mb-2">
@@ -1187,6 +1191,15 @@ export function ThreadDetail() {
             </div>
           </>
         )}
+          </div>
+        </div>
+
+        {/* Sidebar - PC only */}
+        <div className="hidden lg:block lg:w-80 shrink-0">
+          <div className="sticky top-4">
+            <Sidebar showPostButton={true} showCategories={false} />
+          </div>
+        </div>
       </div>
     </div>
   )
