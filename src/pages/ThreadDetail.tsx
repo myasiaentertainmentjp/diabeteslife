@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
@@ -15,7 +15,7 @@ import {
   DiaryEntry,
 } from '../types/database'
 import { ReportButton } from '../components/ReportButton'
-import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Reply } from 'lucide-react'
 
 const SITE_URL = 'https://diabeteslife.jp'
 const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
@@ -46,7 +46,10 @@ export function ThreadDetail() {
   const [diaryError, setDiaryError] = useState('')
   const [showComments, setShowComments] = useState(false)
   const [showDiaryForm, setShowDiaryForm] = useState(false)
+  const [hoveredComment, setHoveredComment] = useState<number | null>(null)
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
 
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const MAX_DIARY_IMAGES = 4
 
   const { user } = useAuth()
@@ -422,7 +425,36 @@ export function ThreadDetail() {
     })
   }
 
-  // Parse comment text and convert >>N patterns to clickable anchor links
+  // Handle reply button click - insert >>N into comment field
+  function handleReply(commentNumber: number) {
+    const anchor = `>>${commentNumber} `
+    // Check if anchor already exists to avoid duplicates
+    if (!commentContent.includes(`>>${commentNumber}`)) {
+      setCommentContent((prev) => prev ? `${prev}${anchor}` : anchor)
+    }
+    // Focus and scroll to comment textarea
+    if (commentTextareaRef.current) {
+      commentTextareaRef.current.focus()
+      commentTextareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  // Handle anchor hover for popup
+  function handleAnchorHover(e: React.MouseEvent, commentNumber: number) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setPopupPosition({
+      x: rect.left,
+      y: rect.bottom + window.scrollY + 8,
+    })
+    setHoveredComment(commentNumber)
+  }
+
+  // Get comment by number for popup
+  function getCommentByNumber(num: number) {
+    return comments[num - 1]
+  }
+
+  // Parse comment text and convert >>N patterns to clickable anchor links with hover
   function renderCommentWithAnchors(text: string, totalComments: number) {
     // Match >>N or >>N-M patterns (e.g., >>5, >>3-7)
     const anchorRegex = />>(\d+)(?:-(\d+))?/g
@@ -441,29 +473,17 @@ export function ThreadDetail() {
 
       // Validate anchor numbers
       if (startNum >= 1 && startNum <= totalComments) {
-        if (endNum) {
-          // Range anchor >>N-M
-          parts.push(
-            <button
-              key={`${match.index}-range`}
-              onClick={() => scrollToComment(startNum)}
-              className="text-rose-500 hover:text-rose-600 hover:underline font-medium"
-            >
-              {match[0]}
-            </button>
-          )
-        } else {
-          // Single anchor >>N
-          parts.push(
-            <button
-              key={match.index}
-              onClick={() => scrollToComment(startNum)}
-              className="text-rose-500 hover:text-rose-600 hover:underline font-medium"
-            >
-              {match[0]}
-            </button>
-          )
-        }
+        parts.push(
+          <button
+            key={`${match.index}-${startNum}`}
+            onClick={() => scrollToComment(startNum)}
+            onMouseEnter={(e) => handleAnchorHover(e, startNum)}
+            onMouseLeave={() => setHoveredComment(null)}
+            className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+          >
+            {match[0]}
+          </button>
+        )
       } else {
         // Invalid anchor, keep as plain text
         parts.push(match[0])
@@ -481,6 +501,7 @@ export function ThreadDetail() {
   }
 
   function scrollToComment(commentNumber: number) {
+    setHoveredComment(null) // Hide popup
     const element = document.getElementById(`comment-${commentNumber}`)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -781,7 +802,7 @@ export function ThreadDetail() {
                     id={`comment-${index + 1}`}
                     className="transition-colors duration-500 rounded-lg"
                   >
-                    {/* 5ch風ヘッダー: 番号 名前 日時 */}
+                    {/* 5ch風ヘッダー: 番号 名前 日時 返信ボタン */}
                     <div className="flex flex-wrap items-baseline gap-2 text-sm mb-1">
                       <span className="font-bold text-rose-500">{index + 1}:</span>
                       <Link
@@ -793,6 +814,15 @@ export function ThreadDetail() {
                       <span className="text-gray-400 text-xs">
                         {formatDate(comment.created_at)}
                       </span>
+                      {user && thread.mode !== 'diary' && (
+                        <button
+                          onClick={() => handleReply(index + 1)}
+                          className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                        >
+                          <Reply size={12} />
+                          <span>返信</span>
+                        </button>
+                      )}
                       <ReportButton targetType="comment" targetId={comment.id} />
                     </div>
                     {/* コメント本文 */}
@@ -801,6 +831,29 @@ export function ThreadDetail() {
                     </p>
                   </div>
                 ))}
+
+                {/* Anchor Popup */}
+                {hoveredComment && getCommentByNumber(hoveredComment) && (
+                  <div
+                    className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-3 max-w-sm"
+                    style={{
+                      left: Math.min(popupPosition.x, window.innerWidth - 320),
+                      top: popupPosition.y,
+                    }}
+                    onMouseEnter={() => setHoveredComment(hoveredComment)}
+                    onMouseLeave={() => setHoveredComment(null)}
+                  >
+                    <div className="text-xs text-gray-500 mb-1">
+                      <span className="font-bold text-rose-500">{hoveredComment}:</span>
+                      {' '}
+                      {getCommentByNumber(hoveredComment)?.profiles?.display_name || '匿名'}
+                    </div>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">
+                      {(getCommentByNumber(hoveredComment) as any)?.body ||
+                       getCommentByNumber(hoveredComment)?.content || ''}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -817,6 +870,7 @@ export function ThreadDetail() {
                   <div className="flex gap-3">
                     <div className="flex-1">
                       <textarea
+                        ref={commentTextareaRef}
                         value={commentContent}
                         onChange={(e) => setCommentContent(e.target.value)}
                         placeholder="コメントを入力...&#10;返信は >>1 のように番号を入れてください"
