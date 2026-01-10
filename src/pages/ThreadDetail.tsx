@@ -1121,7 +1121,7 @@ export function ThreadDetail() {
             )}
 
             {/* Comment Form */}
-            <div className="px-6 py-4 bg-gray-50">
+            <div className="px-4 md:px-6 py-4 bg-gray-50">
               {user ? (
                 <form onSubmit={handleSubmitComment}>
                   {error && (
@@ -1130,22 +1130,38 @@ export function ThreadDetail() {
                       <span className="text-sm">{error}</span>
                     </div>
                   )}
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <textarea
-                        ref={commentTextareaRef}
-                        value={commentContent}
-                        onChange={(e) => setCommentContent(e.target.value)}
-                        placeholder="コメントを入力..."
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
-                        rows={3}
-                        required
-                      />
-                    </div>
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      ref={commentTextareaRef}
+                      value={commentContent}
+                      onChange={(e) => {
+                        setCommentContent(e.target.value)
+                        // Auto-resize textarea
+                        e.target.style.height = 'auto'
+                        e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'
+                      }}
+                      onKeyDown={(e) => {
+                        // PC: Enter to send, Shift+Enter for newline
+                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                          // Only on non-mobile
+                          if (window.innerWidth >= 768) {
+                            e.preventDefault()
+                            if (commentContent.trim() && !submitting) {
+                              handleSubmitComment(e as unknown as React.FormEvent)
+                            }
+                          }
+                        }
+                      }}
+                      placeholder="コメントを入力..."
+                      className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none text-base"
+                      rows={1}
+                      style={{ minHeight: '44px', maxHeight: '200px' }}
+                      required
+                    />
                     <button
                       type="submit"
                       disabled={submitting || !commentContent.trim()}
-                      className="self-start px-4 py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
+                      className="shrink-0 w-11 h-11 flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <Loader2 size={20} className="animate-spin" />
@@ -1154,16 +1170,28 @@ export function ThreadDetail() {
                       )}
                     </button>
                   </div>
+                  <p className="hidden md:block text-xs text-gray-400 mt-2">
+                    Enter で送信 / Shift + Enter で改行
+                  </p>
                 </form>
               ) : (
                 <div className="relative">
-                  <textarea
-                    disabled
-                    placeholder=""
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-400 resize-none cursor-not-allowed"
-                    rows={3}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      disabled
+                      placeholder=""
+                      className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-400 resize-none cursor-not-allowed text-base"
+                      rows={1}
+                      style={{ minHeight: '44px' }}
+                    />
+                    <button
+                      disabled
+                      className="shrink-0 w-11 h-11 flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
+                    >
+                      <Send size={20} />
+                    </button>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80">
                     <p className="text-gray-500 text-sm">
                       コメントするには
                       <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline mx-1">

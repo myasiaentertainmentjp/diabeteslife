@@ -85,14 +85,27 @@ export function Header() {
       <div className="bg-rose-400">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-14">
-            {/* Mobile Menu Button (left on mobile) */}
-            <button
-              className="md:hidden p-2 text-white hover:text-rose-100"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="メニュー"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* Mobile Auth (left on mobile) */}
+            <div className="md:hidden flex items-center gap-2">
+              {loading ? (
+                <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
+              ) : user ? (
+                <Link
+                  to="/mypage"
+                  className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
+                >
+                  マイページ
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  state={{ from: currentPath }}
+                  className="text-white text-sm font-medium"
+                >
+                  ログイン
+                </Link>
+              )}
+            </div>
 
             {/* Logo - Centered */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
@@ -153,27 +166,14 @@ export function Header() {
               )}
             </div>
 
-            {/* Mobile Auth (right) */}
-            <div className="md:hidden flex items-center gap-2">
-              {loading ? (
-                <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
-              ) : user ? (
-                <Link
-                  to="/mypage"
-                  className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
-                >
-                  マイページ
-                </Link>
-              ) : (
-                <Link
-                  to="/login"
-                  state={{ from: currentPath }}
-                  className="text-white text-sm font-medium"
-                >
-                  ログイン
-                </Link>
-              )}
-            </div>
+            {/* Mobile Menu Button (right on mobile) */}
+            <button
+              className="md:hidden p-2 text-white hover:text-rose-100"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="メニュー"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
       </div>

@@ -754,18 +754,35 @@ export function UserProfile() {
         <div className="px-4 py-3">
           {currentUser ? (
             <form onSubmit={submitProfileComment}>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-end">
                 <textarea
                   value={commentBody}
-                  onChange={(e) => setCommentBody(e.target.value)}
+                  onChange={(e) => {
+                    setCommentBody(e.target.value)
+                    // Auto-resize textarea
+                    e.target.style.height = 'auto'
+                    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
+                  }}
+                  onKeyDown={(e) => {
+                    // PC: Enter to send, Shift+Enter for newline
+                    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      if (window.innerWidth >= 768) {
+                        e.preventDefault()
+                        if (commentBody.trim() && !submittingComment) {
+                          submitProfileComment(e as unknown as React.FormEvent)
+                        }
+                      }
+                    }
+                  }}
                   placeholder="コメントを入力..."
-                  rows={2}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                  rows={1}
+                  style={{ minHeight: '40px', maxHeight: '150px' }}
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
                 />
                 <button
                   type="submit"
                   disabled={submittingComment || !commentBody.trim()}
-                  className="self-end px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="shrink-0 w-10 h-10 flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                   {submittingComment ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -777,13 +794,22 @@ export function UserProfile() {
             </form>
           ) : (
             <div className="relative">
-              <textarea
-                disabled
-                placeholder=""
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none bg-gray-100 cursor-not-allowed"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex gap-2 items-end">
+                <textarea
+                  disabled
+                  placeholder=""
+                  rows={1}
+                  style={{ minHeight: '40px' }}
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none bg-gray-100 cursor-not-allowed"
+                />
+                <button
+                  disabled
+                  className="shrink-0 w-10 h-10 flex items-center justify-center bg-gray-300 text-white rounded-lg cursor-not-allowed"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-white/80">
                 <p className="text-gray-500 text-sm">
                   <Link to="/login" state={{ from: currentPath }} className="text-rose-500 hover:underline">ログイン</Link>
                   してコメントする
