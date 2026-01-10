@@ -42,6 +42,8 @@ import {
   Lock,
   Send,
   Trash2,
+  Ban,
+  UserX,
 } from 'lucide-react'
 
 interface UserData {
@@ -151,13 +153,21 @@ export function UserProfile() {
   const [submittingComment, setSubmittingComment] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // Block feature state
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [isBlockedBy, setIsBlockedBy] = useState(false)
+  const [blockLoading, setBlockLoading] = useState(false)
+
   const isOwnProfile = currentUser?.id === userId
 
   useEffect(() => {
     if (userId) {
       fetchUserData()
+      if (currentUser && currentUser.id !== userId) {
+        checkBlockStatus()
+      }
     }
-  }, [userId])
+  }, [userId, currentUser])
 
   async function fetchUserData() {
     setLoading(true)
@@ -260,6 +270,12 @@ export function UserProfile() {
     e.preventDefault()
     if (!currentUser || !commentBody.trim()) return
 
+    // Check if blocked by profile owner
+    if (isBlockedBy) {
+      showToast('コメントできませんでした', 'error')
+      return
+    }
+
     setSubmittingComment(true)
     try {
       const { error } = await supabase
@@ -307,6 +323,69 @@ export function UserProfile() {
     } catch (error) {
       console.error('Error deleting comment:', error)
       showToast('コメントの削除に失敗しました', 'error')
+    }
+  }
+
+  async function checkBlockStatus() {
+    if (!currentUser || !userId || currentUser.id === userId) return
+
+    try {
+      // Check if current user has blocked this user
+      const { data: blockedData } = await supabase
+        .from('user_blocks')
+        .select('id')
+        .eq('blocker_id', currentUser.id)
+        .eq('blocked_id', userId)
+        .single()
+
+      setIsBlocked(!!blockedData)
+
+      // Check if this user has blocked current user
+      const { data: blockedByData } = await supabase
+        .from('user_blocks')
+        .select('id')
+        .eq('blocker_id', userId)
+        .eq('blocked_id', currentUser.id)
+        .single()
+
+      setIsBlockedBy(!!blockedByData)
+    } catch (error) {
+      // No block found is expected, not an error
+    }
+  }
+
+  async function toggleBlock() {
+    if (!currentUser || !userId || isOwnProfile) return
+
+    setBlockLoading(true)
+    try {
+      if (isBlocked) {
+        // Unblock
+        await supabase
+          .from('user_blocks')
+          .delete()
+          .eq('blocker_id', currentUser.id)
+          .eq('blocked_id', userId)
+
+        setIsBlocked(false)
+        showToast('ブロックを解除しました', 'success')
+      } else {
+        // Block
+        await supabase
+          .from('user_blocks')
+          .insert({
+            blocker_id: currentUser.id,
+            blocked_id: userId
+          } as never)
+
+        setIsBlocked(true)
+        showToast('ブロックしました', 'success')
+      }
+    } catch (error) {
+      console.error('Error toggling block:', error)
+      showToast('操作に失敗しました', 'error')
+    } finally {
+      setBlockLoading(false)
     }
   }
 
@@ -426,7 +505,7 @@ export function UserProfile() {
               </div>
             )}
           </div>
-          {isOwnProfile && (
+          {isOwnProfile ? (
             <Link
               to="/mypage/profile"
               className="flex items-center gap-1 px-3 py-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors text-sm font-medium flex-shrink-0"
@@ -434,6 +513,26 @@ export function UserProfile() {
               <Settings size={14} />
               <span className="hidden sm:inline">編集</span>
             </Link>
+          ) : currentUser && (
+            <button
+              onClick={toggleBlock}
+              disabled={blockLoading}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex-shrink-0 ${
+                isBlocked
+                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'
+              }`}
+              title={isBlocked ? 'ブロック解除' : 'ブロックする'}
+            >
+              {blockLoading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : isBlocked ? (
+                <UserX size={14} />
+              ) : (
+                <Ban size={14} />
+              )}
+              <span className="hidden sm:inline">{isBlocked ? 'ブロック中' : 'ブロック'}</span>
+            </button>
           )}
         </div>
 

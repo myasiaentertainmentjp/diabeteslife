@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Loader2, User, Activity, FileText } from 'lucide-react'
+import { Loader2, User, Activity, FileText, UserX } from 'lucide-react'
 import { ProfileSettings } from './mypage/ProfileSettings'
 import { HbA1cRecords } from './mypage/HbA1cRecords'
 import { PostHistory } from './mypage/PostHistory'
+import { BlockedUsers } from './mypage/BlockedUsers'
 
-type TabType = 'profile' | 'hba1c' | 'history'
+type TabType = 'profile' | 'hba1c' | 'history' | 'blocked'
 
 const TABS: { id: TabType; label: string; icon: React.ReactNode }[] = [
   { id: 'profile', label: 'プロフィール設定', icon: <User size={18} /> },
   { id: 'hba1c', label: 'HbA1c記録', icon: <Activity size={18} /> },
   { id: 'history', label: '投稿履歴', icon: <FileText size={18} /> },
+  { id: 'blocked', label: 'ブロック', icon: <UserX size={18} /> },
 ]
 
 export function MyPage() {
@@ -67,6 +69,7 @@ export function MyPage() {
         {activeTab === 'profile' && <ProfileSettings />}
         {activeTab === 'hba1c' && <HbA1cRecords />}
         {activeTab === 'history' && <PostHistory />}
+        {activeTab === 'blocked' && <BlockedUsers />}
       </div>
     </div>
   )

@@ -657,3 +657,36 @@ export interface ExtendedUserProfile {
   hba1c_public: boolean          // default: false
   links_public: boolean          // default: true
 }
+
+// User block interface
+export interface UserBlock {
+  id: string
+  blocker_id: string
+  blocked_id: string
+  created_at: string
+}
+
+// Notification types
+export type NotificationType = 'thread_comment' | 'reply' | 'like' | 'profile_comment'
+
+// User notification interface
+export interface UserNotification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string | null
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
+// Notification settings interface
+export interface NotificationSettings {
+  user_id: string
+  thread_comment: boolean
+  reply: boolean
+  likes: boolean
+  profile_comment: boolean
+  email_enabled: boolean
+}
