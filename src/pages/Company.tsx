@@ -29,10 +29,10 @@ export function Company() {
         <div>
           <h2 className="text-sm font-bold text-gray-700 mb-2">メール</h2>
           <a
-            href="mailto:indo@myasia.jp"
+            href="mailto:info@diabeteslife.jp"
             className="text-rose-500 hover:underline"
           >
-            indo@myasia.jp
+            info@diabeteslife.jp
           </a>
         </div>
       </div>
