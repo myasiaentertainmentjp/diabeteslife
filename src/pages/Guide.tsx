@@ -8,11 +8,16 @@ import {
   HelpCircle,
   Mail,
   Users,
-  Heart
+  Heart,
+  UserCircle,
+  Settings,
+  CheckCircle2
 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 export function Guide() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -54,6 +59,103 @@ export function Guide() {
             <p className="text-amber-800 text-sm">
               Dライフは医療機関ではありません。ユーザー同士の体験共有の場としてご利用ください。
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Getting Started Steps */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
+        <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-rose-500">
+          はじめの3ステップ
+        </h2>
+
+        <div className="space-y-4">
+          {/* Step 1 */}
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">
+              1
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 mb-1">アカウント登録</h3>
+              <p className="text-gray-600 text-sm">
+                メールアドレスで簡単に登録できます。
+              </p>
+              {!user && (
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-1 mt-2 text-rose-500 hover:text-rose-600 text-sm font-medium"
+                >
+                  <UserCircle size={16} />
+                  新規登録はこちら
+                </Link>
+              )}
+              {user && (
+                <span className="inline-flex items-center gap-1 mt-2 text-green-600 text-sm">
+                  <CheckCircle2 size={16} />
+                  登録済み
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">
+              2
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 mb-1">プロフィールを充実させる</h3>
+              <p className="text-gray-600 text-sm mb-2">
+                プロフィールを設定すると、同じ境遇の仲間と繋がりやすくなります。
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-sm text-gray-600">
+                <p className="flex items-center gap-2">
+                  <span className="text-rose-400">●</span>
+                  <span><strong>糖尿病タイプ</strong>：1型・2型など</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-rose-400">●</span>
+                  <span><strong>発症時期</strong>：いつ頃からか</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-rose-400">●</span>
+                  <span><strong>治療法</strong>：インスリン、内服薬など</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-rose-400">●</span>
+                  <span><strong>自己紹介</strong>：あなたのことを教えてください</span>
+                </p>
+              </div>
+              {user && (
+                <Link
+                  to="/mypage/settings"
+                  className="inline-flex items-center gap-1 mt-3 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 text-sm font-medium transition-colors"
+                >
+                  <Settings size={16} />
+                  プロフィールを設定する
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">
+              3
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 mb-1">コミュニティに参加</h3>
+              <p className="text-gray-600 text-sm">
+                気になるトピックにコメントしたり、新しいトピックを作成してみましょう。
+              </p>
+              <Link
+                to="/threads"
+                className="inline-flex items-center gap-1 mt-2 text-rose-500 hover:text-rose-600 text-sm font-medium"
+              >
+                <MessageSquare size={16} />
+                スレッド一覧を見る
+              </Link>
+            </div>
           </div>
         </div>
       </div>

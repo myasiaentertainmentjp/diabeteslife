@@ -48,71 +48,128 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-gray-800 text-gray-300">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Links - Centered */}
-        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-          <Link to="/company" className="hover:text-white transition-colors">
-            会社概要
-          </Link>
-          <Link to="/terms" className="hover:text-white transition-colors">
-            利用規約
-          </Link>
-          <Link to="/privacy" className="hover:text-white transition-colors">
-            プライバシーポリシー
-          </Link>
-          <Link to="/disclaimer" className="hover:text-white transition-colors">
-            免責事項
-          </Link>
-          <Link to="/guidelines" className="hover:text-white transition-colors">
-            ガイドライン
-          </Link>
-          <Link to="/guide" className="hover:text-white transition-colors">
-            使い方
-          </Link>
-          <Link to="/help/thread-modes" className="hover:text-white transition-colors">
-            スレッドタイプ
-          </Link>
-          <Link to="/faq" className="hover:text-white transition-colors">
-            よくある質問
-          </Link>
-          <Link to="/contact" className="hover:text-white transition-colors">
-            お問い合わせ
-          </Link>
-        </nav>
+    <footer className="bg-gradient-to-r from-gray-800 via-gray-800 to-gray-700 text-gray-300">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        {/* 4 Column Layout */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          {/* Column 1: コンテンツ */}
+          <div>
+            <h3 className="text-white font-bold mb-4">コンテンツ</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/threads" className="hover:text-white transition-colors">
+                  スレッド一覧
+                </Link>
+              </li>
+              <li>
+                <Link to="/articles" className="hover:text-white transition-colors">
+                  記事一覧
+                </Link>
+              </li>
+              <li>
+                <Link to="/threads?category=todays_meal" className="hover:text-white transition-colors">
+                  今日のごはん
+                </Link>
+              </li>
+              <li>
+                <Link to="/help/thread-modes" className="hover:text-white transition-colors">
+                  スレッドタイプ
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-        {/* Font Size Toggle */}
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <Type size={14} className="text-gray-500" />
-          <span className="text-xs text-gray-500">文字サイズ</span>
-          <div className="flex border border-gray-600 rounded overflow-hidden">
-            {FONT_SIZES.map((size) => (
-              <button
-                key={size.key}
-                onClick={() => handleFontSizeChange(size.key)}
-                className={`px-3 py-1 text-xs transition-colors ${
-                  fontSize === size.key
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                {size.label}
-              </button>
-            ))}
+          {/* Column 2: サポート */}
+          <div>
+            <h3 className="text-white font-bold mb-4">サポート</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/guide" className="hover:text-white transition-colors">
+                  使い方ガイド
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-white transition-colors">
+                  よくある質問
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-white transition-colors">
+                  お問い合わせ
+                </Link>
+              </li>
+              <li>
+                <Link to="/guidelines" className="hover:text-white transition-colors">
+                  ガイドライン
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: 運営情報 */}
+          <div>
+            <h3 className="text-white font-bold mb-4">運営情報</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/company" className="hover:text-white transition-colors">
+                  会社概要
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="hover:text-white transition-colors">
+                  利用規約
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-white transition-colors">
+                  プライバシーポリシー
+                </Link>
+              </li>
+              <li>
+                <Link to="/disclaimer" className="hover:text-white transition-colors">
+                  免責事項
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: 設定 */}
+          <div>
+            <h3 className="text-white font-bold mb-4">設定</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Type size={14} className="text-gray-400" />
+                <span className="text-sm text-gray-400">文字サイズ</span>
+              </div>
+              <div className="flex border border-gray-600 rounded overflow-hidden w-fit">
+                {FONT_SIZES.map((size) => (
+                  <button
+                    key={size.key}
+                    onClick={() => handleFontSizeChange(size.key)}
+                    className={`px-3 py-1.5 text-sm transition-colors ${
+                      fontSize === size.key
+                        ? 'bg-rose-500 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-6 pt-6 border-t border-gray-700 text-center">
-          <p className="text-sm text-gray-400">
-            &copy;2025 MYASIA LLC All Rights Reserved.
-          </p>
-        </div>
-
-        {/* Medical Disclaimer */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
+        {/* Divider */}
+        <div className="border-t border-gray-700 pt-6">
+          {/* Medical Disclaimer */}
+          <p className="text-xs text-gray-500 text-center mb-4">
             ※このサイトの情報は医療アドバイスの代わりにはなりません。治療に関する判断は必ず医師にご相談ください。
+          </p>
+
+          {/* Copyright */}
+          <p className="text-sm text-gray-400 text-center">
+            &copy; 2025 D-LIFE / MYASIA LLC. All Rights Reserved.
           </p>
         </div>
       </div>
