@@ -190,7 +190,7 @@ export function Home() {
                     : 'bg-blue-50 text-cyan-600 hover:bg-blue-100'
                 }`}
               >
-                今日の人気トピック
+                人気トピック
                 {activeTab === 'popular' && (
                   <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-rose-400" />
                 )}

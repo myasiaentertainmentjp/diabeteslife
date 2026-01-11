@@ -111,7 +111,7 @@ export function AdminUserList() {
     return str
   }
 
-  // Export user data as ZIP
+  // Export all data as ZIP
   async function handleExport() {
     setExporting(true)
     try {
@@ -124,33 +124,53 @@ export function AdminUserList() {
       if (usersError) throw usersError
 
       // Fetch all user_profiles
-      const { data: profilesData, error: profilesError } = await supabase
+      const { data: profilesData } = await supabase
         .from('user_profiles')
         .select('*')
-
-      if (profilesError) throw profilesError
 
       // Fetch all profiles (legacy)
       const { data: legacyProfilesData } = await supabase
         .from('profiles')
         .select('*')
 
-      // Fetch activity data
-      const { data: threadsData } = await supabase
+      // Fetch all threads
+      const { data: allThreadsData } = await supabase
         .from('threads')
-        .select('user_id, created_at')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      const { data: commentsData } = await supabase
+      // Fetch all comments
+      const { data: allCommentsData } = await supabase
         .from('thread_comments')
-        .select('user_id, created_at')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      const { data: likesData } = await supabase
+      // Fetch all diary entries
+      const { data: diaryEntriesData } = await supabase
+        .from('diary_entries')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      // Fetch all HbA1c records
+      const { data: hba1cData } = await supabase
+        .from('hba1c_records')
+        .select('*')
+        .order('record_month', { ascending: false })
+
+      // Fetch all likes
+      const { data: threadLikesData } = await supabase
         .from('thread_likes')
-        .select('user_id')
+        .select('*')
 
       const { data: diaryLikesData } = await supabase
         .from('diary_entry_likes')
-        .select('user_id')
+        .select('*')
+
+      // Fetch all articles
+      const { data: articlesData } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
 
       // Create users.csv
       const usersCSV = [
@@ -180,7 +200,6 @@ export function AdminUserList() {
           const profile = profilesMap.get(u.id)
           const legacyProfile = legacyProfilesMap.get(u.id)
 
-          // Calculate profile completeness
           let completedFields = 0
           const totalFields = 8
           if (profile?.diabetes_type || legacyProfile?.diabetes_type) completedFields++
@@ -193,11 +212,8 @@ export function AdminUserList() {
           if ((profile?.devices && profile.devices.length > 0) || (legacyProfile?.treatments && legacyProfile.treatments.length > 0)) completedFields++
           const completeness = Math.round((completedFields / totalFields) * 100)
 
-          // Format treatments/devices
           const treatments = legacyProfile?.treatments?.map((t: TreatmentType) => TREATMENT_TYPE_LABELS[t]).join('; ') || ''
           const devices = profile?.devices?.map((d: DeviceType) => DEVICE_TYPE_LABELS[d]).join('; ') || ''
-
-          // Format external links
           const links = profile?.external_links?.map((l: { title: string; url: string }) => `${l.title || ''}:${l.url}`).join('; ') || ''
 
           return [
@@ -222,12 +238,12 @@ export function AdminUserList() {
         })
       ].join('\n')
 
-      // Create activity.csv
+      // Create activity.csv (user summary)
       const threadCountMap = new Map<string, { count: number; lastDate: string | null }>()
       const commentCountMap = new Map<string, number>()
       const likeCountMap = new Map<string, number>()
 
-      (threadsData || []).forEach(t => {
+      (allThreadsData || []).forEach(t => {
         const current = threadCountMap.get(t.user_id) || { count: 0, lastDate: null }
         current.count++
         if (!current.lastDate || t.created_at > current.lastDate) {
@@ -236,11 +252,11 @@ export function AdminUserList() {
         threadCountMap.set(t.user_id, current)
       })
 
-      ;(commentsData || []).forEach(c => {
+      ;(allCommentsData || []).forEach(c => {
         commentCountMap.set(c.user_id, (commentCountMap.get(c.user_id) || 0) + 1)
       })
 
-      ;(likesData || []).forEach(l => {
+      ;(threadLikesData || []).forEach(l => {
         likeCountMap.set(l.user_id, (likeCountMap.get(l.user_id) || 0) + 1)
       })
       ;(diaryLikesData || []).forEach(l => {
@@ -251,39 +267,140 @@ export function AdminUserList() {
         ['user_id', '投稿数', 'コメント数', 'いいね数', '最終投稿日'].join(','),
         ...(usersData || []).map(u => {
           const threadInfo = threadCountMap.get(u.id) || { count: 0, lastDate: null }
-          const commentCount = commentCountMap.get(u.id) || 0
-          const likeCount = likeCountMap.get(u.id) || 0
-
           return [
             escapeCSV(u.id),
             threadInfo.count,
-            commentCount,
-            likeCount,
+            commentCountMap.get(u.id) || 0,
+            likeCountMap.get(u.id) || 0,
             escapeCSV(threadInfo.lastDate ? new Date(threadInfo.lastDate).toLocaleDateString('ja-JP') : ''),
           ].join(',')
         })
       ].join('\n')
 
+      // Create threads.csv
+      const threadsCSV = [
+        ['thread_id', 'thread_number', 'user_id', 'タイトル', '本文', 'カテゴリ', 'モード', 'ステータス', 'コメント数', '画像URL', '作成日時', '更新日時'].join(','),
+        ...(allThreadsData || []).map(t => [
+          escapeCSV(t.id),
+          t.thread_number || '',
+          escapeCSV(t.user_id),
+          escapeCSV(t.title),
+          escapeCSV(t.content),
+          escapeCSV(t.category),
+          escapeCSV(t.mode || 'normal'),
+          escapeCSV(t.status),
+          t.comments_count || 0,
+          escapeCSV(t.image_url),
+          escapeCSV(t.created_at),
+          escapeCSV(t.updated_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create comments.csv
+      const commentsCSV = [
+        ['comment_id', 'thread_id', 'user_id', 'comment_number', '本文', 'ステータス', '作成日時', '更新日時'].join(','),
+        ...(allCommentsData || []).map(c => [
+          escapeCSV(c.id),
+          escapeCSV(c.thread_id),
+          escapeCSV(c.user_id),
+          c.comment_number || '',
+          escapeCSV(c.content),
+          escapeCSV(c.status),
+          escapeCSV(c.created_at),
+          escapeCSV(c.updated_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create diary_entries.csv
+      const diaryCSV = [
+        ['entry_id', 'thread_id', 'user_id', '本文', '画像URL', '作成日時', '更新日時'].join(','),
+        ...(diaryEntriesData || []).map(d => [
+          escapeCSV(d.id),
+          escapeCSV(d.thread_id),
+          escapeCSV(d.user_id),
+          escapeCSV(d.content),
+          escapeCSV(d.image_url),
+          escapeCSV(d.created_at),
+          escapeCSV(d.updated_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create hba1c_records.csv
+      const hba1cCSV = [
+        ['record_id', 'user_id', '記録月', 'HbA1c値', 'メモ', '公開', '作成日時'].join(','),
+        ...(hba1cData || []).map(h => [
+          escapeCSV(h.id),
+          escapeCSV(h.user_id),
+          escapeCSV(h.record_month),
+          h.value,
+          escapeCSV(h.memo),
+          h.is_public ? '公開' : '非公開',
+          escapeCSV(h.created_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create likes.csv
+      const allLikes = [
+        ...(threadLikesData || []).map(l => ({ ...l, type: 'thread' })),
+        ...(diaryLikesData || []).map(l => ({ ...l, type: 'diary' })),
+      ]
+      const likesCSV = [
+        ['like_id', 'user_id', 'target_type', 'target_id', '作成日時'].join(','),
+        ...allLikes.map(l => [
+          escapeCSV(l.id),
+          escapeCSV(l.user_id),
+          l.type,
+          escapeCSV(l.type === 'thread' ? l.thread_id : l.diary_entry_id),
+          escapeCSV(l.created_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create articles.csv
+      const articlesCSV = [
+        ['article_id', 'slug', 'タイトル', '概要', '本文', 'カテゴリ', 'タグ', 'サムネイルURL', '公開', '注目', '閲覧数', '公開日時', '作成日時', '更新日時'].join(','),
+        ...(articlesData || []).map(a => [
+          escapeCSV(a.id),
+          escapeCSV(a.slug),
+          escapeCSV(a.title),
+          escapeCSV(a.excerpt),
+          escapeCSV(a.content),
+          escapeCSV(a.category),
+          escapeCSV(a.tags?.join('; ')),
+          escapeCSV(a.thumbnail_url),
+          a.is_published ? '公開' : '下書き',
+          a.is_featured ? 'はい' : 'いいえ',
+          a.view_count || 0,
+          escapeCSV(a.published_at),
+          escapeCSV(a.created_at),
+          escapeCSV(a.updated_at),
+        ].join(','))
+      ].join('\n')
+
       // Create ZIP
       const zip = new JSZip()
-      // Add BOM for Excel compatibility
       const BOM = '\uFEFF'
       zip.file('users.csv', BOM + usersCSV)
       zip.file('profiles.csv', BOM + profilesCSV)
       zip.file('activity.csv', BOM + activityCSV)
+      zip.file('threads.csv', BOM + threadsCSV)
+      zip.file('comments.csv', BOM + commentsCSV)
+      zip.file('diary_entries.csv', BOM + diaryCSV)
+      zip.file('hba1c_records.csv', BOM + hba1cCSV)
+      zip.file('likes.csv', BOM + likesCSV)
+      zip.file('articles.csv', BOM + articlesCSV)
 
       // Generate and download
       const blob = await zip.generateAsync({ type: 'blob' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `dlife_users_export_${new Date().toISOString().split('T')[0]}.zip`
+      a.download = `dlife_full_export_${new Date().toISOString().split('T')[0]}.zip`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      showToast('エクスポートが完了しました', 'success')
+      showToast('フルエクスポートが完了しました', 'success')
     } catch (error) {
       console.error('Export error:', error)
       showToast('エクスポートに失敗しました', 'error')
@@ -333,7 +450,7 @@ export function AdminUserList() {
           ) : (
             <>
               <Download size={18} />
-              <span>CSVエクスポート</span>
+              <span>フルエクスポート</span>
             </>
           )}
         </button>
