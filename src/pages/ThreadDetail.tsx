@@ -1191,14 +1191,22 @@ export function ThreadDetail() {
                   </p>
                 </form>
               ) : (
-                <Link
-                  to="/login"
-                  state={{ from: currentPath }}
-                  className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => navigate('/login', { state: { from: currentPath } })}
                 >
-                  <Send size={18} className="text-gray-400" />
-                  <span><span className="text-rose-500 font-medium">ログイン</span>してコメントする</span>
-                </Link>
+                  <div className="flex gap-2 items-start">
+                    <div className="flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-400 text-base">
+                      コメントするには<span className="text-rose-500 font-medium mx-1">ログイン</span>してください
+                    </div>
+                    <button
+                      type="button"
+                      className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-gray-300 text-white rounded-lg"
+                    >
+                      <Send size={18} />
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </>
