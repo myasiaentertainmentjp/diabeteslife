@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Send, Loader2, AlertCircle, Mail } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 const inquiryTypes = [
   { value: '', label: '選択してください' },
@@ -33,12 +34,35 @@ export function Contact() {
     setError('')
     setSubmitting(true)
 
-    // TODO: Implement actual email sending via Resend Edge Function
-    // For now, just simulate a delay and show success
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Get inquiry type label
+      const inquiryTypeLabel = inquiryTypes.find(t => t.value === formData.inquiryType)?.label || formData.inquiryType
 
-    setSubmitting(false)
-    navigate('/contact/complete')
+      const { error: sendError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'contact',
+          data: {
+            name: formData.name,
+            email: formData.email,
+            inquiryType: inquiryTypeLabel,
+            message: formData.message,
+          },
+        },
+      })
+
+      if (sendError) {
+        console.error('Error sending contact email:', sendError)
+        setError('送信に失敗しました。しばらく経ってから再度お試しください。')
+        setSubmitting(false)
+        return
+      }
+
+      navigate('/contact/complete')
+    } catch (err) {
+      console.error('Error:', err)
+      setError('送信に失敗しました。しばらく経ってから再度お試しください。')
+      setSubmitting(false)
+    }
   }
 
   return (

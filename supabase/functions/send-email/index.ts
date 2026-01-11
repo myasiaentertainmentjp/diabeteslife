@@ -1,12 +1,13 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://d-life.example.com'
-const FROM_EMAIL = 'onboarding@resend.dev'
+const SITE_URL = Deno.env.get('SITE_URL') || 'https://diabeteslife.jp'
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'noreply@diabeteslife.jp'
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'info@diabeteslife.jp'
 
 interface EmailRequest {
-  type: 'welcome' | 'comment-notification'
-  to: string
+  type: 'welcome' | 'comment-notification' | 'contact'
+  to?: string
   data: Record<string, string>
 }
 
@@ -112,6 +113,50 @@ function getEmailTemplate(type: string, data: Record<string, string>): { subject
         `,
       }
 
+    case 'contact':
+      return {
+        subject: `【お問い合わせ】${data.inquiryType || 'その他'}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>${baseStyles}</head>
+          <body>
+            <div class="container">
+              ${header}
+              <div class="content">
+                <h2>お問い合わせがありました</h2>
+
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold; width: 120px;">お名前</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${data.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">メールアドレス</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><a href="mailto:${data.email}">${data.email}</a></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">種別</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${data.inquiryType}</td>
+                  </tr>
+                </table>
+
+                <h3>お問い合わせ内容</h3>
+                <div class="quote">
+                  <p style="white-space: pre-wrap;">${data.message}</p>
+                </div>
+
+                <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                  送信日時: ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+                </p>
+              </div>
+              ${footer}
+            </div>
+          </body>
+          </html>
+        `,
+      }
+
     default:
       throw new Error(`Unknown email type: ${type}`)
   }
@@ -169,15 +214,25 @@ serve(async (req) => {
   try {
     const { type, to, data }: EmailRequest = await req.json()
 
-    if (!type || !to) {
+    if (!type) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: type, to' }),
+        JSON.stringify({ error: 'Missing required field: type' }),
+        { status: 400, headers }
+      )
+    }
+
+    // For contact type, send to admin email
+    const recipient = type === 'contact' ? ADMIN_EMAIL : to
+
+    if (!recipient) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required field: to' }),
         { status: 400, headers }
       )
     }
 
     const { subject, html } = getEmailTemplate(type, data || {})
-    const result = await sendEmail(to, subject, html)
+    const result = await sendEmail(recipient, subject, html)
 
     if (!result.success) {
       return new Response(
