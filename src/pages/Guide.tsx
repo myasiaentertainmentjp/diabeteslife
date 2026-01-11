@@ -126,13 +126,21 @@ export function Guide() {
                   <span><strong>自己紹介</strong>：あなたのことを教えてください</span>
                 </p>
               </div>
-              {user && (
+              {user ? (
                 <Link
                   to="/mypage/profile"
                   className="inline-flex items-center gap-1 mt-3 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 text-sm font-medium transition-colors"
                 >
                   <Settings size={16} />
                   プロフィールを設定する
+                </Link>
+              ) : (
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-1 mt-3 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 text-sm font-medium transition-colors"
+                >
+                  <UserCircle size={16} />
+                  新規登録してプロフィールを設定
                 </Link>
               )}
             </div>
