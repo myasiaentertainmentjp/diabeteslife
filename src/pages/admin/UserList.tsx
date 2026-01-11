@@ -1,15 +1,35 @@
 import { useState, useEffect } from 'react'
+import JSZip from 'jszip'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { AppUser, UserRole, USER_ROLE_LABELS } from '../../types/database'
-import { Loader2, Shield, ShieldOff, Bot } from 'lucide-react'
+import {
+  AppUser,
+  UserRole,
+  USER_ROLE_LABELS,
+  DIABETES_TYPE_LABELS,
+  TREATMENT_TYPE_LABELS,
+  AGE_GROUP_LABELS,
+  GENDER_LABELS,
+  ILLNESS_DURATION_LABELS,
+  DEVICE_TYPE_LABELS,
+  YES_NO_PRIVATE_LABELS,
+  DiabetesType,
+  TreatmentType,
+  AgeGroup,
+  Gender,
+  IllnessDuration,
+  DeviceType,
+  YesNoPrivate,
+} from '../../types/database'
+import { Loader2, Shield, ShieldOff, Bot, Download } from 'lucide-react'
 
 export function AdminUserList() {
   const { user: currentUser } = useAuth()
   const { showToast } = useToast()
   const [users, setUsers] = useState<AppUser[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -81,6 +101,197 @@ export function AdminUserList() {
     }
   }
 
+  // Helper to escape CSV fields
+  function escapeCSV(value: string | null | undefined): string {
+    if (value === null || value === undefined) return ''
+    const str = String(value)
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  // Export user data as ZIP
+  async function handleExport() {
+    setExporting(true)
+    try {
+      // Fetch all users
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (usersError) throw usersError
+
+      // Fetch all user_profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('*')
+
+      if (profilesError) throw profilesError
+
+      // Fetch all profiles (legacy)
+      const { data: legacyProfilesData } = await supabase
+        .from('profiles')
+        .select('*')
+
+      // Fetch activity data
+      const { data: threadsData } = await supabase
+        .from('threads')
+        .select('user_id, created_at')
+
+      const { data: commentsData } = await supabase
+        .from('thread_comments')
+        .select('user_id, created_at')
+
+      const { data: likesData } = await supabase
+        .from('thread_likes')
+        .select('user_id')
+
+      const { data: diaryLikesData } = await supabase
+        .from('diary_entry_likes')
+        .select('user_id')
+
+      // Create users.csv
+      const usersCSV = [
+        ['user_id', '表示名', 'メールアドレス', '役割', 'ダミー', '登録日時', '更新日時'].join(','),
+        ...(usersData || []).map(u => [
+          escapeCSV(u.id),
+          escapeCSV(u.display_name),
+          escapeCSV(u.email),
+          escapeCSV(USER_ROLE_LABELS[u.role as UserRole] || u.role),
+          u.is_dummy ? 'はい' : 'いいえ',
+          escapeCSV(u.created_at),
+          escapeCSV(u.updated_at),
+        ].join(','))
+      ].join('\n')
+
+      // Create profiles.csv
+      const profilesMap = new Map((profilesData || []).map(p => [p.user_id, p]))
+      const legacyProfilesMap = new Map((legacyProfilesData || []).map(p => [p.id, p]))
+
+      const profilesCSV = [
+        [
+          'user_id', 'アバターURL', '自己紹介', '年代', '性別', '都道府県',
+          '糖尿病タイプ', '罹患期間', '診断年', '治療方法', '使用デバイス',
+          '合併症', '透析', '妊娠中', 'SNSリンク', 'HbA1c公開', 'プロフィール完成度'
+        ].join(','),
+        ...(usersData || []).map(u => {
+          const profile = profilesMap.get(u.id)
+          const legacyProfile = legacyProfilesMap.get(u.id)
+
+          // Calculate profile completeness
+          let completedFields = 0
+          const totalFields = 8
+          if (profile?.diabetes_type || legacyProfile?.diabetes_type) completedFields++
+          if (profile?.diagnosis_year || legacyProfile?.diagnosis_year) completedFields++
+          if (profile?.bio || legacyProfile?.bio) completedFields++
+          if (profile?.age_group) completedFields++
+          if (profile?.gender) completedFields++
+          if (profile?.prefecture) completedFields++
+          if (profile?.illness_duration) completedFields++
+          if ((profile?.devices && profile.devices.length > 0) || (legacyProfile?.treatments && legacyProfile.treatments.length > 0)) completedFields++
+          const completeness = Math.round((completedFields / totalFields) * 100)
+
+          // Format treatments/devices
+          const treatments = legacyProfile?.treatments?.map((t: TreatmentType) => TREATMENT_TYPE_LABELS[t]).join('; ') || ''
+          const devices = profile?.devices?.map((d: DeviceType) => DEVICE_TYPE_LABELS[d]).join('; ') || ''
+
+          // Format external links
+          const links = profile?.external_links?.map((l: { title: string; url: string }) => `${l.title || ''}:${l.url}`).join('; ') || ''
+
+          return [
+            escapeCSV(u.id),
+            escapeCSV(u.avatar_url || legacyProfile?.avatar_url),
+            escapeCSV(profile?.bio || legacyProfile?.bio),
+            escapeCSV(profile?.age_group ? AGE_GROUP_LABELS[profile.age_group as AgeGroup] : ''),
+            escapeCSV(profile?.gender ? GENDER_LABELS[profile.gender as Gender] : ''),
+            escapeCSV(profile?.prefecture),
+            escapeCSV((profile?.diabetes_type || legacyProfile?.diabetes_type) ? DIABETES_TYPE_LABELS[(profile?.diabetes_type || legacyProfile?.diabetes_type) as NonNullable<DiabetesType>] : ''),
+            escapeCSV(profile?.illness_duration ? ILLNESS_DURATION_LABELS[profile.illness_duration as IllnessDuration] : ''),
+            escapeCSV(profile?.diagnosis_year || legacyProfile?.diagnosis_year),
+            escapeCSV(treatments),
+            escapeCSV(devices),
+            escapeCSV(profile?.has_complications ? YES_NO_PRIVATE_LABELS[profile.has_complications as YesNoPrivate] : ''),
+            escapeCSV(profile?.on_dialysis ? YES_NO_PRIVATE_LABELS[profile.on_dialysis as YesNoPrivate] : ''),
+            escapeCSV(profile?.is_pregnant ? YES_NO_PRIVATE_LABELS[profile.is_pregnant as YesNoPrivate] : ''),
+            escapeCSV(links),
+            profile?.hba1c_public ? '公開' : '非公開',
+            `${completeness}%`,
+          ].join(',')
+        })
+      ].join('\n')
+
+      // Create activity.csv
+      const threadCountMap = new Map<string, { count: number; lastDate: string | null }>()
+      const commentCountMap = new Map<string, number>()
+      const likeCountMap = new Map<string, number>()
+
+      (threadsData || []).forEach(t => {
+        const current = threadCountMap.get(t.user_id) || { count: 0, lastDate: null }
+        current.count++
+        if (!current.lastDate || t.created_at > current.lastDate) {
+          current.lastDate = t.created_at
+        }
+        threadCountMap.set(t.user_id, current)
+      })
+
+      ;(commentsData || []).forEach(c => {
+        commentCountMap.set(c.user_id, (commentCountMap.get(c.user_id) || 0) + 1)
+      })
+
+      ;(likesData || []).forEach(l => {
+        likeCountMap.set(l.user_id, (likeCountMap.get(l.user_id) || 0) + 1)
+      })
+      ;(diaryLikesData || []).forEach(l => {
+        likeCountMap.set(l.user_id, (likeCountMap.get(l.user_id) || 0) + 1)
+      })
+
+      const activityCSV = [
+        ['user_id', '投稿数', 'コメント数', 'いいね数', '最終投稿日'].join(','),
+        ...(usersData || []).map(u => {
+          const threadInfo = threadCountMap.get(u.id) || { count: 0, lastDate: null }
+          const commentCount = commentCountMap.get(u.id) || 0
+          const likeCount = likeCountMap.get(u.id) || 0
+
+          return [
+            escapeCSV(u.id),
+            threadInfo.count,
+            commentCount,
+            likeCount,
+            escapeCSV(threadInfo.lastDate ? new Date(threadInfo.lastDate).toLocaleDateString('ja-JP') : ''),
+          ].join(',')
+        })
+      ].join('\n')
+
+      // Create ZIP
+      const zip = new JSZip()
+      // Add BOM for Excel compatibility
+      const BOM = '\uFEFF'
+      zip.file('users.csv', BOM + usersCSV)
+      zip.file('profiles.csv', BOM + profilesCSV)
+      zip.file('activity.csv', BOM + activityCSV)
+
+      // Generate and download
+      const blob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `dlife_users_export_${new Date().toISOString().split('T')[0]}.zip`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      showToast('エクスポートが完了しました', 'success')
+    } catch (error) {
+      console.error('Export error:', error)
+      showToast('エクスポートに失敗しました', 'error')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('ja-JP')
   }
@@ -107,7 +318,26 @@ export function AdminUserList() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">ユーザー管理</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">ユーザー管理</h1>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors"
+        >
+          {exporting ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span>エクスポート中...</span>
+            </>
+          ) : (
+            <>
+              <Download size={18} />
+              <span>CSVエクスポート</span>
+            </>
+          )}
+        </button>
+      </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
