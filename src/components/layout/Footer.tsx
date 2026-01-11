@@ -71,11 +71,6 @@ export function Footer() {
                   今日のごはん
                 </Link>
               </li>
-              <li>
-                <Link to="/help/thread-modes" className="hover:text-white transition-colors">
-                  スレッドタイプ
-                </Link>
-              </li>
             </ul>
           </div>
 

@@ -3,6 +3,7 @@ import {
   MessageSquare,
   PenSquare,
   BookHeart,
+  BookOpen,
   LineChart,
   AlertTriangle,
   HelpCircle,
@@ -233,6 +234,13 @@ export function Guide() {
                 <span>他のユーザーから応援コメントをもらえる</span>
               </li>
             </ul>
+            <Link
+              to="/help/thread-modes"
+              className="inline-flex items-center gap-1 mt-3 text-purple-500 hover:text-purple-600 text-sm font-medium"
+            >
+              <BookOpen size={16} />
+              スレッドタイプについて詳しく
+            </Link>
           </div>
 
           {/* HbA1c Records */}
