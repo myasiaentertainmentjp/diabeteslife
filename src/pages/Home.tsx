@@ -46,7 +46,7 @@ export function Home() {
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id')
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(15)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -81,7 +81,7 @@ export function Home() {
         .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
         .order('created_at', { ascending: false })
-        .limit(5)
+        .limit(15)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -110,7 +110,7 @@ export function Home() {
         .from('articles')
         .select('id, title, slug, thumbnail_url, created_at')
         .order('created_at', { ascending: false })
-        .limit(5)
+        .limit(10)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
