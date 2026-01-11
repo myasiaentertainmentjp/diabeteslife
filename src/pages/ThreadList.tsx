@@ -12,7 +12,7 @@ import { MessageSquare, Plus, ChevronLeft, ChevronRight, Loader2, BookOpen } fro
 
 const ITEMS_PER_PAGE = 10
 
-const categories: (ThreadCategory | 'all')[] = ['all', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
+const categories: (ThreadCategory | 'all')[] = ['all', 'todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function ThreadList() {
   const [threads, setThreads] = useState<ThreadWithUser[]>([])

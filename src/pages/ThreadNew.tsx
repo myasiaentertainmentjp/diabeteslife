@@ -5,12 +5,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
 import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare, HelpCircle } from 'lucide-react'
 
-const categories: ThreadCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
+const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function ThreadNew() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [category, setCategory] = useState<ThreadCategory>('food_recipe')
+  const [category, setCategory] = useState<ThreadCategory>('todays_meal')
   const [mode, setMode] = useState<ThreadMode>('normal')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)

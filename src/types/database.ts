@@ -1,4 +1,4 @@
-export type ThreadCategory = 'food_recipe' | 'treatment' | 'exercise_lifestyle' | 'mental_concerns' | 'complications_prevention' | 'chat_other'
+export type ThreadCategory = 'todays_meal' | 'food_recipe' | 'treatment' | 'exercise_lifestyle' | 'mental_concerns' | 'complications_prevention' | 'chat_other'
 export type ArticleCategory = ThreadCategory
 export type DiabetesType = 'type1' | 'type2' | 'gestational' | 'prediabetes' | 'family' | null
 export type TreatmentType = 'insulin' | 'insulin_pump' | 'oral_medication' | 'glp1' | 'diet_therapy' | 'exercise_therapy' | 'observation'
@@ -426,6 +426,7 @@ export interface ThreadCommentWithUser extends ThreadComment {
 
 // Category labels
 export const THREAD_CATEGORY_LABELS: Record<ThreadCategory, string> = {
+  todays_meal: '🔥 今日のごはん',
   food_recipe: '食事・レシピ',
   treatment: '治療・通院',
   exercise_lifestyle: '運動・生活',
@@ -436,6 +437,7 @@ export const THREAD_CATEGORY_LABELS: Record<ThreadCategory, string> = {
 
 // Category colors for badges
 export const THREAD_CATEGORY_COLORS: Record<ThreadCategory, string> = {
+  todays_meal: 'bg-amber-100 text-amber-700',
   food_recipe: 'bg-orange-100 text-orange-700',
   treatment: 'bg-blue-100 text-blue-700',
   exercise_lifestyle: 'bg-green-100 text-green-700',

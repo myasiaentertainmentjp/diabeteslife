@@ -9,7 +9,7 @@ import { Search, MessageSquare, PenSquare, ChevronRight, Loader2, FileText } fro
 
 type TabType = 'popular' | 'new'
 
-const categories: ThreadCategory[] = ['food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
+const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
 export function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('popular')

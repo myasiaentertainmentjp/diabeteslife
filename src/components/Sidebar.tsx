@@ -7,6 +7,7 @@ import { PopularKeywords } from './PopularKeywords'
 import { PenSquare, ChevronRight, FileText } from 'lucide-react'
 
 const categories: ThreadCategory[] = [
+  'todays_meal',
   'food_recipe',
   'treatment',
   'exercise_lifestyle',
