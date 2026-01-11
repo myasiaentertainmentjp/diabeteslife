@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { UserPlus, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { setNewUserFlag } from '../components/NewUserWelcomeModal'
 
 export function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -36,6 +38,9 @@ export function Register() {
       setError(error.message)
       setLoading(false)
     } else {
+      // Store new user flag and redirect path for after email confirmation
+      const fromPath = location.state?.from
+      setNewUserFlag(fromPath)
       navigate('/register/complete')
     }
   }

@@ -39,6 +39,9 @@ import { ThreadModes } from './pages/help/ThreadModes'
 // Error pages
 import { NotFound, Forbidden, ServerError } from './pages/errors'
 
+// Components
+import { NewUserWelcomeModal } from './components/NewUserWelcomeModal'
+
 // Admin imports
 import { ProtectedAdminRoute } from './components/admin/ProtectedAdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
@@ -84,6 +87,7 @@ function App() {
         <ScrollToTop />
         <AuthProvider>
           <ToastProvider>
+            <NewUserWelcomeModal />
             <Routes>
             {/* Public routes */}
             <Route path="/" element={<Layout />}>

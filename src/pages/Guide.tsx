@@ -128,7 +128,7 @@ export function Guide() {
               </div>
               {user && (
                 <Link
-                  to="/mypage/settings"
+                  to="/mypage/profile"
                   className="inline-flex items-center gap-1 mt-3 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 text-sm font-medium transition-colors"
                 >
                   <Settings size={16} />
