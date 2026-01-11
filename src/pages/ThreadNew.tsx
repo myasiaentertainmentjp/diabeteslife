@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
-import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare, HelpCircle } from 'lucide-react'
+import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare, HelpCircle, Image as ImageIcon, X } from 'lucide-react'
 
 const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export function ThreadNew() {
   const [title, setTitle] = useState('')
@@ -14,6 +16,10 @@ export function ThreadNew() {
   const [mode, setMode] = useState<ThreadMode>('normal')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -41,6 +47,68 @@ export function ThreadNew() {
     const lowerText = text.toLowerCase()
 
     return ngWords.some((word) => lowerText.includes(word))
+  }
+
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('画像ファイルを選択してください')
+      return
+    }
+
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE) {
+      setError('画像サイズは5MB以下にしてください')
+      return
+    }
+
+    setImageFile(file)
+    setError('')
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function removeImage() {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  async function uploadImage(file: File): Promise<string | null> {
+    setUploadingImage(true)
+    try {
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'threads')
+      formData.append('fileName', fileName)
+
+      const { data, error } = await supabase.functions.invoke('upload-image', {
+        body: formData,
+      })
+
+      if (error) {
+        console.error('Upload error:', error)
+        return null
+      }
+
+      return data?.url || null
+    } catch (err) {
+      console.error('Upload error:', err)
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -73,6 +141,17 @@ export function ThreadNew() {
       return
     }
 
+    // Upload image if selected
+    let imageUrl: string | null = null
+    if (imageFile) {
+      imageUrl = await uploadImage(imageFile)
+      if (!imageUrl) {
+        setError('画像のアップロードに失敗しました。画像なしで投稿するか、再度お試しください。')
+        setSubmitting(false)
+        return
+      }
+    }
+
     const { data, error: insertError } = await supabase
       .from('threads')
       .insert({
@@ -82,6 +161,7 @@ export function ThreadNew() {
         category,
         mode,
         comments_count: 0,
+        image_url: imageUrl,
       } as never)
       .select()
       .single()
@@ -277,6 +357,49 @@ export function ThreadNew() {
             </p>
           </div>
 
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              画像（任意）
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+
+            {imagePreview ? (
+              <div className="relative inline-block">
+                <img
+                  src={imagePreview}
+                  alt="プレビュー"
+                  className="max-w-full max-h-64 rounded-lg border border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rose-400 hover:text-rose-500 transition-colors w-full justify-center"
+              >
+                <ImageIcon size={20} />
+                <span>画像を追加</span>
+              </button>
+            )}
+            <p className="mt-2 text-xs text-gray-500">
+              JPEG, PNG, GIF, WebP（最大5MB）
+            </p>
+          </div>
+
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
             <Link
@@ -287,13 +410,13 @@ export function ThreadNew() {
             </Link>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || uploadingImage}
               className="inline-flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
             >
-              {submitting ? (
+              {submitting || uploadingImage ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  <span>投稿中...</span>
+                  <span>{uploadingImage ? '画像アップロード中...' : '投稿中...'}</span>
                 </>
               ) : (
                 <>

@@ -848,6 +848,18 @@ export function ThreadDetail() {
             {(thread as any).body || thread.content}
           </div>
 
+          {/* Thread Image */}
+          {(thread as any).image_url && (
+            <div className="mt-4 pl-4">
+              <img
+                src={(thread as any).image_url}
+                alt="投稿画像"
+                className="max-w-full md:max-w-lg rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => window.open((thread as any).image_url, '_blank')}
+              />
+            </div>
+          )}
+
           {/* Heart reaction for diary mode OP */}
           {thread.mode === 'diary' && (
             <div className="mt-4 pl-4">

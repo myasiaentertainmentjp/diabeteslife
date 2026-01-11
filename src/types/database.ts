@@ -183,6 +183,7 @@ export interface Database {
           category: ThreadCategory
           status: ThreadStatus
           comments_count: number
+          image_url: string | null
           created_at: string
           updated_at: string
         }
@@ -195,6 +196,7 @@ export interface Database {
           category: ThreadCategory
           status?: ThreadStatus
           comments_count?: number
+          image_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -207,6 +209,7 @@ export interface Database {
           category?: ThreadCategory
           status?: ThreadStatus
           comments_count?: number
+          image_url?: string | null
           created_at?: string
           updated_at?: string
         }
