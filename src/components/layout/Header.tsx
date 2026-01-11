@@ -90,21 +90,8 @@ export function Header() {
       <div className="bg-rose-400">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-14">
-            {/* Mobile Auth (left on mobile) - only show when logged in */}
-            <div className="md:hidden flex items-center gap-2">
-              {loading ? (
-                <div className="w-16 h-8 bg-white/30 animate-pulse rounded" />
-              ) : user ? (
-                <Link
-                  to="/mypage"
-                  className="px-3 py-1.5 bg-white text-rose-500 rounded text-sm font-medium"
-                >
-                  マイページ
-                </Link>
-              ) : (
-                <div className="w-16" />
-              )}
-            </div>
+            {/* Empty spacer for mobile layout balance */}
+            <div className="md:hidden w-10" />
 
             {/* Logo - Centered */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
