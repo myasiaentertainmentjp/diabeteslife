@@ -12,7 +12,7 @@ export function RegisterComplete() {
         <p className="text-gray-600 mb-6">
           メール内のリンクをクリックして、登録を完了してください。
         </p>
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-red-500 mb-8">
           ※メールが届かない場合は、迷惑メールフォルダをご確認ください。
         </p>
         <Link
