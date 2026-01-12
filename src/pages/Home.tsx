@@ -169,27 +169,27 @@ export function Home() {
         {/* Hero Slider */}
         <HeroSlider />
 
-      {/* Search Bar */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <form onSubmit={handleSearch} className="relative max-w-md mx-auto">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="キーワードで検索..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none shadow-sm"
-            />
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          </form>
+        {/* Search Bar */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <form onSubmit={handleSearch} className="relative max-w-md mx-auto">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="キーワードで検索..."
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none shadow-sm"
+              />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            </form>
+          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Column - Main Content */}
-          <div className="flex-1">
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column - Main Content */}
+            <div className="flex-1">
             {/* Tabs - Full width 2-column */}
             <div className="flex mb-0">
               <button
@@ -394,6 +394,7 @@ export function Home() {
               </ul>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>
