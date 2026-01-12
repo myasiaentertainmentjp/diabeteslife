@@ -348,25 +348,7 @@ export function ProfileSettings() {
         setLinksPublic(userProfileData.links_public ?? true)
       }
 
-      // Also try profiles table for other fields
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (profileData) {
-        if (!userProfileData) {
-          setDisplayName(profileData.display_name || '')
-          setBio(profileData.bio || '')
-          setDiabetesType(profileData.diabetes_type)
-          setDiagnosisYear(profileData.diagnosis_year)
-        }
-        setAvatarUrl(profileData.avatar_url || '')
-        setTreatments(profileData.treatments || [])
-      }
-
-      // Try users table for display_name
+      // Try users table for display_name and avatar
       const { data: userData } = await supabase
         .from('users')
         .select('display_name, avatar_url')
@@ -503,22 +485,6 @@ export function ProfileSettings() {
         }
       }
 
-      // Also update profiles table for backward compatibility
-      const profileData = {
-        display_name: displayName || null,
-        avatar_url: avatarUrl || null,
-        bio: bio || null,
-        diabetes_type: diabetesType,
-        treatments: treatments.length > 0 ? treatments : null,
-        diagnosis_year: diagnosisYear,
-        updated_at: new Date().toISOString(),
-      }
-
-      await supabase
-        .from('profiles')
-        .update(profileData as never)
-        .eq('id', user.id)
-
       // Check if notification settings exist
       const { data: existingNotif } = await supabase
         .from('notification_settings')
@@ -588,9 +554,6 @@ export function ProfileSettings() {
 
       // Delete user_profiles
       await supabase.from('user_profiles').delete().eq('user_id', user.id)
-
-      // Delete profiles
-      await supabase.from('profiles').delete().eq('id', user.id)
 
       // Delete from users table
       await supabase.from('users').delete().eq('id', user.id)
