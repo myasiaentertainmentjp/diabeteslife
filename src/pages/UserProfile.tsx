@@ -584,7 +584,7 @@ export function UserProfile() {
             <span className="text-sm">- 保存前の内容を表示しています</span>
           </div>
           <button
-            onClick={() => navigate('/mypage')}
+            onClick={() => navigate('/mypage/profile', { state: { fromPreview: true } })}
             className="px-3 py-1 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors"
           >
             編集に戻る

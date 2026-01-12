@@ -21,7 +21,9 @@ import {
   ExternalLink,
 } from '../../types/database'
 import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+const PROFILE_DRAFT_KEY = 'profile_settings_draft'
 
 const DIABETES_TYPES: NonNullable<DiabetesType>[] = [
   'type1',
@@ -53,10 +55,14 @@ const DIAGNOSIS_YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i)
 export function ProfileSettings() {
   const { user, profile: authProfile, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Check if returning from preview
+  const returningFromPreview = (location.state as { fromPreview?: boolean } | null)?.fromPreview === true
 
   // Account deletion state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -116,6 +122,97 @@ export function ProfileSettings() {
       case 'tiktok': return `https://tiktok.com/@${cleanId}`
       default: return ''
     }
+  }
+
+  // Save current form state to sessionStorage
+  function saveDraft() {
+    const draft = {
+      displayName,
+      avatarUrl,
+      bio,
+      diabetesType,
+      treatments,
+      diagnosisYear,
+      ageGroup,
+      gender,
+      prefecture,
+      illnessDuration,
+      devices,
+      hasComplications,
+      onDialysis,
+      isPregnant,
+      xId,
+      instagramId,
+      youtubeId,
+      tiktokId,
+      customLinkTitle,
+      customLinkUrl,
+      ageGroupPublic,
+      genderPublic,
+      prefecturePublic,
+      illnessDurationPublic,
+      treatmentPublic,
+      devicePublic,
+      bioPublic,
+      hba1cPublic,
+      linksPublic,
+      notifyThreadComment,
+      notifyReply,
+      notifyLikes,
+      notifyProfileComment,
+    }
+    sessionStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(draft))
+  }
+
+  // Restore form state from sessionStorage
+  function restoreDraft(): boolean {
+    const draftStr = sessionStorage.getItem(PROFILE_DRAFT_KEY)
+    if (!draftStr) return false
+
+    try {
+      const draft = JSON.parse(draftStr)
+      setDisplayName(draft.displayName || '')
+      setAvatarUrl(draft.avatarUrl || '')
+      setBio(draft.bio || '')
+      setDiabetesType(draft.diabetesType)
+      setTreatments(draft.treatments || [])
+      setDiagnosisYear(draft.diagnosisYear)
+      setAgeGroup(draft.ageGroup)
+      setGender(draft.gender)
+      setPrefecture(draft.prefecture)
+      setIllnessDuration(draft.illnessDuration)
+      setDevices(draft.devices || [])
+      setHasComplications(draft.hasComplications || 'private')
+      setOnDialysis(draft.onDialysis || 'private')
+      setIsPregnant(draft.isPregnant || 'private')
+      setXId(draft.xId || '')
+      setInstagramId(draft.instagramId || '')
+      setYoutubeId(draft.youtubeId || '')
+      setTiktokId(draft.tiktokId || '')
+      setCustomLinkTitle(draft.customLinkTitle || '')
+      setCustomLinkUrl(draft.customLinkUrl || '')
+      setAgeGroupPublic(draft.ageGroupPublic ?? false)
+      setGenderPublic(draft.genderPublic ?? false)
+      setPrefecturePublic(draft.prefecturePublic ?? false)
+      setIllnessDurationPublic(draft.illnessDurationPublic ?? true)
+      setTreatmentPublic(draft.treatmentPublic ?? true)
+      setDevicePublic(draft.devicePublic ?? true)
+      setBioPublic(draft.bioPublic ?? true)
+      setHba1cPublic(draft.hba1cPublic ?? false)
+      setLinksPublic(draft.linksPublic ?? true)
+      setNotifyThreadComment(draft.notifyThreadComment ?? true)
+      setNotifyReply(draft.notifyReply ?? true)
+      setNotifyLikes(draft.notifyLikes ?? true)
+      setNotifyProfileComment(draft.notifyProfileComment ?? true)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // Clear draft from sessionStorage
+  function clearDraft() {
+    sessionStorage.removeItem(PROFILE_DRAFT_KEY)
   }
 
   // Privacy toggles (using new naming convention)
@@ -179,8 +276,16 @@ export function ProfileSettings() {
   }
 
   useEffect(() => {
+    // If returning from preview, restore draft instead of fetching
+    if (returningFromPreview) {
+      const restored = restoreDraft()
+      if (restored) {
+        setLoading(false)
+        return
+      }
+    }
     fetchProfile()
-  }, [user])
+  }, [user, returningFromPreview])
 
   async function fetchProfile() {
     if (!user) {
@@ -440,6 +545,7 @@ export function ProfileSettings() {
       }
 
       setSaved(true)
+      clearDraft() // Clear draft after successful save
       refreshProfile()
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -1080,6 +1186,8 @@ export function ProfileSettings() {
         <button
           type="button"
           onClick={() => {
+            // Save draft before navigating to preview
+            saveDraft()
             // Pass current form state to preview
             const previewData = {
               display_name: displayName,
