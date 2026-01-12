@@ -567,13 +567,7 @@ export function ProfileSettings() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-8">
-        <Loader2 size={24} className="animate-spin text-rose-500" />
-      </div>
-    )
-  }
+  // ローディング表示は削除 - フォームを即座に表示してデータは非同期で読み込む
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -1309,7 +1303,7 @@ function PrivacySettingRow({
         <span className="text-sm font-medium text-gray-700">{label}</span>
         <p className="text-xs text-gray-500 mt-1">{description}</p>
       </div>
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <input
           type="checkbox"
           checked={value}
@@ -1317,14 +1311,14 @@ function PrivacySettingRow({
           className="sr-only"
         />
         <div
-          className={`w-11 h-6 rounded-full transition-colors ${
+          className={`w-11 h-6 rounded-full transition-colors flex items-center ${
             value ? 'bg-rose-500' : 'bg-gray-300'
           }`}
         >
           <div
             className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
-              value ? 'translate-x-5' : 'translate-x-0.5'
-            } mt-0.5`}
+              value ? 'translate-x-[22px]' : 'translate-x-0.5'
+            }`}
           />
         </div>
       </div>
