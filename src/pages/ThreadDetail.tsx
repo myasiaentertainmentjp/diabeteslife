@@ -779,7 +779,7 @@ export function ThreadDetail() {
 
   const threadContent = (thread as any).body || thread.content || ''
   const ogDescription = threadContent.substring(0, 150)
-  const ogUrl = `${SITE_URL}/threads/${thread.id}`
+  const ogUrl = `${SITE_URL}/threads/${(thread as any).thread_number || thread.id}`
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

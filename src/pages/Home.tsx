@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadWithUser, THREAD_CATEGORY_LABELS, ThreadCategory, Article } from '../types/database'
@@ -157,9 +158,16 @@ export function Home() {
   }
 
   return (
-    <div className="bg-rose-50 min-h-screen">
-      {/* Hero Slider */}
-      <HeroSlider />
+    <>
+      <Helmet>
+        <title>Dライフ - 糖尿病コミュニティサイト</title>
+        <meta name="description" content="糖尿病と向き合う人々のためのコミュニティサイト。情報交換、HbA1c記録、経験談の共有ができます。" />
+        <link rel="canonical" href="https://diabeteslife.jp" />
+        <meta property="og:url" content="https://diabeteslife.jp" />
+      </Helmet>
+      <div className="bg-rose-50 min-h-screen">
+        {/* Hero Slider */}
+        <HeroSlider />
 
       {/* Search Bar */}
       <div className="bg-white border-b border-gray-200">
@@ -388,6 +396,6 @@ export function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

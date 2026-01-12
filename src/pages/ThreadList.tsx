@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -129,11 +130,19 @@ export function ThreadList() {
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">スレッド一覧</h1>
+    <>
+      <Helmet>
+        <title>スレッド一覧 | Dライフ</title>
+        <meta name="description" content="糖尿病に関するスレッド一覧。食事、治療、運動、メンタルなど様々なカテゴリで情報交換できます。" />
+        <link rel="canonical" href="https://diabeteslife.jp/threads" />
+        <meta property="og:title" content="スレッド一覧 | Dライフ" />
+        <meta property="og:url" content="https://diabeteslife.jp/threads" />
+      </Helmet>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">スレッド一覧</h1>
           <p className="text-gray-600 mt-1">みんなで情報交換しましょう</p>
         </div>
         {user && (
@@ -281,6 +290,7 @@ export function ThreadList() {
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
