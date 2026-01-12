@@ -38,6 +38,14 @@ export function Register() {
       setError(error.message)
       setLoading(false)
     } else {
+      // GTM: 会員登録完了イベント
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          'event': 'sign_up',
+          'method': 'email'
+        })
+      }
+
       // Store new user flag and redirect path for after email confirmation
       const fromPath = location.state?.from
       setNewUserFlag(fromPath)
