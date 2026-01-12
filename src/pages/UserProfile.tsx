@@ -709,7 +709,7 @@ export function UserProfile() {
         {/* Bio */}
         {(showBio || (isPreviewMode && profileData?.bio)) && (
           <div className={`mt-3 pt-3 border-t border-gray-100 ${(isOwnProfile || isPreviewMode) && !profileData?.bio_public ? 'opacity-50' : ''}`}>
-            <p className="text-sm text-gray-700">{profileData!.bio}</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{profileData!.bio}</p>
           </div>
         )}
 
