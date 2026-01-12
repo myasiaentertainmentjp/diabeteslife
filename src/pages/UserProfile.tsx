@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useLocation } from 'react-router-dom'
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -65,15 +65,16 @@ interface UserProfileData {
   treatment: TreatmentType[] | null
   devices: DeviceType[] | null
   external_links: ExternalLink[] | null
-  is_age_public: boolean
-  is_gender_public: boolean
-  is_prefecture_public: boolean
-  is_illness_duration_public: boolean
-  is_treatment_public: boolean
-  is_devices_public: boolean
-  is_bio_public: boolean
-  is_hba1c_public: boolean
-  is_links_public: boolean
+  // Privacy flags (matching database column names)
+  age_group_public: boolean
+  gender_public: boolean
+  prefecture_public: boolean
+  illness_duration_public: boolean
+  treatment_public: boolean
+  device_public: boolean
+  bio_public: boolean
+  hba1c_public: boolean
+  links_public: boolean
 }
 
 interface HbA1cRecord {
@@ -144,6 +145,7 @@ export function UserProfile() {
   const { user: currentUser, isAdmin } = useAuth()
   const { showToast } = useToast()
   const location = useLocation()
+  const navigate = useNavigate()
   const currentPath = location.pathname
   const [userData, setUserData] = useState<UserData | null>(null)
   const [profileData, setProfileData] = useState<UserProfileData | null>(null)
@@ -163,73 +165,120 @@ export function UserProfile() {
   const isOwnProfile = currentUser?.id === userId
 
   useEffect(() => {
-    if (userId) {
-      fetchUserData()
-      if (currentUser && currentUser.id !== userId) {
-        checkBlockStatus()
-      }
+    // Validate userId
+    if (!userId || userId === 'undefined') {
+      setLoading(false)
+      setUserData(null)
+      return
     }
-  }, [userId, currentUser])
 
-  async function fetchUserData() {
-    setLoading(true)
-    try {
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('id, display_name, avatar_url, created_at')
-        .eq('id', userId)
-        .single()
+    let isCancelled = false
 
-      if (userError) {
-        console.error('Error fetching user:', userError)
-        return
-      }
+    async function fetchData() {
+      setLoading(true)
 
-      setUserData(user)
+      // 10秒タイムアウト
+      const timeoutId = setTimeout(() => {
+        if (!isCancelled) {
+          console.warn('Fetch user data timeout')
+          setUserData(null)
+          setLoading(false)
+        }
+      }, 10000)
 
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+      try {
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('id, display_name, avatar_url, created_at')
+          .eq('id', userId)
+          .single()
 
-      if (profile) {
-        setProfileData(profile as UserProfileData)
+        if (isCancelled) {
+          clearTimeout(timeoutId)
+          return
+        }
 
-        if (profile.is_hba1c_public || isOwnProfile) {
-          const { data: records } = await supabase
-            .from('hba1c_records')
-            .select('id, recorded_at, value')
-            .eq('user_id', userId)
-            .order('recorded_at', { ascending: true })
-            .limit(12)
+        if (userError || !user) {
+          console.error('Error fetching user:', userError)
+          clearTimeout(timeoutId)
+          setUserData(null)
+          setLoading(false)
+          return
+        }
 
-          if (records) {
-            setHba1cRecords(records as HbA1cRecord[])
+        setUserData(user)
+
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+
+        if (isCancelled) {
+          clearTimeout(timeoutId)
+          return
+        }
+
+        if (profile) {
+          setProfileData(profile as UserProfileData)
+
+          // Check if we should fetch HbA1c records
+          const shouldFetchHba1c = profile.hba1c_public || currentUser?.id === userId
+          if (shouldFetchHba1c) {
+            const { data: records } = await supabase
+              .from('hba1c_records')
+              .select('id, recorded_at, value')
+              .eq('user_id', userId)
+              .order('recorded_at', { ascending: true })
+              .limit(12)
+
+            if (!isCancelled && records) {
+              setHba1cRecords(records as HbA1cRecord[])
+            }
           }
         }
+
+        if (isCancelled) {
+          clearTimeout(timeoutId)
+          return
+        }
+
+        const { data: userThreads } = await supabase
+          .from('threads')
+          .select('*')
+          .eq('user_id', userId)
+          .lte('created_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (!isCancelled && userThreads) {
+          setThreads(userThreads as Thread[])
+        }
+
+        // Fetch profile comments
+        if (!isCancelled) {
+          await fetchProfileComments()
+        }
+        clearTimeout(timeoutId)
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      } finally {
+        if (!isCancelled) {
+          setLoading(false)
+        }
       }
-
-      const { data: userThreads } = await supabase
-        .from('threads')
-        .select('*')
-        .eq('user_id', userId)
-        .lte('created_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (userThreads) {
-        setThreads(userThreads as Thread[])
-      }
-
-      // Fetch profile comments
-      await fetchProfileComments()
-    } catch (error) {
-      console.error('Error fetching user data:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchData()
+
+    if (currentUser && currentUser.id !== userId) {
+      checkBlockStatus()
+    }
+
+    return () => {
+      isCancelled = true
+    }
+  }, [userId, currentUser])
 
   async function fetchProfileComments() {
     try {
@@ -476,25 +525,25 @@ export function UserProfile() {
     )
   }
 
-  const showAgeGroup = profileData?.age_group && shouldShow(profileData.is_age_public)
-  const showGender = profileData?.gender && shouldShow(profileData.is_gender_public)
-  const showPrefecture = profileData?.prefecture && shouldShow(profileData.is_prefecture_public)
-  const showIllnessDuration = profileData?.illness_duration && shouldShow(profileData.is_illness_duration_public)
-  const showTreatment = (profileData?.treatment?.length ?? 0) > 0 && shouldShow(profileData.is_treatment_public)
-  const showDevices = (profileData?.devices?.length ?? 0) > 0 && shouldShow(profileData.is_devices_public)
-  const showBio = profileData?.bio && shouldShow(profileData.is_bio_public)
-  const showHba1c = hba1cRecords.length > 0 && shouldShow(profileData?.is_hba1c_public)
-  const showLinks = (profileData?.external_links?.length ?? 0) > 0 && shouldShow(profileData.is_links_public)
+  const showAgeGroup = profileData?.age_group && shouldShow(profileData.age_group_public)
+  const showGender = profileData?.gender && shouldShow(profileData.gender_public)
+  const showPrefecture = profileData?.prefecture && shouldShow(profileData.prefecture_public)
+  const showIllnessDuration = profileData?.illness_duration && shouldShow(profileData.illness_duration_public)
+  const showTreatment = (profileData?.treatment?.length ?? 0) > 0 && shouldShow(profileData.treatment_public)
+  const showDevices = (profileData?.devices?.length ?? 0) > 0 && shouldShow(profileData.device_public)
+  const showBio = profileData?.bio && shouldShow(profileData.bio_public)
+  const showHba1c = hba1cRecords.length > 0 && shouldShow(profileData?.hba1c_public)
+  const showLinks = (profileData?.external_links?.length ?? 0) > 0 && shouldShow(profileData.links_public)
 
   const chartData = getChartData()
   const latestHba1c = hba1cRecords[hba1cRecords.length - 1]?.value
 
   // Build info items for compact display
   const infoItems: { label: string; value: string; isPublic: boolean }[] = []
-  if (showAgeGroup) infoItems.push({ label: '年代', value: AGE_GROUP_LABELS[profileData!.age_group!], isPublic: profileData!.is_age_public })
-  if (showGender) infoItems.push({ label: '性別', value: GENDER_LABELS[profileData!.gender!], isPublic: profileData!.is_gender_public })
-  if (showPrefecture) infoItems.push({ label: '地域', value: profileData!.prefecture!, isPublic: profileData!.is_prefecture_public })
-  if (showIllnessDuration) infoItems.push({ label: '罹患歴', value: `闘病${ILLNESS_DURATION_LABELS[profileData!.illness_duration!]}`, isPublic: profileData!.is_illness_duration_public })
+  if (showAgeGroup) infoItems.push({ label: '年代', value: AGE_GROUP_LABELS[profileData!.age_group!], isPublic: profileData!.age_group_public })
+  if (showGender) infoItems.push({ label: '性別', value: GENDER_LABELS[profileData!.gender!], isPublic: profileData!.gender_public })
+  if (showPrefecture) infoItems.push({ label: '地域', value: profileData!.prefecture!, isPublic: profileData!.prefecture_public })
+  if (showIllnessDuration) infoItems.push({ label: '罹患歴', value: `闘病${ILLNESS_DURATION_LABELS[profileData!.illness_duration!]}`, isPublic: profileData!.illness_duration_public })
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -575,12 +624,12 @@ export function UserProfile() {
         {(showTreatment || showDevices) && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
             {showTreatment && profileData!.treatment!.map((t) => (
-              <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${isOwnProfile && !profileData?.is_treatment_public ? 'opacity-50' : ''}`}>
+              <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${isOwnProfile && !profileData?.treatment_public ? 'opacity-50' : ''}`}>
                 {TREATMENT_TYPE_LABELS[t]}
               </span>
             ))}
             {showDevices && profileData!.devices!.map((d) => (
-              <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${isOwnProfile && !profileData?.is_devices_public ? 'opacity-50' : ''}`}>
+              <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${isOwnProfile && !profileData?.device_public ? 'opacity-50' : ''}`}>
                 {DEVICE_TYPE_LABELS[d]}
               </span>
             ))}
@@ -589,14 +638,14 @@ export function UserProfile() {
 
         {/* Bio */}
         {showBio && (
-          <div className={`mt-3 pt-3 border-t border-gray-100 ${isOwnProfile && !profileData?.is_bio_public ? 'opacity-50' : ''}`}>
+          <div className={`mt-3 pt-3 border-t border-gray-100 ${isOwnProfile && !profileData?.bio_public ? 'opacity-50' : ''}`}>
             <p className="text-sm text-gray-700">{profileData!.bio}</p>
           </div>
         )}
 
         {/* External Links */}
         {showLinks && (
-          <div className={`mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 ${isOwnProfile && !profileData?.is_links_public ? 'opacity-50' : ''}`}>
+          <div className={`mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 ${isOwnProfile && !profileData?.links_public ? 'opacity-50' : ''}`}>
             {profileData!.external_links!.map((link, index) => (
               <a
                 key={index}
@@ -615,12 +664,12 @@ export function UserProfile() {
 
       {/* HbA1c Chart */}
       {showHba1c && (
-        <div className={`bg-white rounded-xl shadow-sm p-4 mb-3 ${isOwnProfile && !profileData?.is_hba1c_public ? 'opacity-60' : ''}`}>
+        <div className={`bg-white rounded-xl shadow-sm p-4 mb-3 ${isOwnProfile && !profileData?.hba1c_public ? 'opacity-60' : ''}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Activity size={16} className="text-rose-500" />
               <h2 className="text-sm font-bold text-gray-900">HbA1c推移</h2>
-              {isOwnProfile && !profileData?.is_hba1c_public && <PrivateBadge />}
+              {isOwnProfile && !profileData?.hba1c_public && <PrivateBadge />}
             </div>
             {latestHba1c && (
               <span className="text-sm font-bold text-rose-600">
@@ -662,7 +711,7 @@ export function UserProfile() {
       )}
 
       {/* No HbA1c data message for own profile */}
-      {isOwnProfile && !showHba1c && profileData?.is_hba1c_public && (
+      {isOwnProfile && !showHba1c && profileData?.hba1c_public && (
         <div className="bg-white rounded-xl shadow-sm p-4 mb-3">
           <div className="flex items-center gap-2 mb-2">
             <Activity size={16} className="text-rose-500" />
@@ -755,14 +804,14 @@ export function UserProfile() {
         <div className="px-4 py-3">
           {currentUser ? (
             <form onSubmit={submitProfileComment}>
-              <div className="flex gap-2 items-start">
+              <div className="flex flex-col gap-3">
                 <textarea
                   value={commentBody}
                   onChange={(e) => {
                     setCommentBody(e.target.value)
                     // Auto-resize textarea
-                    e.target.style.height = '38px'
-                    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
+                    e.target.style.height = '100px'
+                    e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px'
                   }}
                   onKeyDown={(e) => {
                     // PC: Enter to send, Shift+Enter for newline
@@ -776,32 +825,51 @@ export function UserProfile() {
                     }
                   }}
                   placeholder="コメントを入力..."
-                  rows={1}
-                  style={{ height: '38px', maxHeight: '150px' }}
-                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none leading-tight"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none text-base leading-relaxed bg-white"
+                  rows={4}
+                  style={{ minHeight: '100px', maxHeight: '300px' }}
                 />
-                <button
-                  type="submit"
-                  disabled={submittingComment || !commentBody.trim()}
-                  className="shrink-0 w-[38px] h-[38px] flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  {submittingComment ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Send size={16} />
-                  )}
-                </button>
+                <div className="flex items-center justify-between">
+                  <p className="hidden md:block text-xs text-gray-400">
+                    Enter で送信 / Shift + Enter で改行
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={submittingComment || !commentBody.trim()}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed font-medium"
+                  >
+                    {submittingComment ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Send size={18} />
+                    )}
+                    <span>コメントする</span>
+                  </button>
+                </div>
               </div>
             </form>
           ) : (
-            <Link
-              to="/login"
-              state={{ from: currentPath }}
-              className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 hover:border-gray-300 transition-colors"
-            >
-              <Send size={16} className="text-gray-400" />
-              <span><span className="text-rose-500 font-medium">ログイン</span>してコメントする</span>
-            </Link>
+            <div className="flex flex-col gap-3">
+              <div
+                onClick={() => navigate('/login', { state: { from: currentPath } })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white cursor-pointer hover:border-rose-300 transition-colors"
+                style={{ minHeight: '100px' }}
+              >
+                <p className="text-gray-400 text-base">
+                  コメントするには<span className="text-rose-500 font-medium mx-1 hover:underline">ログイン</span>してください
+                </p>
+              </div>
+              <div className="flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/login', { state: { from: currentPath } })}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium"
+                >
+                  <Send size={18} />
+                  <span>コメントする</span>
+                </button>
+              </div>
+            </div>
           )}
         </div>
 

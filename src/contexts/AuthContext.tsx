@@ -3,9 +3,6 @@ import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile, UserRole } from '../types/database'
 
-// Session restoration timeout (3 seconds)
-const SESSION_TIMEOUT = 3000
-
 // Extended profile that includes role from users table
 interface UserProfile extends Partial<Profile> {
   id: string
@@ -31,49 +28,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 /**
  * Clear all Supabase auth-related items from localStorage
- * Supabase stores auth tokens with pattern: sb-{project-ref}-auth-token
+ * Only called on explicit sign out
  */
 function clearSupabaseAuthStorage(): void {
   try {
     const keysToRemove: string[] = []
-
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
-      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+      if (key && (key.startsWith('sb-') || key.includes('supabase') || key === 'dlife-auth-token')) {
         keysToRemove.push(key)
       }
     }
-
-    keysToRemove.forEach(key => {
-      localStorage.removeItem(key)
-      console.log(`[Auth] Cleared localStorage key: ${key}`)
-    })
-
-    // Also clear sessionStorage just in case
-    const sessionKeysToRemove: string[] = []
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const key = sessionStorage.key(i)
-      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
-        sessionKeysToRemove.push(key)
-      }
-    }
-    sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key))
-
+    keysToRemove.forEach(key => localStorage.removeItem(key))
   } catch (e) {
     console.error('[Auth] Error clearing storage:', e)
   }
-}
-
-/**
- * Wrap a promise with a timeout
- */
-function withTimeout<T>(promise: Promise<T>, ms: number, timeoutError: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(timeoutError)), ms)
-    )
-  ])
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -82,35 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Reset to unauthenticated state
-  const resetAuthState = useCallback(() => {
-    setUser(null)
-    setProfile(null)
-    setSession(null)
-    setLoading(false)
-  }, [])
-
-  // Handle auth error: clear storage and reset state
-  const handleAuthError = useCallback((error: unknown, context: string) => {
-    console.error(`[Auth] ${context}:`, error)
-    clearSupabaseAuthStorage()
-    resetAuthState()
-  }, [resetAuthState])
-
-  // Fetch user profile from database
+  // Fetch user profile from database (no timeout - let it complete naturally)
   const fetchUserData = useCallback(async (userId: string, userEmail: string): Promise<UserProfile> => {
     try {
-      const { data: userData, error: userError } = await withTimeout(
-        supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single(),
-        5000,
-        'User data fetch timeout'
-      )
+      const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-      if (userData && !userError) {
+      if (userData) {
         return {
           id: userId,
           email: userData.email,
@@ -134,166 +84,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true
-    let initTimeoutId: NodeJS.Timeout | null = null
 
-    async function initialize() {
-      console.log('[Auth] Initializing authentication...')
+    // Get initial session
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+      if (!mounted) return
 
-      try {
-        // Set a hard timeout for the entire initialization
-        initTimeoutId = setTimeout(() => {
-          if (mounted && loading) {
-            console.warn('[Auth] Initialization timeout - clearing auth state')
-            clearSupabaseAuthStorage()
-            resetAuthState()
-          }
-        }, SESSION_TIMEOUT)
+      setSession(initialSession)
+      setUser(initialSession?.user ?? null)
 
-        // Get session with timeout (2 seconds)
-        const { data, error } = await withTimeout(
-          supabase.auth.getSession(),
-          2000,
-          'Session restoration timeout'
+      if (initialSession?.user) {
+        const userProfile = await fetchUserData(
+          initialSession.user.id,
+          initialSession.user.email || ''
         )
-
-        if (!mounted) return
-
-        if (error) {
-          console.error('[Auth] Session error:', error.message)
-          // Clear invalid tokens on error
-          clearSupabaseAuthStorage()
-          resetAuthState()
-          return
-        }
-
-        if (data.session) {
-          console.log('[Auth] Session found, fetching user profile...')
-          setSession(data.session)
-          setUser(data.session.user)
-
-          try {
-            const userProfile = await fetchUserData(
-              data.session.user.id,
-              data.session.user.email || ''
-            )
-
-            if (mounted) {
-              setProfile(userProfile)
-              console.log('[Auth] Authentication complete')
-            }
-          } catch (profileError) {
-            console.error('[Auth] Profile fetch error:', profileError)
-            // Session is valid but profile fetch failed - still authenticated
-            if (mounted) {
-              const isAdminEmail = data.session.user.email === 'info@diabeteslife.jp'
-              setProfile({
-                id: data.session.user.id,
-                email: data.session.user.email || '',
-                role: isAdminEmail ? 'admin' : 'user',
-                display_name: null,
-              })
-            }
-          }
-        } else {
-          console.log('[Auth] No session found')
-        }
-      } catch (error) {
-        if (mounted) {
-          handleAuthError(error, 'Initialization failed')
-        }
-        return
-      } finally {
-        if (mounted) {
-          if (initTimeoutId) clearTimeout(initTimeoutId)
-          setLoading(false)
-        }
+        if (mounted) setProfile(userProfile)
       }
-    }
 
-    initialize()
+      setLoading(false)
+    })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return
 
-        console.log(`[Auth] Auth state changed: ${event}`)
+        // Only handle explicit sign out
+        if (event === 'SIGNED_OUT') {
+          setSession(null)
+          setUser(null)
+          setProfile(null)
+          return
+        }
 
-        try {
-          // Handle sign out or token refresh failure
-          if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !newSession) {
-            resetAuthState()
-            return
-          }
+        setSession(newSession)
+        setUser(newSession?.user ?? null)
 
-          // Handle user deleted
-          if (event === 'USER_DELETED') {
-            clearSupabaseAuthStorage()
-            resetAuthState()
-            return
-          }
-
-          setSession(newSession)
-          setUser(newSession?.user ?? null)
-
-          if (newSession?.user) {
-            try {
-              const userProfile = await fetchUserData(
-                newSession.user.id,
-                newSession.user.email || ''
-              )
-              if (mounted) {
-                setProfile(userProfile)
-              }
-            } catch (profileError) {
-              console.error('[Auth] Profile fetch error on state change:', profileError)
-              // Still set a basic profile
-              if (mounted) {
-                const isAdminEmail = newSession.user.email === 'info@diabeteslife.jp'
-                setProfile({
-                  id: newSession.user.id,
-                  email: newSession.user.email || '',
-                  role: isAdminEmail ? 'admin' : 'user',
-                  display_name: null,
-                })
-              }
-            }
-          } else {
-            setProfile(null)
-          }
-        } catch (error) {
-          console.error('[Auth] Error in auth state change handler:', error)
-          // Don't clear storage here as it might be a temporary error
-          if (newSession?.user && mounted) {
-            const isAdminEmail = newSession.user.email === 'info@diabeteslife.jp'
-            setProfile({
-              id: newSession.user.id,
-              email: newSession.user.email || '',
-              role: isAdminEmail ? 'admin' : 'user',
-              display_name: null,
-            })
-          }
-        } finally {
-          if (mounted) setLoading(false)
+        if (newSession?.user) {
+          const userProfile = await fetchUserData(
+            newSession.user.id,
+            newSession.user.email || ''
+          )
+          if (mounted) setProfile(userProfile)
+        } else {
+          setProfile(null)
         }
       }
     )
 
-    // Final safety net - force loading to false after 5 seconds no matter what
-    const safetyTimeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn('[Auth] Safety timeout triggered - forcing loading to false')
-        setLoading(false)
-      }
-    }, 5000)
-
     return () => {
       mounted = false
-      if (initTimeoutId) clearTimeout(initTimeoutId)
-      clearTimeout(safetyTimeoutId)
       subscription.unsubscribe()
     }
-  }, [fetchUserData, handleAuthError, resetAuthState])
+  }, [fetchUserData])
 
   async function signUp(email: string, password: string, displayName: string) {
     try {

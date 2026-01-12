@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -18,12 +18,40 @@ const categories: (ThreadCategory | 'all')[] = ['all', 'todays_meal', 'food_reci
 export function ThreadList() {
   const [threads, setThreads] = useState<ThreadWithUser[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState<ThreadCategory | 'all'>('all')
-  const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
 
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // URLからカテゴリとページを取得（初期値を同期）
+  const categoryParam = searchParams.get('category') as ThreadCategory | 'all' | null
+  const pageParam = searchParams.get('page')
+
+  const selectedCategory: ThreadCategory | 'all' =
+    categoryParam && categories.includes(categoryParam) ? categoryParam : 'all'
+  const currentPage = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1
+
+  // カテゴリ変更時にURLを更新
+  function handleCategoryChange(category: ThreadCategory | 'all') {
+    const params = new URLSearchParams()
+    if (category !== 'all') {
+      params.set('category', category)
+    }
+    // ページは1にリセット
+    setSearchParams(params)
+  }
+
+  // ページ変更時にURLを更新
+  function handlePageChange(page: number) {
+    const params = new URLSearchParams(searchParams)
+    if (page > 1) {
+      params.set('page', String(page))
+    } else {
+      params.delete('page')
+    }
+    setSearchParams(params)
+  }
 
   useEffect(() => {
     fetchThreads()
@@ -161,10 +189,7 @@ export function ThreadList() {
         {categories.map((category) => (
           <button
             key={category}
-            onClick={() => {
-              setSelectedCategory(category)
-              setCurrentPage(1)
-            }}
+            onClick={() => handleCategoryChange(category)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category
                 ? 'bg-rose-500 text-white'
@@ -248,7 +273,7 @@ export function ThreadList() {
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-8">
           <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -268,7 +293,7 @@ export function ThreadList() {
                   <div key={page} className="flex items-center">
                     {showEllipsis && <span className="px-2 text-gray-400">...</span>}
                     <button
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => handlePageChange(page)}
                       className={`w-10 h-10 rounded-lg font-medium transition-colors ${
                         currentPage === page
                           ? 'bg-rose-500 text-white'
@@ -282,7 +307,7 @@ export function ThreadList() {
               })}
           </div>
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
             disabled={currentPage === totalPages}
             className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >

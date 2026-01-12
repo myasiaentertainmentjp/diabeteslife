@@ -522,7 +522,7 @@ export function ThreadDetail() {
       console.error('Error posting comment:', insertError)
     } else {
       setCommentContent('')
-      fetchComments(thread.id)
+      await fetchComments(thread.id)
       // Update thread comments count
       if (thread) {
         await supabase
@@ -876,7 +876,7 @@ export function ThreadDetail() {
                 title={user ? (threadReaction.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
               >
                 <Heart size={16} className={threadReaction.hasReacted ? 'fill-current' : ''} />
-                <span>{threadReaction.count > 0 ? threadReaction.count : '応援'}</span>
+                {!threadReaction.hasReacted && <span>応援</span>}
               </button>
             </div>
           )}
@@ -1044,7 +1044,7 @@ export function ThreadDetail() {
                         title={user ? (diaryReactions[entry.id]?.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
                       >
                         <Heart size={16} className={diaryReactions[entry.id]?.hasReacted ? 'fill-current' : ''} />
-                        <span>{diaryReactions[entry.id]?.count > 0 ? diaryReactions[entry.id].count : '応援'}</span>
+                        {!diaryReactions[entry.id]?.hasReacted && <span>応援</span>}
                       </button>
                     </div>
                   </div>
@@ -1062,7 +1062,7 @@ export function ThreadDetail() {
           <div className="flex items-center gap-2">
             <MessageSquare size={20} className="text-gray-600" />
             <h2 className="font-semibold text-gray-800">
-              コメント ({thread.comments_count})
+              コメント ({comments.length})
             </h2>
           </div>
         </div>
@@ -1139,7 +1139,7 @@ export function ThreadDetail() {
             )}
 
             {/* Comment Form */}
-            <div className="px-4 md:px-6 py-4">
+            <div className="px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-200">
               {user ? (
                 <form onSubmit={handleSubmitComment}>
                   {error && (
@@ -1148,15 +1148,15 @@ export function ThreadDetail() {
                       <span className="text-sm">{error}</span>
                     </div>
                   )}
-                  <div className="flex gap-2 items-start">
+                  <div className="flex flex-col gap-3">
                     <textarea
                       ref={commentTextareaRef}
                       value={commentContent}
                       onChange={(e) => {
                         setCommentContent(e.target.value)
                         // Auto-resize textarea
-                        e.target.style.height = '42px'
-                        e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'
+                        e.target.style.height = '100px'
+                        e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px'
                       }}
                       onKeyDown={(e) => {
                         // PC: Enter to send, Shift+Enter for newline
@@ -1171,41 +1171,49 @@ export function ThreadDetail() {
                         }
                       }}
                       placeholder="コメントを入力..."
-                      className="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none text-base leading-tight"
-                      rows={1}
-                      style={{ height: '42px', maxHeight: '200px' }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none text-base leading-relaxed bg-white"
+                      rows={4}
+                      style={{ minHeight: '100px', maxHeight: '300px' }}
                       required
                     />
-                    <button
-                      type="submit"
-                      disabled={submitting || !commentContent.trim()}
-                      className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed"
-                    >
-                      {submitting ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <Send size={18} />
-                      )}
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <p className="hidden md:block text-xs text-gray-400">
+                        Enter で送信 / Shift + Enter で改行
+                      </p>
+                      <button
+                        type="submit"
+                        disabled={submitting || !commentContent.trim()}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed font-medium"
+                      >
+                        {submitting ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Send size={18} />
+                        )}
+                        <span>コメントする</span>
+                      </button>
+                    </div>
                   </div>
-                  <p className="hidden md:block text-xs text-gray-400 mt-2">
-                    Enter で送信 / Shift + Enter で改行
-                  </p>
                 </form>
               ) : (
-                <div
-                  className="relative cursor-pointer"
-                  onClick={() => navigate('/login', { state: { from: currentPath } })}
-                >
-                  <div className="flex gap-2 items-start">
-                    <div className="flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-400 text-base">
-                      コメントするには<span className="text-rose-500 font-medium mx-1">ログイン</span>してください
-                    </div>
+                <div className="flex flex-col gap-3">
+                  <div
+                    onClick={() => navigate('/login', { state: { from: currentPath } })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white cursor-pointer hover:border-rose-300 transition-colors"
+                    style={{ minHeight: '100px' }}
+                  >
+                    <p className="text-gray-400 text-base">
+                      コメントするには<span className="text-rose-500 font-medium mx-1 hover:underline">ログイン</span>してください
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-end">
                     <button
                       type="button"
-                      className="shrink-0 w-[42px] h-[42px] flex items-center justify-center bg-gray-300 text-white rounded-lg"
+                      onClick={() => navigate('/login', { state: { from: currentPath } })}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium"
                     >
                       <Send size={18} />
+                      <span>コメントする</span>
                     </button>
                   </div>
                 </div>
