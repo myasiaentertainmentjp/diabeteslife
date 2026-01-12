@@ -207,6 +207,10 @@ export function ProfileSettings() {
         setGender(userProfileData.gender)
         setPrefecture(userProfileData.prefecture)
         setIllnessDuration(userProfileData.illness_duration)
+        // Load treatment from user_profiles
+        if (userProfileData.treatment && Array.isArray(userProfileData.treatment)) {
+          setTreatments(userProfileData.treatment)
+        }
         setDevices(userProfileData.devices || [])
         setHasComplications(userProfileData.has_complications || 'private')
         setOnDialysis(userProfileData.on_dialysis || 'private')
