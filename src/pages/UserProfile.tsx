@@ -548,11 +548,30 @@ export function UserProfile() {
   const latestHba1c = hba1cRecords[hba1cRecords.length - 1]?.value
 
   // Build info items for compact display
-  const infoItems: { label: string; value: string; isPublic: boolean }[] = []
-  if (showAgeGroup) infoItems.push({ label: '年代', value: AGE_GROUP_LABELS[profileData!.age_group!], isPublic: profileData!.age_group_public })
-  if (showGender) infoItems.push({ label: '性別', value: GENDER_LABELS[profileData!.gender!], isPublic: profileData!.gender_public })
-  if (showPrefecture) infoItems.push({ label: '地域', value: profileData!.prefecture!, isPublic: profileData!.prefecture_public })
-  if (showIllnessDuration) infoItems.push({ label: '罹患歴', value: `闘病${ILLNESS_DURATION_LABELS[profileData!.illness_duration!]}`, isPublic: profileData!.illness_duration_public })
+  const infoItems: { label: string; value: string; isPublic: boolean; isEmpty?: boolean }[] = []
+
+  // In preview mode, show all fields (even empty ones with "未設定")
+  if (isPreviewMode) {
+    // Always show these fields in preview mode
+    if (profileData?.age_group) {
+      infoItems.push({ label: '年代', value: AGE_GROUP_LABELS[profileData.age_group], isPublic: profileData.age_group_public })
+    }
+    if (profileData?.gender) {
+      infoItems.push({ label: '性別', value: GENDER_LABELS[profileData.gender], isPublic: profileData.gender_public })
+    }
+    if (profileData?.prefecture) {
+      infoItems.push({ label: '地域', value: profileData.prefecture, isPublic: profileData.prefecture_public })
+    }
+    if (profileData?.illness_duration) {
+      infoItems.push({ label: '罹患歴', value: `闘病${ILLNESS_DURATION_LABELS[profileData.illness_duration]}`, isPublic: profileData.illness_duration_public })
+    }
+  } else {
+    // Normal mode - only show public fields
+    if (showAgeGroup) infoItems.push({ label: '年代', value: AGE_GROUP_LABELS[profileData!.age_group!], isPublic: profileData!.age_group_public })
+    if (showGender) infoItems.push({ label: '性別', value: GENDER_LABELS[profileData!.gender!], isPublic: profileData!.gender_public })
+    if (showPrefecture) infoItems.push({ label: '地域', value: profileData!.prefecture!, isPublic: profileData!.prefecture_public })
+    if (showIllnessDuration) infoItems.push({ label: '罹患歴', value: `闘病${ILLNESS_DURATION_LABELS[profileData!.illness_duration!]}`, isPublic: profileData!.illness_duration_public })
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -593,9 +612,13 @@ export function UserProfile() {
               <h1 className="text-xl font-bold text-gray-900">
                 {userData.display_name || '匿名ユーザー'}
               </h1>
-              {profileData?.diabetes_type && (
+              {profileData?.diabetes_type ? (
                 <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full text-xs font-medium">
                   {DIABETES_TYPE_LABELS[profileData.diabetes_type]}
+                </span>
+              ) : isPreviewMode && (
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs">
+                  糖尿病タイプ未設定
                 </span>
               )}
             </div>
@@ -647,31 +670,52 @@ export function UserProfile() {
         </div>
 
         {/* Treatment & Devices Row */}
-        {(showTreatment || showDevices) && (
+        {(showTreatment || showDevices || isPreviewMode) && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
-            {showTreatment && profileData!.treatment!.map((t) => (
+            {/* In preview mode, show treatments directly from profileData */}
+            {isPreviewMode && (profileData?.treatment?.length ?? 0) > 0 && profileData!.treatment!.map((t) => (
+              <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${!profileData?.treatment_public ? 'opacity-50' : ''}`}>
+                {TREATMENT_TYPE_LABELS[t]}
+              </span>
+            ))}
+            {/* In normal mode, use showTreatment check */}
+            {!isPreviewMode && showTreatment && profileData!.treatment!.map((t) => (
               <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${isOwnProfile && !profileData?.treatment_public ? 'opacity-50' : ''}`}>
                 {TREATMENT_TYPE_LABELS[t]}
               </span>
             ))}
-            {showDevices && profileData!.devices!.map((d) => (
+            {/* In preview mode, show devices directly from profileData */}
+            {isPreviewMode && (profileData?.devices?.length ?? 0) > 0 && profileData!.devices!.map((d) => (
+              <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${!profileData?.device_public ? 'opacity-50' : ''}`}>
+                {DEVICE_TYPE_LABELS[d]}
+              </span>
+            ))}
+            {/* In normal mode, use showDevices check */}
+            {!isPreviewMode && showDevices && profileData!.devices!.map((d) => (
               <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${isOwnProfile && !profileData?.device_public ? 'opacity-50' : ''}`}>
                 {DEVICE_TYPE_LABELS[d]}
               </span>
             ))}
+            {/* Show 未設定 labels in preview mode when fields are empty */}
+            {isPreviewMode && (profileData?.treatment?.length ?? 0) === 0 && (
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">治療方法未設定</span>
+            )}
+            {isPreviewMode && (profileData?.devices?.length ?? 0) === 0 && (
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">デバイス未設定</span>
+            )}
           </div>
         )}
 
         {/* Bio */}
-        {showBio && (
-          <div className={`mt-3 pt-3 border-t border-gray-100 ${isOwnProfile && !profileData?.bio_public ? 'opacity-50' : ''}`}>
+        {(showBio || (isPreviewMode && profileData?.bio)) && (
+          <div className={`mt-3 pt-3 border-t border-gray-100 ${(isOwnProfile || isPreviewMode) && !profileData?.bio_public ? 'opacity-50' : ''}`}>
             <p className="text-sm text-gray-700">{profileData!.bio}</p>
           </div>
         )}
 
         {/* External Links */}
-        {showLinks && (
-          <div className={`mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 ${isOwnProfile && !profileData?.links_public ? 'opacity-50' : ''}`}>
+        {(showLinks || (isPreviewMode && (profileData?.external_links?.length ?? 0) > 0)) && (
+          <div className={`mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 ${(isOwnProfile || isPreviewMode) && !profileData?.links_public ? 'opacity-50' : ''}`}>
             {profileData!.external_links!.map((link, index) => (
               <a
                 key={index}
