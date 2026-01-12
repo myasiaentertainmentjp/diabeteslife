@@ -50,7 +50,6 @@ const DEVICE_TYPES: DeviceType[] = ['libre', 'dexcom', 'insulin_pump', 'meter_on
 const YES_NO_PRIVATES: YesNoPrivate[] = ['yes', 'no', 'private']
 
 const currentYear = new Date().getFullYear()
-const DIAGNOSIS_YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i)
 
 export function ProfileSettings() {
   const { user, profile: authProfile, refreshProfile, signOut } = useAuth()
@@ -779,45 +778,31 @@ export function ProfileSettings() {
           </div>
         </div>
 
-        {/* Illness Duration */}
+        {/* Diagnosis Year with auto-calculated duration */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">罹患期間</label>
+            <label className="text-sm font-medium text-gray-700">診断年</label>
             <PrivacyToggle value={illnessDurationPublic} onChange={setIllnessDurationPublic} />
           </div>
-          <select
-            value={illnessDuration || ''}
-            onChange={(e) => setIllnessDuration(e.target.value as IllnessDuration || null)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-          >
-            <option value="">未設定</option>
-            {ILLNESS_DURATIONS.map((duration) => (
-              <option key={duration} value={duration}>
-                {ILLNESS_DURATION_LABELS[duration]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Diagnosis Year */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            診断年
-          </label>
-          <select
-            value={diagnosisYear || ''}
-            onChange={(e) =>
-              setDiagnosisYear(e.target.value ? Number(e.target.value) : null)
-            }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-          >
-            <option value="">未設定</option>
-            {DIAGNOSIS_YEARS.map((year) => (
-              <option key={year} value={year}>
-                {year}年
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={diagnosisYear || ''}
+                onChange={(e) => setDiagnosisYear(e.target.value ? Number(e.target.value) : null)}
+                placeholder="1960"
+                min={1960}
+                max={currentYear}
+                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              />
+              <span className="text-gray-500">年</span>
+            </div>
+            {diagnosisYear && diagnosisYear <= currentYear && diagnosisYear >= 1960 && (
+              <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-sm font-medium">
+                糖尿病歴：約{currentYear - diagnosisYear}年
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Treatments */}
