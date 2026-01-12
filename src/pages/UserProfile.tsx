@@ -170,17 +170,24 @@ export function UserProfile() {
 
   const isOwnProfile = currentUser?.id === userId
 
+  // Handle preview mode separately
   useEffect(() => {
-    // If in preview mode, use preview data
-    if (isPreviewMode && previewState?.previewData && currentUser) {
+    if (isPreviewMode && previewState?.previewData) {
       setUserData({
-        id: currentUser.id,
+        id: userId || 'preview',
         display_name: previewState.previewData.display_name || null,
         avatar_url: (previewState.previewData as any).avatar_url || null,
         created_at: new Date().toISOString(),
       })
       setProfileData(previewState.previewData)
       setLoading(false)
+    }
+  }, [isPreviewMode, previewState])
+
+  // Handle normal data fetching
+  useEffect(() => {
+    // Skip if in preview mode
+    if (isPreviewMode) {
       return
     }
 
@@ -192,34 +199,21 @@ export function UserProfile() {
     }
 
     let isCancelled = false
+    setLoading(true)
 
     async function fetchData() {
-      setLoading(true)
-
-      // 10秒タイムアウト
-      const timeoutId = setTimeout(() => {
-        if (!isCancelled) {
-          console.warn('Fetch user data timeout')
-          setUserData(null)
-          setLoading(false)
-        }
-      }, 10000)
-
       try {
+        // Fetch user data
         const { data: user, error: userError } = await supabase
           .from('users')
           .select('id, display_name, avatar_url, created_at')
           .eq('id', userId)
           .single()
 
-        if (isCancelled) {
-          clearTimeout(timeoutId)
-          return
-        }
+        if (isCancelled) return
 
         if (userError || !user) {
           console.error('Error fetching user:', userError)
-          clearTimeout(timeoutId)
           setUserData(null)
           setLoading(false)
           return
@@ -227,21 +221,19 @@ export function UserProfile() {
 
         setUserData(user)
 
+        // Fetch profile data
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
           .single()
 
-        if (isCancelled) {
-          clearTimeout(timeoutId)
-          return
-        }
+        if (isCancelled) return
 
         if (profile) {
           setProfileData(profile as UserProfileData)
 
-          // Check if we should fetch HbA1c records
+          // Fetch HbA1c records if public or own profile
           const shouldFetchHba1c = profile.hba1c_public || currentUser?.id === userId
           if (shouldFetchHba1c) {
             const { data: records } = await supabase
@@ -257,11 +249,9 @@ export function UserProfile() {
           }
         }
 
-        if (isCancelled) {
-          clearTimeout(timeoutId)
-          return
-        }
+        if (isCancelled) return
 
+        // Fetch threads
         const { data: userThreads } = await supabase
           .from('threads')
           .select('*')
@@ -278,7 +268,6 @@ export function UserProfile() {
         if (!isCancelled) {
           await fetchProfileComments()
         }
-        clearTimeout(timeoutId)
       } catch (error) {
         console.error('Error fetching user data:', error)
       } finally {
@@ -290,6 +279,7 @@ export function UserProfile() {
 
     fetchData()
 
+    // Check block status for other users
     if (currentUser && currentUser.id !== userId) {
       checkBlockStatus()
     }
@@ -297,7 +287,7 @@ export function UserProfile() {
     return () => {
       isCancelled = true
     }
-  }, [userId, currentUser])
+  }, [userId, isPreviewMode])
 
   async function fetchProfileComments() {
     try {
