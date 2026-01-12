@@ -151,6 +151,7 @@ export function ThreadDetail() {
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: true })
 
       if (commentsError) {
@@ -197,6 +198,7 @@ export function ThreadDetail() {
         .from('diary_entries')
         .select('*')
         .eq('thread_id', threadId)
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
 
       if (entriesError) {

@@ -49,6 +49,7 @@ export function Sidebar({
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(5)
 

@@ -214,6 +214,7 @@ export function UserProfile() {
         .from('threads')
         .select('*')
         .eq('user_id', userId)
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(10)
 

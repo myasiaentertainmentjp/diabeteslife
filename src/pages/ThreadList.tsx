@@ -40,6 +40,7 @@ export function ThreadList() {
       let query = supabase
         .from('threads')
         .select('id, thread_number, user_id, title, category, comments_count, created_at', { count: 'exact' })
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {

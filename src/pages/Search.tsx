@@ -59,7 +59,7 @@ export function Search() {
         .from('threads')
         .select('*', { count: 'exact' })
         .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .range(0, ITEMS_PER_PAGE - 1)
 
@@ -114,7 +114,7 @@ export function Search() {
         .from('threads')
         .select('*')
         .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .range(from, to)
 
