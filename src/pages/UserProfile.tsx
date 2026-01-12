@@ -45,6 +45,7 @@ import {
   Ban,
   UserX,
   HelpCircle,
+  Eye,
 } from 'lucide-react'
 
 interface UserData {
@@ -55,6 +56,7 @@ interface UserData {
 }
 
 interface UserProfileData {
+  display_name?: string | null
   diabetes_type: DiabetesType
   diagnosis_year: number | null
   bio: string | null
@@ -162,9 +164,26 @@ export function UserProfile() {
   const [isBlockedBy, setIsBlockedBy] = useState(false)
   const [blockLoading, setBlockLoading] = useState(false)
 
+  // Preview mode state
+  const previewState = location.state as { previewData?: UserProfileData; isPreview?: boolean } | null
+  const isPreviewMode = previewState?.isPreview === true
+
   const isOwnProfile = currentUser?.id === userId
 
   useEffect(() => {
+    // If in preview mode, use preview data
+    if (isPreviewMode && previewState?.previewData && currentUser) {
+      setUserData({
+        id: currentUser.id,
+        display_name: previewState.previewData.display_name || null,
+        avatar_url: (previewState.previewData as any).avatar_url || null,
+        created_at: new Date().toISOString(),
+      })
+      setProfileData(previewState.previewData)
+      setLoading(false)
+      return
+    }
+
     // Validate userId
     if (!userId || userId === 'undefined') {
       setLoading(false)
@@ -547,6 +566,23 @@ export function UserProfile() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* Preview Mode Banner */}
+      {isPreviewMode && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2 text-amber-800">
+            <Eye size={18} />
+            <span className="font-medium">プレビューモード</span>
+            <span className="text-sm">- 保存前の内容を表示しています</span>
+          </div>
+          <button
+            onClick={() => navigate('/mypage')}
+            className="px-3 py-1 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors"
+          >
+            編集に戻る
+          </button>
+        </div>
+      )}
+
       {/* Compact Profile Card */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-3">
         {/* Header Row */}

@@ -315,7 +315,7 @@ export function ProfileSettings() {
 
     try {
       // Update users table
-      await supabase
+      const { error: usersError } = await supabase
         .from('users')
         .update({
           display_name: displayName || null,
@@ -324,9 +324,27 @@ export function ProfileSettings() {
         } as never)
         .eq('id', user.id)
 
-      // Update or insert user_profiles table
+      if (usersError) {
+        console.error('Error updating users:', usersError)
+      }
+
+      // Build profile data
+      const externalLinks = [
+        ...(xId ? [{ title: 'X', url: buildUrl(xId, 'x') }] : []),
+        ...(instagramId ? [{ title: 'Instagram', url: buildUrl(instagramId, 'instagram') }] : []),
+        ...(youtubeId ? [{ title: 'YouTube', url: buildUrl(youtubeId, 'youtube') }] : []),
+        ...(tiktokId ? [{ title: 'TikTok', url: buildUrl(tiktokId, 'tiktok') }] : []),
+        ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
+      ]
+
+      // Check if user_profiles record exists
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single()
+
       const userProfileData = {
-        user_id: user.id,
         diabetes_type: diabetesType,
         diagnosis_year: diagnosisYear,
         bio: bio || null,
@@ -334,18 +352,14 @@ export function ProfileSettings() {
         gender: gender,
         prefecture: prefecture,
         illness_duration: illnessDuration,
+        treatment: treatments.length > 0 ? treatments : [],
         devices: devices.length > 0 ? devices : [],
         has_complications: hasComplications,
         on_dialysis: onDialysis,
         is_pregnant: isPregnant,
-        external_links: [
-          ...(xId ? [{ title: 'X', url: buildUrl(xId, 'x') }] : []),
-          ...(instagramId ? [{ title: 'Instagram', url: buildUrl(instagramId, 'instagram') }] : []),
-          ...(youtubeId ? [{ title: 'YouTube', url: buildUrl(youtubeId, 'youtube') }] : []),
-          ...(tiktokId ? [{ title: 'TikTok', url: buildUrl(tiktokId, 'tiktok') }] : []),
-          ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
-        ],
-        // Privacy flags (new naming convention)
+        external_links: externalLinks,
+        display_name: displayName || null,
+        // Privacy flags
         age_group_public: ageGroupPublic,
         gender_public: genderPublic,
         prefecture_public: prefecturePublic,
@@ -357,12 +371,27 @@ export function ProfileSettings() {
         links_public: linksPublic,
       }
 
-      const { error: upsertError } = await supabase
-        .from('user_profiles')
-        .upsert(userProfileData as never, { onConflict: 'user_id' })
+      if (existingProfile) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update(userProfileData as never)
+          .eq('user_id', user.id)
 
-      if (upsertError) {
-        console.error('Error updating user_profiles:', upsertError)
+        if (updateError) {
+          console.error('Error updating user_profiles:', updateError)
+          throw updateError
+        }
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('user_profiles')
+          .insert({ ...userProfileData, user_id: user.id } as never)
+
+        if (insertError) {
+          console.error('Error inserting user_profiles:', insertError)
+          throw insertError
+        }
       }
 
       // Also update profiles table for backward compatibility
@@ -381,16 +410,30 @@ export function ProfileSettings() {
         .update(profileData as never)
         .eq('id', user.id)
 
-      // Upsert notification settings
-      await supabase
+      // Check if notification settings exist
+      const { data: existingNotif } = await supabase
         .from('notification_settings')
-        .upsert({
-          user_id: user.id,
-          thread_comment: notifyThreadComment,
-          reply: notifyReply,
-          likes: notifyLikes,
-          profile_comment: notifyProfileComment,
-        } as never, { onConflict: 'user_id' })
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single()
+
+      const notifData = {
+        thread_comment: notifyThreadComment,
+        reply: notifyReply,
+        likes: notifyLikes,
+        profile_comment: notifyProfileComment,
+      }
+
+      if (existingNotif) {
+        await supabase
+          .from('notification_settings')
+          .update(notifData as never)
+          .eq('user_id', user.id)
+      } else {
+        await supabase
+          .from('notification_settings')
+          .insert({ ...notifData, user_id: user.id } as never)
+      }
 
       setSaved(true)
       refreshProfile()
@@ -1032,7 +1075,39 @@ export function ProfileSettings() {
         </button>
         <button
           type="button"
-          onClick={() => navigate(`/users/${user?.id}`)}
+          onClick={() => {
+            // Pass current form state to preview
+            const previewData = {
+              display_name: displayName,
+              avatar_url: avatarUrl,
+              diabetes_type: diabetesType,
+              diagnosis_year: diagnosisYear,
+              bio: bio,
+              age_group: ageGroup,
+              gender: gender,
+              prefecture: prefecture,
+              illness_duration: illnessDuration,
+              treatment: treatments,
+              devices: devices,
+              external_links: [
+                ...(xId ? [{ title: 'X', url: buildUrl(xId, 'x') }] : []),
+                ...(instagramId ? [{ title: 'Instagram', url: buildUrl(instagramId, 'instagram') }] : []),
+                ...(youtubeId ? [{ title: 'YouTube', url: buildUrl(youtubeId, 'youtube') }] : []),
+                ...(tiktokId ? [{ title: 'TikTok', url: buildUrl(tiktokId, 'tiktok') }] : []),
+                ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
+              ],
+              age_group_public: ageGroupPublic,
+              gender_public: genderPublic,
+              prefecture_public: prefecturePublic,
+              illness_duration_public: illnessDurationPublic,
+              treatment_public: treatmentPublic,
+              device_public: devicePublic,
+              bio_public: bioPublic,
+              hba1c_public: hba1cPublic,
+              links_public: linksPublic,
+            }
+            navigate(`/users/${user?.id}`, { state: { previewData, isPreview: true } })
+          }}
           className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
         >
           <Eye size={18} />
