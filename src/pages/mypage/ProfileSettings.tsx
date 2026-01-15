@@ -916,6 +916,7 @@ export function ProfileSettings() {
       {/* Health Status Section */}
       <section>
         <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">健康状態</h3>
+        <p className="text-sm text-gray-500 mb-4">「未回答」を選ぶと、この項目は表示されません。</p>
 
         {/* Complications */}
         <div className="mb-4">
@@ -923,7 +924,7 @@ export function ProfileSettings() {
             合併症
           </label>
           <div className="flex gap-2">
-            {YES_NO_PRIVATES.map((option) => (
+            {(['yes', 'no', 'private'] as const).map((option) => (
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -937,7 +938,9 @@ export function ProfileSettings() {
                   onChange={() => setHasComplications(option)}
                   className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
-                <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
+                <span className="text-sm text-gray-700">
+                  {option === 'yes' ? 'あり' : option === 'no' ? 'なし' : '未回答'}
+                </span>
               </label>
             ))}
           </div>
@@ -949,7 +952,7 @@ export function ProfileSettings() {
             透析
           </label>
           <div className="flex gap-2">
-            {YES_NO_PRIVATES.map((option) => (
+            {(['yes', 'no', 'private'] as const).map((option) => (
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -963,7 +966,9 @@ export function ProfileSettings() {
                   onChange={() => setOnDialysis(option)}
                   className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
-                <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
+                <span className="text-sm text-gray-700">
+                  {option === 'yes' ? 'あり' : option === 'no' ? 'なし' : '未回答'}
+                </span>
               </label>
             ))}
           </div>
@@ -975,7 +980,7 @@ export function ProfileSettings() {
             妊娠中
           </label>
           <div className="flex gap-2">
-            {YES_NO_PRIVATES.map((option) => (
+            {(['yes', 'no', 'private'] as const).map((option) => (
               <label
                 key={option}
                 className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -989,7 +994,9 @@ export function ProfileSettings() {
                   onChange={() => setIsPregnant(option)}
                   className="w-4 h-4 text-rose-500 focus:ring-rose-500"
                 />
-                <span className="text-sm text-gray-700">{YES_NO_PRIVATE_LABELS[option]}</span>
+                <span className="text-sm text-gray-700">
+                  {option === 'yes' ? 'あり' : option === 'no' ? 'なし' : '未回答'}
+                </span>
               </label>
             ))}
           </div>
