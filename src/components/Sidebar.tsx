@@ -45,11 +45,15 @@ export function Sidebar({
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 
+      // 未来の日付を除外（1分のバッファを追加）
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
       const { data, error } = await supabase
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
-        .lte('created_at', new Date().toISOString())
+        .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .limit(5)
 

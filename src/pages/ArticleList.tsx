@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Article, ArticleCategory, ARTICLE_CATEGORY_LABELS } from '../types/database'
-import { Calendar, ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
 
@@ -10,7 +10,6 @@ const categories: (ArticleCategory | 'all')[] = ['all', 'food_recipe', 'treatmen
 
 export function ArticleList() {
   const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<ArticleCategory | 'all'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -20,8 +19,6 @@ export function ArticleList() {
   }, [selectedCategory, currentPage])
 
   async function fetchArticles() {
-    setLoading(true)
-
     // 10秒タイムアウト
     const timeoutPromise = new Promise<null>((resolve) => {
       setTimeout(() => resolve(null), 10000)
@@ -60,8 +57,6 @@ export function ArticleList() {
       console.error('Error fetching articles:', error)
       setArticles([])
       setTotalCount(0)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -111,11 +106,7 @@ export function ArticleList() {
       </div>
 
       {/* Article List */}
-      {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 size={32} className="animate-spin text-rose-500" />
-        </div>
-      ) : articles.length === 0 ? (
+      {articles.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
           <FileText size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="text-gray-600">記事がありません</p>

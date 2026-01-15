@@ -51,21 +51,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch user profile from database (no timeout - let it complete naturally)
+  // Fetch user profile from database (with 3 second timeout)
   const fetchUserData = useCallback(async (userId: string, userEmail: string): Promise<UserProfile> => {
     try {
-      const { data: userData } = await supabase
+      // 3秒タイムアウト
+      const timeoutPromise = new Promise<null>((resolve) => {
+        setTimeout(() => resolve(null), 3000)
+      })
+
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
 
-      if (userData) {
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('[Auth] User data fetch timeout')
+      } else if (result.data) {
         return {
           id: userId,
-          email: userData.email,
-          role: userData.role || 'user',
-          display_name: userData.display_name,
+          email: result.data.email,
+          role: result.data.role || 'user',
+          display_name: result.data.display_name,
         }
       }
     } catch (err) {
@@ -85,9 +94,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
+    // タイムアウト付きでセッション取得（5秒）
+    const sessionTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('[Auth] Session fetch timeout - proceeding without auth')
+        setLoading(false)
+      }
+    }, 5000)
+
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       if (!mounted) return
+      clearTimeout(sessionTimeout)
 
       setSession(initialSession)
       setUser(initialSession?.user ?? null)
@@ -101,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false)
+    }).catch((error) => {
+      console.error('[Auth] Session fetch error:', error)
+      if (mounted) {
+        clearTimeout(sessionTimeout)
+        setLoading(false)
+      }
     })
 
     // Listen for auth changes
@@ -133,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false
+      clearTimeout(sessionTimeout)
       subscription.unsubscribe()
     }
   }, [fetchUserData])

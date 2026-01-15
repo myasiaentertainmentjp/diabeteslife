@@ -56,6 +56,33 @@ export function ThreadDetail() {
   const MAX_DIARY_IMAGES = 4
 
   const { user } = useAuth()
+
+  // 匿名ユーザー用のID取得・生成
+  function getAnonymousId(): string {
+    const key = 'dlife_anonymous_id'
+    let id = localStorage.getItem(key)
+    if (!id) {
+      id = 'anon_' + Math.random().toString(36).substring(2) + Date.now().toString(36)
+      localStorage.setItem(key, id)
+    }
+    return id
+  }
+
+  // ローカルの応援状態を取得
+  function getLocalReaction(type: 'thread' | 'diary', id: string): boolean {
+    const key = `dlife_reaction_${type}_${id}`
+    return localStorage.getItem(key) === 'true'
+  }
+
+  // ローカルの応援状態を設定
+  function setLocalReaction(type: 'thread' | 'diary', id: string, value: boolean) {
+    const key = `dlife_reaction_${type}_${id}`
+    if (value) {
+      localStorage.setItem(key, 'true')
+    } else {
+      localStorage.removeItem(key)
+    }
+  }
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
@@ -65,6 +92,35 @@ export function ThreadDetail() {
       fetchData()
     }
   }, [threadNumber])
+
+  // 匿名ユーザーの場合、localStorageから応援状態を復元
+  useEffect(() => {
+    if (!user && thread?.id) {
+      const hasReactedThread = getLocalReaction('thread', thread.id)
+      if (hasReactedThread) {
+        setThreadReaction(prev => ({ ...prev, hasReacted: true }))
+      }
+    }
+  }, [user, thread?.id])
+
+  // 日記エントリーの応援状態を復元（匿名ユーザー）
+  useEffect(() => {
+    if (!user && diaryEntries.length > 0) {
+      const updatedReactions: Record<string, { count: number; hasReacted: boolean }> = {}
+      diaryEntries.forEach(entry => {
+        const hasReacted = getLocalReaction('diary', entry.id)
+        if (hasReacted) {
+          updatedReactions[entry.id] = {
+            count: diaryReactions[entry.id]?.count || 0,
+            hasReacted: true
+          }
+        }
+      })
+      if (Object.keys(updatedReactions).length > 0) {
+        setDiaryReactions(prev => ({ ...prev, ...updatedReactions }))
+      }
+    }
+  }, [user, diaryEntries])
 
   async function fetchData() {
     setLoading(true)
@@ -151,7 +207,6 @@ export function ThreadDetail() {
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
-        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: true })
 
       if (commentsError) {
@@ -198,7 +253,6 @@ export function ThreadDetail() {
         .from('diary_entries')
         .select('*')
         .eq('thread_id', threadId)
-        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false })
 
       if (entriesError) {
@@ -281,10 +335,28 @@ export function ThreadDetail() {
   }
 
   async function toggleDiaryReaction(entryId: string) {
-    if (!user) return
-
     const current = diaryReactions[entryId] || { count: 0, hasReacted: false }
 
+    // 匿名ユーザーの場合はローカルストレージのみ
+    if (!user) {
+      const hasReacted = getLocalReaction('diary', entryId)
+      if (hasReacted) {
+        setLocalReaction('diary', entryId, false)
+        setDiaryReactions(prev => ({
+          ...prev,
+          [entryId]: { count: Math.max(0, (prev[entryId]?.count || 0) - 1), hasReacted: false }
+        }))
+      } else {
+        setLocalReaction('diary', entryId, true)
+        setDiaryReactions(prev => ({
+          ...prev,
+          [entryId]: { count: (prev[entryId]?.count || 0) + 1, hasReacted: true }
+        }))
+      }
+      return
+    }
+
+    // ログインユーザーの場合はDBに保存
     if (current.hasReacted) {
       // Remove reaction
       await supabase
@@ -329,6 +401,8 @@ export function ThreadDetail() {
 
           await supabase.from('notifications').insert({
             user_id: entry.user_id,
+            from_user_id: user.id,
+            from_user_name: userData?.display_name || '匿名',
             type: 'like',
             title: `${userData?.display_name || '匿名'}さんがいいねしました`,
             message: entry.content?.substring(0, 50) || '',
@@ -340,8 +414,22 @@ export function ThreadDetail() {
   }
 
   async function toggleThreadReaction() {
-    if (!user || !thread?.id) return
+    if (!thread?.id) return
 
+    // 匿名ユーザーの場合はローカルストレージのみ
+    if (!user) {
+      const hasReacted = getLocalReaction('thread', thread.id)
+      if (hasReacted) {
+        setLocalReaction('thread', thread.id, false)
+        setThreadReaction(prev => ({ count: Math.max(0, prev.count - 1), hasReacted: false }))
+      } else {
+        setLocalReaction('thread', thread.id, true)
+        setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
+      }
+      return
+    }
+
+    // ログインユーザーの場合はDBに保存
     if (threadReaction.hasReacted) {
       // Remove reaction
       await supabase
@@ -379,6 +467,8 @@ export function ThreadDetail() {
 
           await supabase.from('notifications').insert({
             user_id: thread.user_id,
+            from_user_id: user.id,
+            from_user_name: userData?.display_name || '匿名',
             type: 'like',
             title: `${userData?.display_name || '匿名'}さんがいいねしました`,
             message: thread.title?.substring(0, 50) || '',
@@ -523,13 +613,19 @@ export function ThreadDetail() {
     } else {
       setCommentContent('')
       await fetchComments(thread.id)
-      // Update thread comments count
+      // Update thread comments count with actual count from DB
       if (thread) {
+        const { count } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('thread_id', thread.id)
+
+        const newCount = count || 0
         await supabase
           .from('threads')
-          .update({ comments_count: thread.comments_count + 1 } as never)
+          .update({ comments_count: newCount } as never)
           .eq('id', thread.id)
-        setThread({ ...thread, comments_count: thread.comments_count + 1 })
+        setThread({ ...thread, comments_count: newCount })
 
         // Get current user's display name
         const { data: currentUserData } = await supabase
@@ -597,6 +693,8 @@ export function ThreadDetail() {
           if (shouldNotify) {
             await supabase.from('notifications').insert({
               user_id: thread.user_id,
+              from_user_id: user.id,
+              from_user_name: currentUserData?.display_name || '匿名',
               type: 'thread_comment',
               title: `${currentUserData?.display_name || '匿名'}さんがコメントしました`,
               message: commentContent.substring(0, 100),
@@ -629,6 +727,8 @@ export function ThreadDetail() {
               if (shouldNotify) {
                 await supabase.from('notifications').insert({
                   user_id: repliedComment.user_id,
+                  from_user_id: user.id,
+                  from_user_name: currentUserData?.display_name || '匿名',
                   type: 'reply',
                   title: `${currentUserData?.display_name || '匿名'}さんが返信しました`,
                   message: commentContent.substring(0, 100),
@@ -867,13 +967,12 @@ export function ThreadDetail() {
             <div className="mt-4 pl-4">
               <button
                 onClick={toggleThreadReaction}
-                disabled={!user}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
                   threadReaction.hasReacted
                     ? 'bg-rose-100 text-rose-600'
                     : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
-                } ${!user ? 'cursor-not-allowed opacity-60' : ''}`}
-                title={user ? (threadReaction.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
+                }`}
+                title={threadReaction.hasReacted ? '応援を取り消す' : '応援する'}
               >
                 <Heart size={16} className={threadReaction.hasReacted ? 'fill-current' : ''} />
                 {!threadReaction.hasReacted && <span>応援</span>}
@@ -882,16 +981,16 @@ export function ThreadDetail() {
           )}
         </div>
 
-      {/* Diary Entries Section (for diary mode) - separate card */}
-      {thread.mode === 'diary' && (
+      {/* Diary Entries Section (for diary mode) - 記録がある場合、または作成者の場合のみ表示 */}
+      {thread.mode === 'diary' && (diaryEntries.length > 0 || (user && thread.user_id === user.id)) && (
         <>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden my-4">
-          <div className="px-6 py-4 border-b border-gray-200 bg-purple-50">
+          <div className={`px-6 py-4 bg-purple-50 ${diaryEntries.length > 0 || showDiaryForm ? 'border-b border-gray-200' : ''}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen size={20} className="text-purple-600" />
                 <h2 className="font-semibold text-gray-800">
-                  日記エントリー ({diaryEntries.length})
+                  記録 ({diaryEntries.length})
                 </h2>
               </div>
               {user && thread.user_id === user.id && (
@@ -900,7 +999,7 @@ export function ThreadDetail() {
                   className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <Plus size={16} />
-                  <span>新規エントリー</span>
+                  <span>記録を追加</span>
                 </button>
               )}
             </div>
@@ -994,11 +1093,7 @@ export function ThreadDetail() {
           )}
 
           {/* Diary Entries List */}
-          {diaryEntries.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">
-              まだ日記エントリーはありません
-            </div>
-          ) : (
+          {diaryEntries.length > 0 && (
             <div className="divide-y divide-gray-200">
               {diaryEntries.map((entry, index) => {
                 const images = (entry as any).image_urls || (entry.image_url ? [entry.image_url] : [])
@@ -1035,13 +1130,12 @@ export function ThreadDetail() {
                     <div className="mt-3">
                       <button
                         onClick={() => toggleDiaryReaction(entry.id)}
-                        disabled={!user}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
                           diaryReactions[entry.id]?.hasReacted
                             ? 'bg-rose-100 text-rose-600'
                             : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
-                        } ${!user ? 'cursor-not-allowed opacity-60' : ''}`}
-                        title={user ? (diaryReactions[entry.id]?.hasReacted ? '応援を取り消す' : '応援する') : 'ログインして応援'}
+                        }`}
+                        title={diaryReactions[entry.id]?.hasReacted ? '応援を取り消す' : '応援する'}
                       >
                         <Heart size={16} className={diaryReactions[entry.id]?.hasReacted ? 'fill-current' : ''} />
                         {!diaryReactions[entry.id]?.hasReacted && <span>応援</span>}

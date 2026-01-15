@@ -681,6 +681,8 @@ export type NotificationType = 'thread_comment' | 'reply' | 'like' | 'profile_co
 export interface UserNotification {
   id: string
   user_id: string
+  from_user_id: string | null
+  from_user_name: string | null
   type: NotificationType
   title: string
   message: string | null

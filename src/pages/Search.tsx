@@ -55,11 +55,15 @@ export function Search() {
 
     try {
       // Search threads
+      // 未来の日付を除外
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
       const threadPromise = supabase
         .from('threads')
         .select('*', { count: 'exact' })
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        .lte('created_at', new Date().toISOString())
+        .or(`title.ilike.%${query}%,body.ilike.%${query}%`)
+        .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .range(0, ITEMS_PER_PAGE - 1)
 
@@ -110,11 +114,14 @@ export function Search() {
     const to = from + ITEMS_PER_PAGE - 1
 
     try {
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
       const { data } = await supabase
         .from('threads')
         .select('*')
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        .lte('created_at', new Date().toISOString())
+        .or(`title.ilike.%${query}%,body.ilike.%${query}%`)
+        .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .range(from, to)
 

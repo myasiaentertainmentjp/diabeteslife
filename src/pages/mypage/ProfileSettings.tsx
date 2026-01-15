@@ -295,59 +295,7 @@ export function ProfileSettings() {
     setLoading(true)
 
     try {
-      // Try user_profiles table first (new schema)
-      const { data: userProfileData } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (userProfileData) {
-        setDisplayName(userProfileData.display_name || '')
-        setBio(userProfileData.bio || '')
-        setDiabetesType(userProfileData.diabetes_type)
-        setDiagnosisYear(userProfileData.diagnosis_year)
-        setAgeGroup(userProfileData.age_group)
-        setGender(userProfileData.gender)
-        setPrefecture(userProfileData.prefecture)
-        setIllnessDuration(userProfileData.illness_duration)
-        // Load treatment from user_profiles
-        if (userProfileData.treatment && Array.isArray(userProfileData.treatment)) {
-          setTreatments(userProfileData.treatment)
-        }
-        setDevices(userProfileData.devices || [])
-        setHasComplications(userProfileData.has_complications || 'private')
-        setOnDialysis(userProfileData.on_dialysis || 'private')
-        setIsPregnant(userProfileData.is_pregnant || 'private')
-        // Parse external_links into SNS fields (extract IDs from URLs)
-        const links = userProfileData.external_links || []
-        links.forEach((link: ExternalLink) => {
-          const url = link.url?.toLowerCase() || ''
-          if (url.includes('twitter.com') || url.includes('x.com')) {
-            setXId(extractIdFromUrl(link.url, 'x'))
-          } else if (url.includes('instagram.com')) {
-            setInstagramId(extractIdFromUrl(link.url, 'instagram'))
-          } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-            setYoutubeId(extractIdFromUrl(link.url, 'youtube'))
-          } else if (url.includes('tiktok.com')) {
-            setTiktokId(extractIdFromUrl(link.url, 'tiktok'))
-          } else if (!customLinkUrl) {
-            setCustomLinkTitle(link.title || '')
-            setCustomLinkUrl(link.url)
-          }
-        })
-        setAgeGroupPublic(userProfileData.age_group_public ?? false)
-        setGenderPublic(userProfileData.gender_public ?? false)
-        setPrefecturePublic(userProfileData.prefecture_public ?? false)
-        setIllnessDurationPublic(userProfileData.illness_duration_public ?? true)
-        setTreatmentPublic(userProfileData.treatment_public ?? true)
-        setDevicePublic(userProfileData.device_public ?? true)
-        setBioPublic(userProfileData.bio_public ?? true)
-        setHba1cPublic(userProfileData.hba1c_public ?? false)
-        setLinksPublic(userProfileData.links_public ?? true)
-      }
-
-      // Try users table for display_name and avatar
+      // Fetch basic data from users table
       const { data: userData } = await supabase
         .from('users')
         .select('display_name, avatar_url')
@@ -355,8 +303,63 @@ export function ProfileSettings() {
         .single()
 
       if (userData) {
-        if (!displayName) setDisplayName(userData.display_name || '')
-        if (!avatarUrl) setAvatarUrl(userData.avatar_url || '')
+        setDisplayName(userData.display_name || '')
+        setAvatarUrl(userData.avatar_url || '')
+      }
+
+      // Fetch extended profile from user_profiles table
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (profileData) {
+        setBio(profileData.bio || '')
+        setDiabetesType(profileData.diabetes_type || null)
+        setDiagnosisYear(profileData.diagnosis_year || null)
+        setAgeGroup(profileData.age_group || null)
+        setGender(profileData.gender || null)
+        setPrefecture(profileData.prefecture || null)
+        setIllnessDuration(profileData.illness_duration || null)
+        if (profileData.treatment_methods && Array.isArray(profileData.treatment_methods)) {
+          setTreatments(profileData.treatment_methods)
+        }
+        if (profileData.device) {
+          setDevices([profileData.device])
+        }
+        setHasComplications(profileData.has_complications || 'private')
+        setOnDialysis(profileData.on_dialysis || 'private')
+        setIsPregnant(profileData.is_pregnant || 'private')
+        // Parse external_links
+        const links = profileData.external_links || []
+        if (Array.isArray(links)) {
+          links.forEach((link: ExternalLink) => {
+            const url = link.url?.toLowerCase() || ''
+            if (url.includes('twitter.com') || url.includes('x.com')) {
+              setXId(extractIdFromUrl(link.url, 'x'))
+            } else if (url.includes('instagram.com')) {
+              setInstagramId(extractIdFromUrl(link.url, 'instagram'))
+            } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+              setYoutubeId(extractIdFromUrl(link.url, 'youtube'))
+            } else if (url.includes('tiktok.com')) {
+              setTiktokId(extractIdFromUrl(link.url, 'tiktok'))
+            } else if (!customLinkUrl) {
+              setCustomLinkTitle(link.title || '')
+              setCustomLinkUrl(link.url)
+            }
+          })
+        }
+        // Privacy settings
+        setAgeGroupPublic(profileData.age_group_public ?? false)
+        setGenderPublic(profileData.gender_public ?? false)
+        setPrefecturePublic(profileData.prefecture_public ?? false)
+        setIllnessDurationPublic(profileData.illness_duration_public ?? true)
+        setTreatmentPublic(profileData.treatment_public ?? true)
+        setDevicePublic(profileData.device_public ?? true)
+        setBioPublic(profileData.bio_public ?? true)
+        setHba1cPublic(profileData.hba1c_public ?? false)
+        setLinksPublic(profileData.links_public ?? true)
       }
 
       // Fetch notification settings
@@ -364,7 +367,7 @@ export function ProfileSettings() {
         .from('notification_settings')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (notifSettings) {
         setNotifyThreadComment(notifSettings.thread_comment ?? true)
@@ -404,7 +407,16 @@ export function ProfileSettings() {
     setSaved(false)
 
     try {
-      // Update users table
+      // Build external links
+      const externalLinks = [
+        ...(xId ? [{ title: 'X', url: buildUrl(xId, 'x') }] : []),
+        ...(instagramId ? [{ title: 'Instagram', url: buildUrl(instagramId, 'instagram') }] : []),
+        ...(youtubeId ? [{ title: 'YouTube', url: buildUrl(youtubeId, 'youtube') }] : []),
+        ...(tiktokId ? [{ title: 'TikTok', url: buildUrl(tiktokId, 'tiktok') }] : []),
+        ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
+      ]
+
+      // Update users table (basic profile data)
       const { error: usersError } = await supabase
         .from('users')
         .update({
@@ -416,40 +428,25 @@ export function ProfileSettings() {
 
       if (usersError) {
         console.error('Error updating users:', usersError)
+        throw usersError
       }
 
-      // Build profile data
-      const externalLinks = [
-        ...(xId ? [{ title: 'X', url: buildUrl(xId, 'x') }] : []),
-        ...(instagramId ? [{ title: 'Instagram', url: buildUrl(instagramId, 'instagram') }] : []),
-        ...(youtubeId ? [{ title: 'YouTube', url: buildUrl(youtubeId, 'youtube') }] : []),
-        ...(tiktokId ? [{ title: 'TikTok', url: buildUrl(tiktokId, 'tiktok') }] : []),
-        ...(customLinkUrl ? [{ title: customLinkTitle || 'リンク', url: customLinkUrl }] : []),
-      ]
-
-      // Check if user_profiles record exists
-      const { data: existingProfile } = await supabase
-        .from('user_profiles')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .single()
-
-      const userProfileData = {
+      // Update user_profiles table (extended profile data)
+      const profileData = {
+        user_id: user.id,
+        bio: bio || null,
         diabetes_type: diabetesType,
         diagnosis_year: diagnosisYear,
-        bio: bio || null,
         age_group: ageGroup,
         gender: gender,
         prefecture: prefecture,
         illness_duration: illnessDuration,
-        treatment: treatments.length > 0 ? treatments : [],
-        devices: devices.length > 0 ? devices : [],
+        treatment_methods: treatments.length > 0 ? treatments : [],
+        device: devices.length > 0 ? devices[0] : null,
         has_complications: hasComplications,
         on_dialysis: onDialysis,
         is_pregnant: isPregnant,
         external_links: externalLinks,
-        display_name: displayName || null,
-        // Privacy flags
         age_group_public: ageGroupPublic,
         gender_public: genderPublic,
         prefecture_public: prefecturePublic,
@@ -459,37 +456,25 @@ export function ProfileSettings() {
         bio_public: bioPublic,
         hba1c_public: hba1cPublic,
         links_public: linksPublic,
+        updated_at: new Date().toISOString(),
       }
 
-      if (existingProfile) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('user_profiles')
-          .update(userProfileData as never)
-          .eq('user_id', user.id)
+      // Try upsert to user_profiles
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert(profileData, { onConflict: 'user_id' })
 
-        if (updateError) {
-          console.error('Error updating user_profiles:', updateError)
-          throw updateError
-        }
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from('user_profiles')
-          .insert({ ...userProfileData, user_id: user.id } as never)
-
-        if (insertError) {
-          console.error('Error inserting user_profiles:', insertError)
-          throw insertError
-        }
+      if (profileError) {
+        console.warn('Could not save extended profile:', profileError)
+        // Don't throw - basic profile was saved successfully
       }
 
-      // Check if notification settings exist
+      // Handle notification settings
       const { data: existingNotif } = await supabase
         .from('notification_settings')
         .select('user_id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       const notifData = {
         thread_comment: notifyThreadComment,
@@ -510,7 +495,7 @@ export function ProfileSettings() {
       }
 
       setSaved(true)
-      clearDraft() // Clear draft after successful save
+      clearDraft()
       refreshProfile()
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -550,9 +535,6 @@ export function ProfileSettings() {
       // Delete reactions
       await supabase.from('diary_reactions').delete().eq('user_id', user.id)
       await supabase.from('thread_reactions').delete().eq('user_id', user.id)
-
-      // Delete user_profiles
-      await supabase.from('user_profiles').delete().eq('user_id', user.id)
 
       // Delete from users table
       await supabase.from('users').delete().eq('id', user.id)

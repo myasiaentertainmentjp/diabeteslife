@@ -87,22 +87,23 @@ export function ThreadNew() {
   async function uploadImage(file: File): Promise<string | null> {
     setUploadingImage(true)
     try {
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'threads')
-      formData.append('fileName', fileName)
+      const fileName = `threads/${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`
 
-      const { data, error } = await supabase.functions.invoke('upload-image', {
-        body: formData,
-      })
+      // Supabase Storageに直接アップロード
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, file, {
+          cacheControl: '31536000',
+          contentType: file.type,
+        })
 
-      if (error) {
-        console.error('Upload error:', error)
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
         return null
       }
 
-      return data?.url || null
+      const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName)
+      return urlData.publicUrl
     } catch (err) {
       console.error('Upload error:', err)
       return null
@@ -157,7 +158,7 @@ export function ThreadNew() {
       .insert({
         user_id: user.id,
         title: title.trim(),
-        content: content.trim(),
+        body: content.trim(),
         category,
         mode,
         comments_count: 0,

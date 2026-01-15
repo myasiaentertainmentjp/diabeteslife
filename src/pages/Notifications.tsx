@@ -175,28 +175,36 @@ export function Notifications() {
                   {NOTIFICATION_ICONS[notification.type] || <Bell size={16} className="text-gray-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
+                  <p className={`text-sm ${!notification.is_read ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
+                    {notification.from_user_id ? (
+                      <>
+                        <Link
+                          to={`/users/${notification.from_user_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          {notification.from_user_name || '匿名'}
+                        </Link>
+                        <span>さんが{notification.type === 'like' ? 'いいねしました' : notification.type === 'reply' ? '返信しました' : notification.type === 'thread_comment' ? 'コメントしました' : '応援コメントしました'}</span>
+                      </>
+                    ) : (
+                      notification.title
+                    )}
+                  </p>
                   {notification.link ? (
                     <Link
                       to={notification.link}
                       onClick={() => !notification.is_read && markAsRead(notification.id)}
                       className="block"
                     >
-                      <p className={`text-sm ${!notification.is_read ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
-                        {notification.title}
-                      </p>
                       {notification.message && (
                         <p className="text-xs text-gray-500 mt-0.5 truncate">{notification.message}</p>
                       )}
                     </Link>
                   ) : (
-                    <>
-                      <p className={`text-sm ${!notification.is_read ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
-                        {notification.title}
-                      </p>
-                      {notification.message && (
-                        <p className="text-xs text-gray-500 mt-0.5 truncate">{notification.message}</p>
-                      )}
-                    </>
+                    notification.message && (
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{notification.message}</p>
+                    )
                   )}
                   <p className="text-xs text-gray-400 mt-1">{formatDate(notification.created_at)}</p>
                 </div>

@@ -6,19 +6,65 @@ import { useAuth } from '../contexts/AuthContext'
 import { ThreadWithUser, THREAD_CATEGORY_LABELS, ThreadCategory, Article } from '../types/database'
 import { PopularKeywords } from '../components/PopularKeywords'
 import { HeroSlider } from '../components/HeroSlider'
-import { Search, MessageSquare, PenSquare, ChevronRight, Loader2, FileText } from 'lucide-react'
+import { Search, MessageSquare, PenSquare, ChevronRight, FileText } from 'lucide-react'
 
 type TabType = 'popular' | 'new'
 
 const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
+
+// スケルトンローディング
+function ThreadSkeleton() {
+  return (
+    <div className="animate-pulse">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="px-4 py-3 border-b border-gray-100 last:border-b-0">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SidebarSkeleton() {
+  return (
+    <div className="animate-pulse px-4 py-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-start gap-3 py-2">
+          <div className="w-4 h-4 bg-gray-200 rounded shrink-0"></div>
+          <div className="h-3 bg-gray-200 rounded flex-1"></div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ArticleSkeleton() {
+  return (
+    <div className="animate-pulse p-4 space-y-3">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="flex items-start gap-3">
+          <div className="w-20 bg-gray-200 rounded shrink-0" style={{ aspectRatio: '1.91 / 1' }}></div>
+          <div className="flex-1 space-y-1">
+            <div className="h-3 bg-gray-200 rounded w-full"></div>
+            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
   const [threads, setThreads] = useState<ThreadWithUser[]>([])
   const [popularThreads, setPopularThreads] = useState<ThreadWithUser[]>([])
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // 個別のローディング状態
+  const [loadingThreads, setLoadingThreads] = useState(true)
+  const [loadingPopular, setLoadingPopular] = useState(true)
+  const [loadingArticles, setLoadingArticles] = useState(true)
 
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -35,20 +81,32 @@ export function Home() {
   }, [activeTab])
 
   async function fetchThreads() {
-    setLoading(true)
+    setLoadingThreads(true)
 
-    // 10秒タイムアウト
     const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 10000)
+      setTimeout(() => resolve(null), 5000)
     })
 
     try {
-      const queryPromise = supabase
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
+      let query = supabase
         .from('threads')
-        .select('id, thread_number, title, category, created_at, user_id')
-        .lte('created_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(15)
+        .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .lte('created_at', futureBuffer.toISOString())
+
+      if (activeTab === 'popular') {
+        // 人気トピック: コメント数の多い順、同数なら新しい順
+        query = query
+          .order('comments_count', { ascending: false })
+          .order('created_at', { ascending: false })
+      } else {
+        // 新着トピック: 作成日時の新しい順
+        query = query.order('created_at', { ascending: false })
+      }
+
+      const queryPromise = query.limit(15)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -65,24 +123,29 @@ export function Home() {
       console.error('Error fetching threads:', error)
       setThreads([])
     } finally {
-      setLoading(false)
+      setLoadingThreads(false)
     }
   }
 
   async function fetchPopularThreads() {
+    setLoadingPopular(true)
+
     const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 10000)
+      setTimeout(() => resolve(null), 5000)
     })
 
     try {
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
       const queryPromise = supabase
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
-        .lte('created_at', new Date().toISOString())
+        .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .limit(15)
 
@@ -100,12 +163,16 @@ export function Home() {
     } catch (error) {
       console.error('Error fetching popular threads:', error)
       setPopularThreads([])
+    } finally {
+      setLoadingPopular(false)
     }
   }
 
   async function fetchFeaturedArticles() {
+    setLoadingArticles(true)
+
     const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 10000)
+      setTimeout(() => resolve(null), 5000)
     })
 
     try {
@@ -129,6 +196,8 @@ export function Home() {
     } catch (error) {
       console.error('Error fetching featured articles:', error)
       setFeaturedArticles([])
+    } finally {
+      setLoadingArticles(false)
     }
   }
 
@@ -222,10 +291,8 @@ export function Home() {
 
             {/* Thread List */}
             <div className="bg-white rounded-b-lg shadow-sm pt-2">
-              {loading ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader2 size={28} className="animate-spin text-rose-500" />
-                </div>
+              {loadingThreads ? (
+                <ThreadSkeleton />
               ) : threads.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <MessageSquare size={40} className="mx-auto mb-3 text-gray-300" />
@@ -296,7 +363,9 @@ export function Home() {
               <div className="px-4 py-3 border-b border-gray-100">
                 <h2 className="font-bold text-gray-800">一週間の人気トピック</h2>
               </div>
-              {popularThreads.length === 0 ? (
+              {loadingPopular ? (
+                <SidebarSkeleton />
+              ) : popularThreads.length === 0 ? (
                 <div className="px-4 py-6 text-center text-gray-500 text-sm">
                   まだトピックがありません
                 </div>
@@ -326,7 +395,9 @@ export function Home() {
               <div className="px-4 py-3 border-b border-gray-100">
                 <h2 className="font-bold text-gray-800">おすすめ記事</h2>
               </div>
-              {featuredArticles.length === 0 ? (
+              {loadingArticles ? (
+                <ArticleSkeleton />
+              ) : featuredArticles.length === 0 ? (
                 <div className="px-4 py-6 text-center text-gray-500 text-sm">
                   <FileText size={24} className="mx-auto mb-2 text-gray-300" />
                   <p>おすすめ記事がありません</p>

@@ -44,7 +44,6 @@ import {
   Trash2,
   Ban,
   UserX,
-  HelpCircle,
   Eye,
 } from 'lucide-react'
 
@@ -156,7 +155,6 @@ export function UserProfile() {
   const [profileComments, setProfileComments] = useState<ProfileComment[]>([])
   const [commentBody, setCommentBody] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
-  const [showCommentTooltip, setShowCommentTooltip] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // Block feature state
@@ -256,7 +254,6 @@ export function UserProfile() {
           .from('threads')
           .select('*')
           .eq('user_id', userId)
-          .lte('created_at', new Date().toISOString())
           .order('created_at', { ascending: false })
           .limit(10)
 
@@ -374,6 +371,8 @@ export function UserProfile() {
         if (shouldNotify) {
           await supabase.from('notifications').insert({
             user_id: userId,
+            from_user_id: currentUser.id,
+            from_user_name: commenterData?.display_name || '匿名',
             type: 'profile_comment',
             title: `${commenterData?.display_name || '匿名'}さんが応援コメントしました`,
             message: commentBody.trim().substring(0, 100),
@@ -850,24 +849,8 @@ export function UserProfile() {
             <MessageSquare size={16} className="text-rose-500" />
             <h2 className="text-sm font-semibold text-gray-900">コメント</h2>
             <span className="text-xs text-gray-500">({profileComments.length})</span>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowCommentTooltip(!showCommentTooltip)}
-                onMouseEnter={() => setShowCommentTooltip(true)}
-                onMouseLeave={() => setShowCommentTooltip(false)}
-                className="text-gray-400 hover:text-rose-500 transition-colors"
-              >
-                <HelpCircle size={14} />
-              </button>
-              {showCommentTooltip && (
-                <div className="absolute left-0 top-6 z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg">
-                  このユーザーへのコメントや応援メッセージを送れます
-                  <div className="absolute -top-1 left-2 w-2 h-2 bg-gray-800 rotate-45" />
-                </div>
-              )}
-            </div>
           </div>
+          <p className="text-xs text-gray-500 mt-1">このユーザーへのコメントや応援メッセージを送れます</p>
         </div>
 
         {/* Comment Form */}

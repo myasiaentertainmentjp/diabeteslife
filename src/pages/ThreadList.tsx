@@ -9,7 +9,7 @@ import {
   THREAD_CATEGORY_LABELS,
   THREAD_CATEGORY_COLORS,
 } from '../types/database'
-import { MessageSquare, Plus, ChevronLeft, ChevronRight, Loader2, BookOpen } from 'lucide-react'
+import { MessageSquare, Plus, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
 
@@ -17,7 +17,6 @@ const categories: (ThreadCategory | 'all')[] = ['all', 'todays_meal', 'food_reci
 
 export function ThreadList() {
   const [threads, setThreads] = useState<ThreadWithUser[]>([])
-  const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
 
   const { user } = useAuth()
@@ -58,18 +57,20 @@ export function ThreadList() {
   }, [selectedCategory, currentPage])
 
   async function fetchThreads() {
-    setLoading(true)
-
     // 10秒タイムアウト
     const timeoutPromise = new Promise<null>((resolve) => {
       setTimeout(() => resolve(null), 10000)
     })
 
     try {
+      // 未来の日付を除外（1分のバッファを追加）
+      const futureBuffer = new Date()
+      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+
       let query = supabase
         .from('threads')
         .select('id, thread_number, user_id, title, category, comments_count, created_at', { count: 'exact' })
-        .lte('created_at', new Date().toISOString())
+        .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {
@@ -86,7 +87,6 @@ export function ThreadList() {
         console.warn('Fetch threads timeout')
         setThreads([])
         setTotalCount(0)
-        setLoading(false)
         return
       }
 
@@ -96,14 +96,12 @@ export function ThreadList() {
         console.error('Error fetching threads:', error)
         setThreads([])
         setTotalCount(0)
-        setLoading(false)
         return
       }
 
       if (!data || data.length === 0) {
         setThreads([])
         setTotalCount(count || 0)
-        setLoading(false)
         return
       }
 
@@ -130,8 +128,6 @@ export function ThreadList() {
       console.error('Error fetching threads:', error)
       setThreads([])
       setTotalCount(0)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -202,11 +198,7 @@ export function ThreadList() {
       </div>
 
       {/* Thread List */}
-      {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 size={32} className="animate-spin text-rose-500" />
-        </div>
-      ) : threads.length === 0 ? (
+      {threads.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl">
           <MessageSquare size={48} className="mx-auto text-gray-400 mb-4" />
           <p className="text-gray-600">スレッドがありません</p>
