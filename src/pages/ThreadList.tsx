@@ -8,8 +8,9 @@ import {
   ThreadWithUser,
   THREAD_CATEGORY_LABELS,
   THREAD_CATEGORY_COLORS,
+  THREAD_CATEGORY_DESCRIPTIONS,
 } from '../types/database'
-import { MessageSquare, Plus, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { MessageSquare, Plus, ChevronLeft, ChevronRight, Camera } from 'lucide-react'
 
 const ITEMS_PER_PAGE = 10
 
@@ -63,14 +64,13 @@ export function ThreadList() {
     })
 
     try {
-      // 未来の日付を除外（1分のバッファを追加）
-      const futureBuffer = new Date()
-      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+      // 未来の日付を除外
+      const now = new Date().toISOString()
 
       let query = supabase
         .from('threads')
         .select('id, thread_number, user_id, title, category, comments_count, created_at', { count: 'exact' })
-        .lte('created_at', futureBuffer.toISOString())
+        .lte('created_at', now)
         .order('created_at', { ascending: false })
 
       if (selectedCategory !== 'all') {
@@ -197,6 +197,17 @@ export function ThreadList() {
         ))}
       </div>
 
+      {/* Banner for 食事の記録 category */}
+      {selectedCategory === 'todays_meal' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <Camera size={24} className="text-orange-500 flex-shrink-0" />
+          <div>
+            <p className="text-orange-800 font-medium">写真を添付して、みんなの食事を見てみましょう!</p>
+            <p className="text-orange-600 text-sm mt-0.5">{THREAD_CATEGORY_DESCRIPTIONS['todays_meal']}</p>
+          </div>
+        </div>
+      )}
+
       {/* Thread List */}
       {threads.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -226,12 +237,6 @@ export function ThreadList() {
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
                       {THREAD_CATEGORY_LABELS[thread.category]}
                     </span>
-                    {(thread as any).mode === 'diary' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
-                        <BookOpen size={12} />
-                        日記
-                      </span>
-                    )}
                   </div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2 truncate">
                     {thread.title}

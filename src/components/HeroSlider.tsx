@@ -24,9 +24,9 @@ const SLIDES: Slide[] = [
   },
   {
     id: 2,
-    title: '毎日の記録が、明日の自信に。',
-    subtitle: '食事や血糖値を記録して、仲間と共有しよう',
-    buttonText: '日記をはじめる',
+    title: '毎日の食事が、明日の自信に。',
+    subtitle: '写真付きで食事を記録して、仲間と共有しよう',
+    buttonText: '食事を記録する',
     buttonLink: '/threads/new',
     bgGradient: 'bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-300',
   },

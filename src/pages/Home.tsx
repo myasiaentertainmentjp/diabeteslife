@@ -16,7 +16,7 @@ const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment',
 function ThreadSkeleton() {
   return (
     <div className="animate-pulse">
-      {[...Array(5)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <div key={i} className="px-4 py-3 border-b border-gray-100 last:border-b-0">
           <div className="h-4 bg-gray-200 rounded w-3/4"></div>
         </div>
@@ -88,13 +88,13 @@ export function Home() {
     })
 
     try {
-      const futureBuffer = new Date()
-      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+      // 未来の日付を除外
+      const now = new Date().toISOString()
 
       let query = supabase
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id, comments_count')
-        .lte('created_at', futureBuffer.toISOString())
+        .lte('created_at', now)
 
       if (activeTab === 'popular') {
         // 人気トピック: コメント数の多い順、同数なら新しい順
@@ -106,7 +106,7 @@ export function Home() {
         query = query.order('created_at', { ascending: false })
       }
 
-      const queryPromise = query.limit(15)
+      const queryPromise = query.limit(25)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -137,15 +137,13 @@ export function Home() {
     try {
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-
-      const futureBuffer = new Date()
-      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
+      const now = new Date().toISOString()
 
       const queryPromise = supabase
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id')
         .gte('created_at', oneWeekAgo.toISOString())
-        .lte('created_at', futureBuffer.toISOString())
+        .lte('created_at', now)
         .order('created_at', { ascending: false })
         .limit(15)
 

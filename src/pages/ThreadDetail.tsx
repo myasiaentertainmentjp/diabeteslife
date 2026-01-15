@@ -10,13 +10,10 @@ import {
   THREAD_CATEGORY_LABELS,
   THREAD_CATEGORY_COLORS,
   ThreadCategory,
-  ThreadMode,
-  THREAD_MODE_LABELS,
-  DiaryEntry,
 } from '../types/database'
 import { ReportButton } from '../components/ReportButton'
 import { Sidebar } from '../components/Sidebar'
-import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, BookOpen, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Reply, Heart } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, Reply, Bookmark } from 'lucide-react'
 
 const SITE_URL = 'https://diabeteslife.jp'
 const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
@@ -24,65 +21,25 @@ const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
 // Extended thread type with author email for notifications
 interface ThreadWithAuthor extends ThreadWithUser {
   users?: { email: string; display_name: string | null }
-  mode?: ThreadMode
-}
-
-// Diary entry with user info
-interface DiaryEntryWithUser extends DiaryEntry {
-  profiles?: { display_name: string | null }
 }
 
 export function ThreadDetail() {
   const { threadNumber } = useParams<{ threadNumber: string }>()
   const [thread, setThread] = useState<ThreadWithAuthor | null>(null)
   const [comments, setComments] = useState<ThreadCommentWithUser[]>([])
-  const [diaryEntries, setDiaryEntries] = useState<DiaryEntryWithUser[]>([])
   const [loading, setLoading] = useState(true)
   const [commentContent, setCommentContent] = useState('')
-  const [diaryContent, setDiaryContent] = useState('')
-  const [diaryImages, setDiaryImages] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const [submittingDiary, setSubmittingDiary] = useState(false)
   const [error, setError] = useState('')
-  const [diaryError, setDiaryError] = useState('')
-  const [showComments, setShowComments] = useState(false)
-  const [showDiaryForm, setShowDiaryForm] = useState(false)
   const [hoveredComment, setHoveredComment] = useState<number | null>(null)
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
-  const [diaryReactions, setDiaryReactions] = useState<Record<string, { count: number; hasReacted: boolean }>>({})
-  const [threadReaction, setThreadReaction] = useState<{ count: number; hasReacted: boolean }>({ count: 0, hasReacted: false })
+  const [imageModal, setImageModal] = useState<string | null>(null)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [bookmarkLoading, setBookmarkLoading] = useState(false)
 
   const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const MAX_DIARY_IMAGES = 4
 
   const { user } = useAuth()
-
-  // 匿名ユーザー用のID取得・生成
-  function getAnonymousId(): string {
-    const key = 'dlife_anonymous_id'
-    let id = localStorage.getItem(key)
-    if (!id) {
-      id = 'anon_' + Math.random().toString(36).substring(2) + Date.now().toString(36)
-      localStorage.setItem(key, id)
-    }
-    return id
-  }
-
-  // ローカルの応援状態を取得
-  function getLocalReaction(type: 'thread' | 'diary', id: string): boolean {
-    const key = `dlife_reaction_${type}_${id}`
-    return localStorage.getItem(key) === 'true'
-  }
-
-  // ローカルの応援状態を設定
-  function setLocalReaction(type: 'thread' | 'diary', id: string, value: boolean) {
-    const key = `dlife_reaction_${type}_${id}`
-    if (value) {
-      localStorage.setItem(key, 'true')
-    } else {
-      localStorage.removeItem(key)
-    }
-  }
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
@@ -93,39 +50,63 @@ export function ThreadDetail() {
     }
   }, [threadNumber])
 
-  // 匿名ユーザーの場合、localStorageから応援状態を復元
+  // Check bookmark status when thread and user are available
   useEffect(() => {
-    if (!user && thread?.id) {
-      const hasReactedThread = getLocalReaction('thread', thread.id)
-      if (hasReactedThread) {
-        setThreadReaction(prev => ({ ...prev, hasReacted: true }))
-      }
+    if (thread?.id && user) {
+      checkBookmarkStatus(thread.id)
     }
-  }, [user, thread?.id])
+  }, [thread?.id, user])
 
-  // 日記エントリーの応援状態を復元（匿名ユーザー）
-  useEffect(() => {
-    if (!user && diaryEntries.length > 0) {
-      const updatedReactions: Record<string, { count: number; hasReacted: boolean }> = {}
-      diaryEntries.forEach(entry => {
-        const hasReacted = getLocalReaction('diary', entry.id)
-        if (hasReacted) {
-          updatedReactions[entry.id] = {
-            count: diaryReactions[entry.id]?.count || 0,
-            hasReacted: true
-          }
-        }
-      })
-      if (Object.keys(updatedReactions).length > 0) {
-        setDiaryReactions(prev => ({ ...prev, ...updatedReactions }))
+  async function checkBookmarkStatus(threadId: string) {
+    if (!user) return
+
+    const { data } = await supabase
+      .from('thread_bookmarks')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('thread_id', threadId)
+      .single()
+
+    setIsBookmarked(!!data)
+  }
+
+  async function toggleBookmark() {
+    if (!user || !thread?.id || bookmarkLoading) return
+
+    setBookmarkLoading(true)
+
+    if (isBookmarked) {
+      // Remove bookmark
+      const { error } = await supabase
+        .from('thread_bookmarks')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('thread_id', thread.id)
+
+      if (!error) {
+        setIsBookmarked(false)
+      }
+    } else {
+      // Add bookmark
+      const { error } = await supabase
+        .from('thread_bookmarks')
+        .insert({
+          user_id: user.id,
+          thread_id: thread.id,
+        } as never)
+
+      if (!error) {
+        setIsBookmarked(true)
       }
     }
-  }, [user, diaryEntries])
+
+    setBookmarkLoading(false)
+  }
 
   async function fetchData() {
     setLoading(true)
 
-    // 15秒タイムアウト（複数のクエリがあるため長めに設定）
+    // 15秒タイムアウト
     const timeoutId = setTimeout(() => {
       console.warn('Fetch data timeout')
       setLoading(false)
@@ -135,11 +116,6 @@ export function ThreadDetail() {
       const threadData = await fetchThread()
       if (threadData?.id) {
         await fetchComments(threadData.id)
-        // Fetch diary entries and thread reaction if diary mode
-        if (threadData?.mode === 'diary') {
-          await fetchDiaryEntries(threadData.id)
-          await fetchThreadReaction(threadData.id)
-        }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -243,327 +219,6 @@ export function ThreadDetail() {
       console.error('Error fetching comments:', error)
       setComments([])
     }
-  }
-
-  async function fetchDiaryEntries(threadId: string) {
-    if (!threadId) return
-
-    try {
-      const { data: entriesData, error: entriesError } = await supabase
-        .from('diary_entries')
-        .select('*')
-        .eq('thread_id', threadId)
-        .order('created_at', { ascending: false })
-
-      if (entriesError) {
-        console.error('Error fetching diary entries:', entriesError)
-        return
-      }
-
-      if (!entriesData || entriesData.length === 0) {
-        setDiaryEntries([])
-        return
-      }
-
-      // Get user info for entries
-      const userIds = [...new Set(entriesData.map((e) => e.user_id))]
-      const { data: usersData } = await supabase
-        .from('users')
-        .select('id, display_name')
-        .in('id', userIds)
-
-      const usersMap = new Map(usersData?.map((u) => [u.id, u]) || [])
-
-      const entriesWithUsers = entriesData.map((entry) => ({
-        ...entry,
-        profiles: {
-          display_name: usersMap.get(entry.user_id)?.display_name || null,
-        },
-      }))
-
-      setDiaryEntries(entriesWithUsers as unknown as DiaryEntryWithUser[])
-
-      // Fetch reactions for diary entries
-      await fetchDiaryReactions(entriesData.map(e => e.id))
-    } catch (error) {
-      console.error('Error fetching diary entries:', error)
-      setDiaryEntries([])
-    }
-  }
-
-  async function fetchDiaryReactions(entryIds: string[]) {
-    if (entryIds.length === 0) return
-
-    try {
-      // Get reaction counts for each entry
-      const { data: reactionsData } = await supabase
-        .from('diary_reactions')
-        .select('diary_entry_id, user_id')
-        .in('diary_entry_id', entryIds)
-
-      // Count reactions per entry and check if current user reacted
-      const reactionMap: Record<string, { count: number; hasReacted: boolean }> = {}
-      entryIds.forEach(id => {
-        const entryReactions = reactionsData?.filter(r => r.diary_entry_id === id) || []
-        reactionMap[id] = {
-          count: entryReactions.length,
-          hasReacted: user ? entryReactions.some(r => r.user_id === user.id) : false,
-        }
-      })
-      setDiaryReactions(reactionMap)
-    } catch (error) {
-      console.error('Error fetching diary reactions:', error)
-    }
-  }
-
-  async function fetchThreadReaction(threadId: string) {
-    if (!threadId) return
-
-    try {
-      const { data: reactionsData } = await supabase
-        .from('thread_reactions')
-        .select('user_id')
-        .eq('thread_id', threadId)
-
-      setThreadReaction({
-        count: reactionsData?.length || 0,
-        hasReacted: user ? reactionsData?.some(r => r.user_id === user.id) || false : false,
-      })
-    } catch (error) {
-      console.error('Error fetching thread reaction:', error)
-    }
-  }
-
-  async function toggleDiaryReaction(entryId: string) {
-    const current = diaryReactions[entryId] || { count: 0, hasReacted: false }
-
-    // 匿名ユーザーの場合はローカルストレージのみ
-    if (!user) {
-      const hasReacted = getLocalReaction('diary', entryId)
-      if (hasReacted) {
-        setLocalReaction('diary', entryId, false)
-        setDiaryReactions(prev => ({
-          ...prev,
-          [entryId]: { count: Math.max(0, (prev[entryId]?.count || 0) - 1), hasReacted: false }
-        }))
-      } else {
-        setLocalReaction('diary', entryId, true)
-        setDiaryReactions(prev => ({
-          ...prev,
-          [entryId]: { count: (prev[entryId]?.count || 0) + 1, hasReacted: true }
-        }))
-      }
-      return
-    }
-
-    // ログインユーザーの場合はDBに保存
-    if (current.hasReacted) {
-      // Remove reaction
-      await supabase
-        .from('diary_reactions')
-        .delete()
-        .eq('diary_entry_id', entryId)
-        .eq('user_id', user.id)
-
-      setDiaryReactions(prev => ({
-        ...prev,
-        [entryId]: { count: prev[entryId].count - 1, hasReacted: false }
-      }))
-    } else {
-      // Add reaction
-      await supabase
-        .from('diary_reactions')
-        .insert({ diary_entry_id: entryId, user_id: user.id } as never)
-
-      setDiaryReactions(prev => ({
-        ...prev,
-        [entryId]: { count: (prev[entryId]?.count || 0) + 1, hasReacted: true }
-      }))
-
-      // Create notification for diary entry owner (if not self)
-      const entry = diaryEntries.find(e => e.id === entryId)
-      if (entry && entry.user_id !== user.id) {
-        // Check notification settings
-        const { data: notifSettings } = await supabase
-          .from('notification_settings')
-          .select('likes')
-          .eq('user_id', entry.user_id)
-          .single()
-
-        const shouldNotify = notifSettings?.likes ?? true
-
-        if (shouldNotify) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('display_name')
-            .eq('id', user.id)
-            .single()
-
-          await supabase.from('notifications').insert({
-            user_id: entry.user_id,
-            from_user_id: user.id,
-            from_user_name: userData?.display_name || '匿名',
-            type: 'like',
-            title: `${userData?.display_name || '匿名'}さんがいいねしました`,
-            message: entry.content?.substring(0, 50) || '',
-            link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
-          } as never)
-        }
-      }
-    }
-  }
-
-  async function toggleThreadReaction() {
-    if (!thread?.id) return
-
-    // 匿名ユーザーの場合はローカルストレージのみ
-    if (!user) {
-      const hasReacted = getLocalReaction('thread', thread.id)
-      if (hasReacted) {
-        setLocalReaction('thread', thread.id, false)
-        setThreadReaction(prev => ({ count: Math.max(0, prev.count - 1), hasReacted: false }))
-      } else {
-        setLocalReaction('thread', thread.id, true)
-        setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
-      }
-      return
-    }
-
-    // ログインユーザーの場合はDBに保存
-    if (threadReaction.hasReacted) {
-      // Remove reaction
-      await supabase
-        .from('thread_reactions')
-        .delete()
-        .eq('thread_id', thread.id)
-        .eq('user_id', user.id)
-
-      setThreadReaction(prev => ({ count: prev.count - 1, hasReacted: false }))
-    } else {
-      // Add reaction
-      await supabase
-        .from('thread_reactions')
-        .insert({ thread_id: thread.id, user_id: user.id } as never)
-
-      setThreadReaction(prev => ({ count: prev.count + 1, hasReacted: true }))
-
-      // Create notification for thread owner (if not self)
-      if (thread && thread.user_id !== user.id) {
-        // Check notification settings
-        const { data: notifSettings } = await supabase
-          .from('notification_settings')
-          .select('likes')
-          .eq('user_id', thread.user_id)
-          .single()
-
-        const shouldNotify = notifSettings?.likes ?? true
-
-        if (shouldNotify) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('display_name')
-            .eq('id', user.id)
-            .single()
-
-          await supabase.from('notifications').insert({
-            user_id: thread.user_id,
-            from_user_id: user.id,
-            from_user_name: userData?.display_name || '匿名',
-            type: 'like',
-            title: `${userData?.display_name || '匿名'}さんがいいねしました`,
-            message: thread.title?.substring(0, 50) || '',
-            link: `/threads/${(thread as any)?.thread_number || thread?.id}`,
-          } as never)
-        }
-      }
-    }
-  }
-
-  function handleDiaryImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || [])
-    if (diaryImages.length + files.length > MAX_DIARY_IMAGES) {
-      setDiaryError(`画像は${MAX_DIARY_IMAGES}枚まで添付できます`)
-      return
-    }
-    setDiaryImages([...diaryImages, ...files])
-  }
-
-  function removeDiaryImage(index: number) {
-    setDiaryImages(diaryImages.filter((_, i) => i !== index))
-  }
-
-  async function uploadDiaryImages(files: File[]): Promise<string[]> {
-    const urls: string[] = []
-
-    for (const file of files) {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-      const filePath = `diary/${user?.id}/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        console.error('Error uploading image:', uploadError)
-        continue
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('images')
-        .getPublicUrl(filePath)
-
-      if (urlData?.publicUrl) {
-        urls.push(urlData.publicUrl)
-      }
-    }
-
-    return urls
-  }
-
-  async function handleSubmitDiaryEntry(e: React.FormEvent) {
-    e.preventDefault()
-    if (!user || !diaryContent.trim() || !thread?.id) return
-    if (thread.user_id !== user.id) return // Only thread owner can post
-
-    setDiaryError('')
-    setSubmittingDiary(true)
-
-    // Check for NG words
-    const hasNgWord = await checkNgWords(diaryContent)
-    if (hasNgWord) {
-      setDiaryError('不適切な表現が含まれている可能性があります')
-      setSubmittingDiary(false)
-      return
-    }
-
-    // Upload images if any
-    let imageUrls: string[] = []
-    if (diaryImages.length > 0) {
-      imageUrls = await uploadDiaryImages(diaryImages)
-    }
-
-    const { error: insertError } = await supabase
-      .from('diary_entries')
-      .insert({
-        thread_id: thread.id,
-        user_id: user.id,
-        content: diaryContent.trim(),
-        image_url: imageUrls[0] || null, // First image as main image
-        image_urls: imageUrls, // All images
-      } as never)
-
-    if (insertError) {
-      setDiaryError('日記の投稿に失敗しました')
-      console.error('Error posting diary entry:', insertError)
-    } else {
-      setDiaryContent('')
-      setDiaryImages([])
-      setShowDiaryForm(false)
-      fetchDiaryEntries(thread.id)
-    }
-
-    setSubmittingDiary(false)
   }
 
   async function checkNgWords(text: string): Promise<boolean> {
@@ -920,14 +575,25 @@ export function ThreadDetail() {
               <span className={`px-2 py-0.5 text-xs font-medium rounded ${THREAD_CATEGORY_COLORS[thread.category]}`}>
                 {THREAD_CATEGORY_LABELS[thread.category]}
               </span>
-              {thread.mode === 'diary' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
-                  <BookOpen size={12} />
-                  {THREAD_MODE_LABELS.diary}
-                </span>
-              )}
             </div>
-            <ReportButton targetType="thread" targetId={thread.id} />
+            <div className="flex items-center gap-2">
+              {user && (
+                <button
+                  onClick={toggleBookmark}
+                  disabled={bookmarkLoading}
+                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
+                    isBookmarked
+                      ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                  title={isBookmarked ? 'ブックマークを解除' : 'ブックマークに追加'}
+                >
+                  <Bookmark size={14} className={isBookmarked ? 'fill-current' : ''} />
+                  <span>{isBookmarked ? 'ブックマーク済み' : 'ブックマーク'}</span>
+                </button>
+              )}
+              <ReportButton targetType="thread" targetId={thread.id} />
+            </div>
           </div>
           <h1 className="text-xl font-bold text-gray-800">{thread.title}</h1>
         </div>
@@ -956,256 +622,102 @@ export function ThreadDetail() {
               <img
                 src={(thread as any).image_url}
                 alt="投稿画像"
-                className="max-w-full md:max-w-lg rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open((thread as any).image_url, '_blank')}
+                className="max-w-full max-h-96 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setImageModal((thread as any).image_url)}
               />
             </div>
           )}
 
-          {/* Heart reaction for diary mode OP */}
-          {thread.mode === 'diary' && (
-            <div className="mt-4 pl-4">
-              <button
-                onClick={toggleThreadReaction}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
-                  threadReaction.hasReacted
-                    ? 'bg-rose-100 text-rose-600'
-                    : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
-                }`}
-                title={threadReaction.hasReacted ? '応援を取り消す' : '応援する'}
-              >
-                <Heart size={16} className={threadReaction.hasReacted ? 'fill-current' : ''} />
-                {!threadReaction.hasReacted && <span>応援</span>}
-              </button>
-            </div>
-          )}
         </div>
 
-      {/* Diary Entries Section (for diary mode) - 記録がある場合、または作成者の場合のみ表示 */}
-      {thread.mode === 'diary' && (diaryEntries.length > 0 || (user && thread.user_id === user.id)) && (
-        <>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden my-4">
-          <div className={`px-6 py-4 bg-purple-50 ${diaryEntries.length > 0 || showDiaryForm ? 'border-b border-gray-200' : ''}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen size={20} className="text-purple-600" />
-                <h2 className="font-semibold text-gray-800">
-                  記録 ({diaryEntries.length})
-                </h2>
-              </div>
-              {user && thread.user_id === user.id && (
-                <button
-                  onClick={() => setShowDiaryForm(!showDiaryForm)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  <Plus size={16} />
-                  <span>記録を追加</span>
-                </button>
-              )}
+          {/* Comments Section header */}
+          <div className="px-6 py-4 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <MessageSquare size={20} className="text-gray-600" />
+              <h2 className="font-semibold text-gray-800">
+                コメント ({comments.length})
+              </h2>
             </div>
           </div>
 
-          {/* Diary Entry Form */}
-          {showDiaryForm && user && thread.user_id === user.id && (
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <form onSubmit={handleSubmitDiaryEntry}>
-                {diaryError && (
-                  <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                    <AlertCircle size={18} />
-                    <span className="text-sm">{diaryError}</span>
-                  </div>
-                )}
-                <textarea
-                  value={diaryContent}
-                  onChange={(e) => setDiaryContent(e.target.value)}
-                  placeholder="今日の出来事を記録..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-colors resize-none mb-3"
-                  rows={4}
-                  required
-                />
-
-                {/* Image Preview */}
-                {diaryImages.length > 0 && (
-                  <div className="flex gap-2 mb-3 flex-wrap">
-                    {diaryImages.map((img, i) => (
-                      <div key={i} className="relative">
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt=""
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeDiaryImage(i)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <label className="cursor-pointer text-gray-500 hover:text-purple-500 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleDiaryImageSelect}
-                      className="hidden"
-                      disabled={diaryImages.length >= MAX_DIARY_IMAGES}
-                    />
-                    <span className="inline-flex items-center gap-1 text-sm">
-                      <ImageIcon size={18} />
-                      画像を追加（{diaryImages.length}/{MAX_DIARY_IMAGES}）
-                    </span>
-                  </label>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDiaryForm(false)
-                        setDiaryImages([])
-                        setDiaryContent('')
-                      }}
-                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      キャンセル
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingDiary || !diaryContent.trim()}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-400 disabled:cursor-not-allowed"
-                    >
-                      {submittingDiary ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <Send size={18} />
-                      )}
-                      <span>投稿</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
+          {/* Comments List */}
+          {comments.length === 0 ? (
+            <div className="px-6 py-8 text-center text-gray-500">
+              まだコメントはありません
             </div>
-          )}
+          ) : (
+            <div className="px-6 py-2">
+                {(() => {
+                  // Create a map of comment.id -> display number for parent lookup
+                  const commentIdToNumber = new Map<string, number>()
+                  comments.forEach((c, i) => {
+                    commentIdToNumber.set(c.id, i + 2)
+                  })
 
-          {/* Diary Entries List */}
-          {diaryEntries.length > 0 && (
-            <div className="divide-y divide-gray-200">
-              {diaryEntries.map((entry, index) => {
-                const images = (entry as any).image_urls || (entry.image_url ? [entry.image_url] : [])
-                return (
-                  <div key={entry.id} className="px-6 py-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-purple-500 text-sm">{index + 1}.</span>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(entry.created_at)}
-                        </span>
-                      </div>
-                      <ReportButton targetType="diary_entry" targetId={entry.id} />
-                    </div>
-                    <p className="text-gray-700 whitespace-pre-wrap">{entry.content}</p>
-                    {images.length > 0 && (
-                      <div className={`grid gap-2 mt-3 ${
-                        images.length === 1 ? 'grid-cols-1 max-w-md' :
-                        images.length === 2 ? 'grid-cols-2' :
-                        'grid-cols-2'
-                      }`}>
-                        {images.map((url: string, i: number) => (
-                          <img
-                            key={i}
-                            src={url}
-                            alt={`日記の画像 ${i + 1}`}
-                            className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => window.open(url, '_blank')}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {/* Heart reaction for diary entry */}
-                    <div className="mt-3">
-                      <button
-                        onClick={() => toggleDiaryReaction(entry.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
-                          diaryReactions[entry.id]?.hasReacted
-                            ? 'bg-rose-100 text-rose-600'
-                            : 'bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500'
-                        }`}
-                        title={diaryReactions[entry.id]?.hasReacted ? '応援を取り消す' : '応援する'}
+                  // Debug: Log the map and comments with parent_id
+                  console.log('=== Reply Debug ===')
+                  console.log('Total comments:', comments.length)
+                  console.log('Comments with parent_id:', comments.filter((c: any) => c.parent_id).length)
+                  comments.forEach((c: any, i) => {
+                    if (c.parent_id) {
+                      const found = commentIdToNumber.get(c.parent_id)
+                      console.log(`Comment ${i + 2}: parent_id=${c.parent_id}, found=${found}`)
+                    }
+                  })
+
+                  return comments.map((comment, index) => {
+                    // Get parent comment number if parent_id exists
+                    const parentId = (comment as any).parent_id
+                    const parentNumber = parentId ? commentIdToNumber.get(parentId) : null
+
+                    return (
+                      <div
+                        key={comment.id}
+                        id={`comment-${index + 2}`}
+                        className="py-5 transition-colors duration-500"
                       >
-                        <Heart size={16} className={diaryReactions[entry.id]?.hasReacted ? 'fill-current' : ''} />
-                        {!diaryReactions[entry.id]?.hasReacted && <span>応援</span>}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        </>
-      )}
-
-      {/* Comments Section header - integrated for normal mode */}
-      {thread.mode !== 'diary' && (
-        <div className="px-6 py-4 border-t border-gray-100">
-          <div className="flex items-center gap-2">
-            <MessageSquare size={20} className="text-gray-600" />
-            <h2 className="font-semibold text-gray-800">
-              コメント ({comments.length})
-            </h2>
-          </div>
-        </div>
-      )}
-
-        {/* Comments List - only for normal mode */}
-        {thread.mode !== 'diary' && (
-          <>
-            {comments.length === 0 ? (
-              <div className="px-6 py-8 text-center text-gray-500">
-                まだコメントはありません
-              </div>
-            ) : (
-              <div className="px-6 py-2">
-                {comments.map((comment, index) => (
-                  <div
-                    key={comment.id}
-                    id={`comment-${index + 2}`}
-                    className="py-5 transition-colors duration-500"
-                  >
-                    {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 (スレ主=1なのでコメントは2から) */}
-                    <div className="flex flex-wrap items-baseline gap-1 mb-2">
-                      <span className="font-bold text-rose-500">{index + 2}:</span>
-                      <Link
-                        to={`/users/${comment.user_id}`}
-                        className="font-medium text-blue-600 hover:underline"
-                      >
-                        {comment.profiles?.display_name || '匿名'}
-                      </Link>
-                      <span className="text-gray-400 text-sm ml-2">
-                        {formatDate(comment.created_at)}
-                      </span>
-                      {user && thread.mode !== 'diary' && (
-                        <button
-                          onClick={() => handleReply(index + 2)}
-                          className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors ml-2"
-                        >
-                          <Reply size={12} />
-                          <span>返信</span>
-                        </button>
-                      )}
-                      <ReportButton targetType="comment" targetId={comment.id} />
-                    </div>
-                    {/* コメント本文 - インデント付き */}
-                    <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
-                      {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length + 1)}
-                    </div>
-                  </div>
-                ))}
+                        {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 (スレ主=1なのでコメントは2から) */}
+                        <div className="flex flex-wrap items-baseline gap-1 mb-2">
+                          <span className="font-bold text-rose-500">{index + 2}:</span>
+                          <Link
+                            to={`/users/${comment.user_id}`}
+                            className="font-medium text-blue-600 hover:underline"
+                          >
+                            {comment.profiles?.display_name || '匿名'}
+                          </Link>
+                          <span className="text-gray-400 text-sm ml-2">
+                            {formatDate(comment.created_at)}
+                          </span>
+                          {user && (
+                            <button
+                              onClick={() => handleReply(index + 2)}
+                              className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors ml-2"
+                            >
+                              <Reply size={12} />
+                              <span>返信</span>
+                            </button>
+                          )}
+                          <ReportButton targetType="comment" targetId={comment.id} />
+                        </div>
+                        {/* コメント本文 - インデント付き */}
+                        <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">
+                          {/* parent_idがある場合、返信先を表示 */}
+                          {parentNumber && (
+                            <button
+                              onClick={() => scrollToComment(parentNumber)}
+                              onMouseEnter={(e) => handleAnchorHover(e, parentNumber)}
+                              onMouseLeave={() => setHoveredComment(null)}
+                              className="text-blue-600 hover:text-blue-700 hover:underline font-medium mr-1"
+                            >
+                              &gt;&gt;{parentNumber}
+                            </button>
+                          )}
+                          {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length + 1)}
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
 
                 {/* Anchor Popup */}
                 {hoveredComment && getCommentByNumber(hoveredComment) && (
@@ -1313,10 +825,8 @@ export function ThreadDetail() {
                 </div>
               )}
             </div>
-          </>
-        )}
-          </div>
         </div>
+      </div>
 
         {/* Sidebar - PC only */}
         <div className="hidden lg:block lg:w-80 shrink-0">
@@ -1325,6 +835,27 @@ export function ThreadDetail() {
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {imageModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setImageModal(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors"
+            onClick={() => setImageModal(null)}
+          >
+            ×
+          </button>
+          <img
+            src={imageModal}
+            alt="拡大画像"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   )
 }

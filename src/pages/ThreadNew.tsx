@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ThreadCategory, ThreadMode, THREAD_CATEGORY_LABELS } from '../types/database'
-import { ArrowLeft, Send, AlertCircle, Loader2, BookOpen, MessageSquare, HelpCircle, Image as ImageIcon, X } from 'lucide-react'
+import { ThreadCategory, THREAD_CATEGORY_LABELS, THREAD_CATEGORY_DESCRIPTIONS } from '../types/database'
+import { ArrowLeft, Send, AlertCircle, Loader2, Image as ImageIcon, X, Camera } from 'lucide-react'
 
 const categories: ThreadCategory[] = ['todays_meal', 'food_recipe', 'treatment', 'exercise_lifestyle', 'mental_concerns', 'complications_prevention', 'chat_other']
 
@@ -13,7 +13,6 @@ export function ThreadNew() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState<ThreadCategory>('todays_meal')
-  const [mode, setMode] = useState<ThreadMode>('normal')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -160,7 +159,7 @@ export function ThreadNew() {
         title: title.trim(),
         body: content.trim(),
         category,
-        mode,
+        mode: 'normal',
         comments_count: 0,
         image_url: imageUrl,
       } as never)
@@ -211,94 +210,6 @@ export function ThreadNew() {
             </div>
           )}
 
-          {/* Mode Selection */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <label className="text-sm font-medium text-gray-700">
-                スレッドタイプ
-              </label>
-              <a
-                href="/help/thread-modes"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-rose-500 transition-colors"
-                title="通常モードと日記モードの違いを見る"
-              >
-                <HelpCircle size={16} />
-              </a>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setMode('normal')}
-                className={`p-4 border-2 rounded-lg text-left transition-all ${
-                  mode === 'normal'
-                    ? 'border-rose-500 bg-rose-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare size={20} className={`flex-shrink-0 ${mode === 'normal' ? 'text-rose-500' : 'text-gray-400'}`} />
-                  <span className={`font-medium whitespace-nowrap ${mode === 'normal' ? 'text-rose-600' : 'text-gray-700'}`}>
-                    通常モード
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed mb-2">
-                  質問や議論に最適
-                </p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  <li className="flex items-center gap-1">
-                    <span className="text-green-500">✓</span> 誰でもコメント可能
-                  </li>
-                  <li className="flex items-center gap-1">
-                    <span className="text-green-500">✓</span> 返信・アンカーで議論
-                  </li>
-                </ul>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('diary')}
-                className={`p-4 border-2 rounded-lg text-left transition-all ${
-                  mode === 'diary'
-                    ? 'border-rose-500 bg-rose-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <BookOpen size={20} className={`flex-shrink-0 ${mode === 'diary' ? 'text-rose-500' : 'text-gray-400'}`} />
-                  <span className={`font-medium whitespace-nowrap ${mode === 'diary' ? 'text-rose-600' : 'text-gray-700'}`}>
-                    日記モード
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed mb-2">
-                  日々の記録に最適
-                </p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  <li className="flex items-center gap-1">
-                    <span className="text-rose-500">♥</span> あなただけが投稿
-                  </li>
-                  <li className="flex items-center gap-1">
-                    <span className="text-rose-500">♥</span> 他の人はいいねで応援
-                  </li>
-                </ul>
-              </button>
-            </div>
-            {mode === 'diary' && (
-              <p className="mt-3 text-xs text-amber-600 bg-amber-50 p-3 rounded-lg">
-                ⚠️ 日記モードは作成後に変更できません。他のユーザーはコメント不可（いいねのみ）。
-              </p>
-            )}
-            <a
-              href="/help/thread-modes"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-600 hover:underline"
-            >
-              <HelpCircle size={14} />
-              <span>モードの詳細を見る</span>
-            </a>
-          </div>
-
           {/* Category */}
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
@@ -316,6 +227,12 @@ export function ThreadNew() {
                 </option>
               ))}
             </select>
+            {THREAD_CATEGORY_DESCRIPTIONS[category] && (
+              <p className="mt-2 text-sm text-orange-600 flex items-center gap-1">
+                <Camera size={14} />
+                {THREAD_CATEGORY_DESCRIPTIONS[category]}
+              </p>
+            )}
           </div>
 
           {/* Title */}
@@ -348,7 +265,7 @@ export function ThreadNew() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
-              placeholder="スレッドの本文を入力..."
+              placeholder={category === 'todays_meal' ? '今日の食事を写真と一緒に共有しましょう!' : 'スレッドの本文を入力...'}
               rows={8}
               maxLength={5000}
               required
@@ -359,9 +276,16 @@ export function ThreadNew() {
           </div>
 
           {/* Image Upload */}
-          <div>
+          <div className={category === 'todays_meal' ? 'bg-orange-50 p-4 rounded-lg border border-orange-200' : ''}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              画像（任意）
+              {category === 'todays_meal' ? (
+                <span className="flex items-center gap-2 text-orange-700">
+                  <Camera size={16} />
+                  写真を追加
+                </span>
+              ) : (
+                '画像（任意）'
+              )}
             </label>
             <input
               ref={fileInputRef}
@@ -390,10 +314,14 @@ export function ThreadNew() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rose-400 hover:text-rose-500 transition-colors w-full justify-center"
+                className={`flex items-center gap-2 px-4 py-6 border-2 border-dashed rounded-lg transition-colors w-full justify-center ${
+                  category === 'todays_meal'
+                    ? 'border-orange-400 text-orange-600 hover:border-orange-500 hover:bg-orange-100'
+                    : 'border-gray-300 text-gray-500 hover:border-rose-400 hover:text-rose-500'
+                }`}
               >
-                <ImageIcon size={20} />
-                <span>画像を追加</span>
+                <Camera size={24} />
+                <span className="font-medium">{category === 'todays_meal' ? '食事の写真を追加' : '画像を追加'}</span>
               </button>
             )}
             <p className="mt-2 text-xs text-gray-500">

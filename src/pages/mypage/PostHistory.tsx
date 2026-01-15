@@ -29,10 +29,14 @@ export function PostHistory() {
   async function fetchThreads() {
     if (!user) return
 
+    // 未来の日付を除外
+    const now = new Date().toISOString()
+
     const { data, error } = await supabase
       .from('threads')
       .select('*')
       .eq('user_id', user.id)
+      .lte('created_at', now)
       .order('created_at', { ascending: false })
 
     if (error) {

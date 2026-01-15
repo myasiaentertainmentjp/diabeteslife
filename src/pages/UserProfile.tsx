@@ -249,11 +249,13 @@ export function UserProfile() {
 
         if (isCancelled) return
 
-        // Fetch threads
+        // Fetch threads (未来の日付を除外)
+        const now = new Date().toISOString()
         const { data: userThreads } = await supabase
           .from('threads')
           .select('*')
           .eq('user_id', userId)
+          .lte('created_at', now)
           .order('created_at', { ascending: false })
           .limit(10)
 
