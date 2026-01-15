@@ -1,7 +1,7 @@
 export type ThreadCategory = 'todays_meal' | 'food_recipe' | 'treatment' | 'exercise_lifestyle' | 'mental_concerns' | 'complications_prevention' | 'chat_other'
 export type ArticleCategory = ThreadCategory
 export type DiabetesType = 'type1' | 'type2' | 'gestational' | 'prediabetes' | 'family' | null
-export type TreatmentType = 'insulin' | 'insulin_pump' | 'oral_medication' | 'glp1' | 'diet_therapy' | 'exercise_therapy' | 'observation'
+export type TreatmentType = 'insulin' | 'insulin_pump' | 'oral_medication' | 'glp1' | 'diet_therapy' | 'exercise_therapy' | 'observation' | 'none'
 export type UserRole = 'user' | 'admin'
 export type ThreadStatus = 'normal' | 'hidden' | 'locked'
 export type ThreadMode = 'normal' | 'diary'
@@ -429,7 +429,7 @@ export interface ThreadCommentWithUser extends ThreadComment {
 
 // Category labels
 export const THREAD_CATEGORY_LABELS: Record<ThreadCategory, string> = {
-  todays_meal: '🔥 今日のごはん',
+  todays_meal: '📸 食事の記録',
   food_recipe: '食事・レシピ',
   treatment: '治療・通院',
   exercise_lifestyle: '運動・生活',
@@ -438,10 +438,21 @@ export const THREAD_CATEGORY_LABELS: Record<ThreadCategory, string> = {
   chat_other: '雑談・その他',
 }
 
+// Category descriptions
+export const THREAD_CATEGORY_DESCRIPTIONS: Record<ThreadCategory, string> = {
+  todays_meal: '写真付きで食事を記録・共有できます',
+  food_recipe: '',
+  treatment: '',
+  exercise_lifestyle: '',
+  mental_concerns: '',
+  complications_prevention: '',
+  chat_other: '',
+}
+
 // Category colors for badges
 export const THREAD_CATEGORY_COLORS: Record<ThreadCategory, string> = {
-  todays_meal: 'bg-amber-100 text-amber-700',
-  food_recipe: 'bg-orange-100 text-orange-700',
+  todays_meal: 'bg-orange-100 text-orange-700',
+  food_recipe: 'bg-amber-100 text-amber-700',
   treatment: 'bg-blue-100 text-blue-700',
   exercise_lifestyle: 'bg-green-100 text-green-700',
   mental_concerns: 'bg-pink-100 text-pink-700',
@@ -479,6 +490,7 @@ export const TREATMENT_TYPE_LABELS: Record<TreatmentType, string> = {
   diet_therapy: '食事療法',
   exercise_therapy: '運動療法',
   observation: '経過観察中',
+  none: '該当なし',
 }
 
 // Legacy aliases
@@ -491,6 +503,7 @@ export const TREATMENT_TAG_LABELS: Record<TreatmentType, string> = {
   diet_therapy: '食事療法',
   exercise_therapy: '運動療法',
   observation: '経過観察',
+  none: '該当なし',
 }
 
 // Thread status labels
@@ -699,4 +712,18 @@ export interface NotificationSettings {
   likes: boolean
   profile_comment: boolean
   email_enabled: boolean
+  hba1c_reminder: boolean
+}
+
+// Thread bookmark interface
+export interface ThreadBookmark {
+  id: string
+  user_id: string
+  thread_id: string
+  created_at: string
+}
+
+// Thread bookmark with thread details
+export interface ThreadBookmarkWithThread extends ThreadBookmark {
+  threads: Thread
 }

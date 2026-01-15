@@ -2,8 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   MessageSquare,
   PenSquare,
-  BookHeart,
-  BookOpen,
+  Camera,
   LineChart,
   AlertTriangle,
   HelpCircle,
@@ -12,7 +11,10 @@ import {
   Heart,
   UserCircle,
   Settings,
-  CheckCircle2
+  CheckCircle2,
+  Receipt,
+  Calculator,
+  FileText
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -216,30 +218,30 @@ export function Guide() {
             </ul>
           </div>
 
-          {/* Diary */}
+          {/* Food Record */}
           <div className="bg-gray-50 rounded-xl p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BookHeart size={20} className="text-purple-500" />
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Camera size={20} className="text-orange-500" />
               </div>
-              <h3 className="font-bold text-gray-900">日記をつける</h3>
+              <h3 className="font-bold text-gray-900">食事を記録する</h3>
             </div>
             <ul className="space-y-2 text-gray-600 ml-13">
               <li className="flex items-start gap-2">
-                <span className="text-purple-500 mt-1">-</span>
-                <span>「日記スレッド」で毎日の食事や体調を記録</span>
+                <span className="text-orange-500 mt-1">-</span>
+                <span>「食事の記録」カテゴリで写真付きの食事記録を投稿</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-500 mt-1">-</span>
-                <span>他のユーザーから応援コメントをもらえる</span>
+                <span className="text-orange-500 mt-1">-</span>
+                <span>みんなの食事を参考にしたり、コメントで交流できる</span>
               </li>
             </ul>
             <Link
-              to="/help/thread-modes"
-              className="inline-flex items-center gap-1 mt-3 text-purple-500 hover:text-purple-600 text-sm font-medium"
+              to="/threads?category=todays_meal"
+              className="inline-flex items-center gap-1 mt-3 text-orange-500 hover:text-orange-600 text-sm font-medium"
             >
-              <BookOpen size={16} />
-              スレッドタイプについて詳しく
+              <MessageSquare size={16} />
+              食事の記録を見る
             </Link>
           </div>
 
@@ -292,6 +294,88 @@ export function Guide() {
             </span>
           </li>
         </ul>
+      </div>
+
+      {/* Medical Expense Deduction Guide */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <Receipt size={20} className="text-emerald-500" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-900">医療費控除の活用方法</h2>
+        </div>
+
+        <p className="text-gray-600 mb-4">
+          糖尿病の治療にかかる医療費は、確定申告で「医療費控除」の対象になります。
+        </p>
+
+        <div className="space-y-4">
+          {/* What's covered */}
+          <div className="bg-emerald-50 rounded-lg p-4">
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <Calculator size={16} className="text-emerald-600" />
+              控除対象になる主な費用
+            </h3>
+            <ul className="space-y-2 text-gray-700 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500">✓</span>
+                <span>通院費・入院費</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500">✓</span>
+                <span>インスリン・経口薬などの薬代</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500">✓</span>
+                <span>血糖測定器・センサー代</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500">✓</span>
+                <span>注射針・消毒綿などの消耗品</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500">✓</span>
+                <span>通院のための交通費（電車・バス）</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* How to apply */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <FileText size={16} className="text-gray-600" />
+              確定申告の流れ
+            </h3>
+            <ol className="space-y-2 text-gray-700 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-rose-500">1.</span>
+                <span>1年間（1/1〜12/31）の医療費の領収書を保管</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-rose-500">2.</span>
+                <span>医療費が年間10万円を超えるか確認</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-rose-500">3.</span>
+                <span>確定申告書と医療費控除の明細書を作成</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-rose-500">4.</span>
+                <span>翌年2月16日〜3月15日に税務署へ提出</span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="text-sm text-gray-500 bg-amber-50 p-3 rounded-lg">
+            <p className="flex items-start gap-2">
+              <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+              <span>
+                詳細は最寄りの税務署または税理士にご相談ください。
+                e-Taxを使えばオンラインでも申告できます。
+              </span>
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Help Section */}

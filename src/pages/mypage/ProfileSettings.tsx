@@ -41,6 +41,7 @@ const TREATMENT_TYPES: TreatmentType[] = [
   'diet_therapy',
   'exercise_therapy',
   'observation',
+  'none',
 ]
 
 const AGE_GROUPS: AgeGroup[] = ['10s', '20s', '30s', '40s', '50s', '60s', '70s_plus', 'private']
@@ -159,6 +160,7 @@ export function ProfileSettings() {
       notifyReply,
       notifyLikes,
       notifyProfileComment,
+      notifyHba1cReminder,
     }
     sessionStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(draft))
   }
@@ -203,6 +205,7 @@ export function ProfileSettings() {
       setNotifyReply(draft.notifyReply ?? true)
       setNotifyLikes(draft.notifyLikes ?? true)
       setNotifyProfileComment(draft.notifyProfileComment ?? true)
+      setNotifyHba1cReminder(draft.notifyHba1cReminder ?? true)
       return true
     } catch {
       return false
@@ -230,6 +233,7 @@ export function ProfileSettings() {
   const [notifyReply, setNotifyReply] = useState(true)
   const [notifyLikes, setNotifyLikes] = useState(true)
   const [notifyProfileComment, setNotifyProfileComment] = useState(true)
+  const [notifyHba1cReminder, setNotifyHba1cReminder] = useState(true)
 
   // Avatar upload state
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -374,6 +378,7 @@ export function ProfileSettings() {
         setNotifyReply(notifSettings.reply ?? true)
         setNotifyLikes(notifSettings.likes ?? true)
         setNotifyProfileComment(notifSettings.profile_comment ?? true)
+        setNotifyHba1cReminder((notifSettings as any).hba1c_reminder ?? true)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -481,6 +486,7 @@ export function ProfileSettings() {
         reply: notifyReply,
         likes: notifyLikes,
         profile_comment: notifyProfileComment,
+        hba1c_reminder: notifyHba1cReminder,
       }
 
       if (existingNotif) {
@@ -551,8 +557,64 @@ export function ProfileSettings() {
 
   // ローディング表示は削除 - フォームを即座に表示してデータは非同期で読み込む
 
+  // Calculate profile completeness
+  const calculateProfileCompleteness = () => {
+    let score = 0
+    const maxScore = 100
+
+    // Basic info (40 points)
+    if (displayName) score += 15
+    if (avatarUrl) score += 15
+    if (bio) score += 10
+
+    // Personal info (20 points)
+    if (ageGroup) score += 7
+    if (gender) score += 7
+    if (prefecture) score += 6
+
+    // Diabetes info (30 points) - family type can skip some
+    if (diabetesType) score += 10
+    if (diabetesType === 'family') {
+      // Family/supporter gets full points for these sections
+      score += 20
+    } else {
+      if (treatments.length > 0) score += 10
+      if (diagnosisYear || illnessDuration) score += 10
+    }
+
+    // Links (10 points)
+    if (xId || instagramId || youtubeId || tiktokId || customLinkUrl) score += 10
+
+    return Math.min(score, maxScore)
+  }
+
+  const profileCompleteness = calculateProfileCompleteness()
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Profile Completeness Bar */}
+      <section className="bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl p-4 border border-rose-100">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-700">プロフィール充実度</span>
+          <span className="text-lg font-bold text-rose-500">{profileCompleteness}%</span>
+        </div>
+        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-rose-400 to-orange-400 rounded-full transition-all duration-500"
+            style={{ width: `${profileCompleteness}%` }}
+          />
+        </div>
+        {profileCompleteness < 100 && (
+          <p className="text-xs text-gray-500 mt-2">
+            {profileCompleteness < 50
+              ? '基本情報を入力して、充実したプロフィールを作りましょう！'
+              : profileCompleteness < 80
+              ? 'あと少しで充実したプロフィールになります！'
+              : '素晴らしい！もう少しで完璧です！'}
+          </p>
+        )}
+      </section>
+
       {/* Basic Info Section */}
       <section>
         <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">基本情報</h3>
@@ -714,6 +776,13 @@ export function ProfileSettings() {
       <section>
         <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">糖尿病に関する情報</h3>
 
+        {/* Note for family/supporter */}
+        {diabetesType === 'family' && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+            <p>家族・サポーターの方は、治療法・診断年の入力は任意です。ご自身が糖尿病でない場合は「該当なし」を選択してください。</p>
+          </div>
+        )}
+
         {/* Diabetes Type */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -757,7 +826,10 @@ export function ProfileSettings() {
         {/* Diagnosis Year with auto-calculated duration */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">診断年</label>
+            <label className="text-sm font-medium text-gray-700">
+              診断年
+              {diabetesType === 'family' && <span className="ml-2 text-xs text-gray-400">- 任意</span>}
+            </label>
             <PrivacyToggle value={illnessDurationPublic} onChange={setIllnessDurationPublic} />
           </div>
           <div className="flex items-center gap-3">
@@ -784,7 +856,10 @@ export function ProfileSettings() {
         {/* Treatments */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">治療方法（複数選択可）</label>
+            <label className="text-sm font-medium text-gray-700">
+              治療方法（複数選択可）
+              {diabetesType === 'family' && <span className="ml-2 text-xs text-gray-400">- 任意</span>}
+            </label>
             <PrivacyToggle value={treatmentPublic} onChange={setTreatmentPublic} />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -1080,6 +1155,12 @@ export function ProfileSettings() {
             description="プロフィールに応援コメントが付いたときに通知"
             value={notifyProfileComment}
             onChange={setNotifyProfileComment}
+          />
+          <PrivacySettingRow
+            label="HbA1cリマインド"
+            description="最後の記録から30日経過した際にメールでお知らせ"
+            value={notifyHba1cReminder}
+            onChange={setNotifyHba1cReminder}
           />
         </div>
       </section>
