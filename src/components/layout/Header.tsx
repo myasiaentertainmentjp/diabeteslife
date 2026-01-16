@@ -75,7 +75,7 @@ export function Header() {
     setIsMenuOpen(false)
   }
 
-  const isAdmin = profile?.role === 'admin'
+  const isAdmin = profile?.role === 'admin' || user?.email === 'info@diabeteslife.jp'
   const displayName = profile?.display_name || profile?.username || 'ユーザー'
 
   async function handleSignOut() {
@@ -132,6 +132,13 @@ export function Header() {
                   >
                     <span>マイページ</span>
                   </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-1 px-3 py-1.5 text-white hover:text-rose-100 text-sm font-medium transition-colors"
+                    title="ログアウト"
+                  >
+                    <LogOut size={16} />
+                  </button>
                 </>
               ) : (
                 <>

@@ -21,7 +21,10 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
     return <Navigate to="/login" replace />
   }
 
-  if (profile?.role !== 'admin') {
+  // Check both role and email for admin access
+  const isAdmin = profile?.role === 'admin' || user?.email === 'info@diabeteslife.jp'
+
+  if (!isAdmin) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
         <ShieldX size={64} className="text-red-500 mb-4" />

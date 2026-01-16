@@ -21,6 +21,38 @@ export function ArticleDetail() {
     }
   }, [slug])
 
+  // Handle broken images in article content
+  useEffect(() => {
+    if (!article) return
+
+    // Add error handler to all images in article content after render
+    const timer = setTimeout(() => {
+      const articleContent = document.querySelector('.article-content')
+      if (articleContent) {
+        const images = articleContent.querySelectorAll('img')
+        images.forEach((img) => {
+          // Hide images with empty or invalid src
+          if (!img.src || img.src === window.location.href || img.src.endsWith('/')) {
+            img.style.display = 'none'
+            return
+          }
+
+          img.onerror = () => {
+            img.classList.add('img-error')
+            img.style.display = 'none'
+          }
+
+          // Check if image is already broken
+          if (img.complete && img.naturalHeight === 0) {
+            img.style.display = 'none'
+          }
+        })
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [article])
+
   async function fetchArticle() {
     if (!slug) return
 

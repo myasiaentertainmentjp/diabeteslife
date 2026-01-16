@@ -224,8 +224,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Compute isAdmin from profile
-  const isAdmin = profile?.role === 'admin'
+  // Compute isAdmin from profile - check both role and email
+  const isAdmin = profile?.role === 'admin' || profile?.email === 'info@diabeteslife.jp'
 
   return (
     <AuthContext.Provider value={{
