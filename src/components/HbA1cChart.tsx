@@ -19,9 +19,9 @@ interface HbA1cChartProps {
 export function HbA1cChart({ records, showFeedback = false }: HbA1cChartProps) {
   const chartData = useMemo(() => {
     return records
-      .sort((a, b) => new Date(a.record_month).getTime() - new Date(b.record_month).getTime())
+      .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
       .map((record) => ({
-        month: formatMonth(record.record_month),
+        month: formatMonth(record.recorded_at),
         value: record.value,
         memo: record.memo,
       }))
@@ -31,7 +31,7 @@ export function HbA1cChart({ records, showFeedback = false }: HbA1cChartProps) {
     if (!showFeedback || records.length < 2) return null
 
     const sorted = [...records].sort(
-      (a, b) => new Date(b.record_month).getTime() - new Date(a.record_month).getTime()
+      (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
     )
     const latest = sorted[0]
     const previous = sorted[1]

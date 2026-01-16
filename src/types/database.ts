@@ -89,7 +89,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          record_month: string
+          recorded_at: string
           value: number
           memo: string | null
           is_public: boolean
@@ -99,7 +99,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          record_month: string
+          recorded_at: string
           value: number
           memo?: string | null
           is_public?: boolean
@@ -109,7 +109,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          record_month?: string
+          recorded_at?: string
           value?: number
           memo?: string | null
           is_public?: boolean

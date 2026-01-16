@@ -1,4 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  ResponsiveContainer,
+} from 'recharts'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { compressImage, uploadToSupabaseStorage } from '../../lib/imageUpload'
@@ -19,9 +29,25 @@ import {
   YES_NO_PRIVATE_LABELS,
   PREFECTURES,
   ExternalLink,
+  HbA1cRecord,
 } from '../../types/database'
-import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell, Activity } from 'lucide-react'
+import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell, Activity, Edit2, X } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
+
+// HbA1c記録用の型とデフォルト値
+interface HbA1cFormData {
+  recorded_at: string
+  value: string
+  memo: string
+  is_public: boolean
+}
+
+const initialHbA1cFormData: HbA1cFormData = {
+  recorded_at: new Date().toISOString().slice(0, 7),
+  value: '',
+  memo: '',
+  is_public: false,
+}
 
 const PROFILE_DRAFT_KEY = 'profile_settings_draft'
 
@@ -53,10 +79,10 @@ const YES_NO_PRIVATES: YesNoPrivate[] = ['yes', 'no', 'private']
 const currentYear = new Date().getFullYear()
 
 interface ProfileSettingsProps {
-  onNavigateToHbA1c?: () => void
+  // No props needed now that HbA1c is integrated
 }
 
-export function ProfileSettings({ onNavigateToHbA1c }: ProfileSettingsProps) {
+export function ProfileSettings({}: ProfileSettingsProps) {
   const { user, profile: authProfile, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -73,6 +99,15 @@ export function ProfileSettings({ onNavigateToHbA1c }: ProfileSettingsProps) {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  // HbA1c Records state
+  const [hba1cRecords, setHba1cRecords] = useState<HbA1cRecord[]>([])
+  const [hba1cLoading, setHba1cLoading] = useState(true)
+  const [hba1cSaving, setHba1cSaving] = useState(false)
+  const [showHba1cForm, setShowHba1cForm] = useState(false)
+  const [hba1cEditingId, setHba1cEditingId] = useState<string | null>(null)
+  const [hba1cFormData, setHba1cFormData] = useState<HbA1cFormData>(initialHbA1cFormData)
+  const [hba1cError, setHba1cError] = useState<string | null>(null)
 
   // Basic profile fields
   const [displayName, setDisplayName] = useState('')
@@ -292,7 +327,152 @@ export function ProfileSettings({ onNavigateToHbA1c }: ProfileSettingsProps) {
       }
     }
     fetchProfile()
+    fetchHba1cRecords()
   }, [user, returningFromPreview])
+
+  // HbA1c Records functions
+  async function fetchHba1cRecords() {
+    if (!user) {
+      setHba1cLoading(false)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('hba1c_records')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('recorded_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching HbA1c records:', error)
+    } else {
+      setHba1cRecords(data as unknown as HbA1cRecord[])
+    }
+    setHba1cLoading(false)
+  }
+
+  function getHba1cChartData() {
+    const sortedRecords = [...hba1cRecords]
+      .sort((a, b) => a.recorded_at.localeCompare(b.recorded_at))
+      .slice(-12)
+
+    return sortedRecords.map((record) => ({
+      month: record.recorded_at.slice(5),
+      value: record.value,
+    }))
+  }
+
+  function getHba1cFeedback(): { message: string; emoji: string; type: 'up' | 'down' | 'same' } | null {
+    if (hba1cRecords.length < 2) return null
+
+    const latest = hba1cRecords[0].value
+    const previous = hba1cRecords[1].value
+    const diff = latest - previous
+
+    if (Math.abs(diff) < 0.1) {
+      return { message: '安定していますね！この調子で！', emoji: '💪', type: 'same' }
+    } else if (diff < 0) {
+      return {
+        message: `素晴らしい！${Math.abs(diff).toFixed(1)}%改善しました！`,
+        emoji: '🎉',
+        type: 'down',
+      }
+    } else {
+      return {
+        message: '少し上がりましたが、一緒に頑張りましょう！',
+        emoji: '😊',
+        type: 'up',
+      }
+    }
+  }
+
+  function handleHba1cEdit(record: HbA1cRecord) {
+    setHba1cEditingId(record.id)
+    setHba1cFormData({
+      recorded_at: record.recorded_at,
+      value: record.value.toString(),
+      memo: record.memo || '',
+      is_public: record.is_public,
+    })
+    setShowHba1cForm(true)
+  }
+
+  async function handleHba1cDelete(id: string) {
+    if (!confirm('この記録を削除しますか？')) return
+
+    const { error } = await supabase.from('hba1c_records').delete().eq('id', id)
+
+    if (error) {
+      console.error('Error deleting HbA1c record:', error)
+      setHba1cError('削除に失敗しました')
+    } else {
+      setHba1cRecords((prev) => prev.filter((r) => r.id !== id))
+    }
+  }
+
+  async function handleHba1cSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!user) return
+
+    const value = parseFloat(hba1cFormData.value)
+    if (isNaN(value) || value < 4.0 || value > 15.0) {
+      setHba1cError('HbA1c値は4.0〜15.0の範囲で入力してください')
+      return
+    }
+
+    setHba1cSaving(true)
+    setHba1cError(null)
+
+    if (hba1cEditingId) {
+      const { error } = await supabase
+        .from('hba1c_records')
+        .update({
+          recorded_at: hba1cFormData.recorded_at,
+          value,
+          memo: hba1cFormData.memo || null,
+          is_public: hba1cFormData.is_public,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq('id', hba1cEditingId)
+
+      if (error) {
+        console.error('Error updating HbA1c record:', error)
+        setHba1cError('更新に失敗しました')
+      } else {
+        await fetchHba1cRecords()
+        resetHba1cForm()
+      }
+    } else {
+      const { error } = await supabase.from('hba1c_records').insert({
+        user_id: user.id,
+        recorded_at: hba1cFormData.recorded_at,
+        value,
+        memo: hba1cFormData.memo || null,
+        is_public: hba1cFormData.is_public,
+      } as never)
+
+      if (error) {
+        console.error('Error inserting HbA1c record:', error)
+        setHba1cError('登録に失敗しました')
+      } else {
+        await fetchHba1cRecords()
+        resetHba1cForm()
+      }
+    }
+
+    setHba1cSaving(false)
+  }
+
+  function resetHba1cForm() {
+    setHba1cFormData(initialHbA1cFormData)
+    setHba1cEditingId(null)
+    setShowHba1cForm(false)
+  }
+
+  function formatHba1cMonth(monthStr: string) {
+    const [year, month] = monthStr.split('-')
+    return `${year}年${parseInt(month)}月`
+  }
 
   async function fetchProfile() {
     if (!user) {
@@ -1117,32 +1297,153 @@ export function ProfileSettings({ onNavigateToHbA1c }: ProfileSettingsProps) {
         </div>
       </section>
 
-      {/* HbA1c Privacy Settings */}
+      {/* HbA1c Records Section - 統合版 */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">HbA1c記録の公開設定</h3>
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b">
+          <Activity size={20} className="text-rose-500" />
+          <h3 className="text-lg font-semibold text-gray-900">HbA1c記録</h3>
+        </div>
 
-        <div className="space-y-4">
+        {/* Privacy Setting */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <PrivacySettingRow
             label="HbA1cグラフを公開"
             description="プロフィールページでHbA1cの推移グラフと記録を表示します"
             value={hba1cPublic}
             onChange={setHba1cPublic}
           />
-
-          {/* HbA1c記録へのショートカット */}
-          {onNavigateToHbA1c && (
-            <div className="pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={onNavigateToHbA1c}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-              >
-                <Activity size={18} />
-                <span>HbA1cを記録する →</span>
-              </button>
-            </div>
-          )}
         </div>
+
+        {/* HbA1c Loading */}
+        {hba1cLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 size={24} className="animate-spin text-rose-500" />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Chart */}
+            {hba1cRecords.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-4">HbA1c推移（過去12ヶ月）</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={getHba1cChartData()} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} />
+                    <YAxis domain={[4, 12]} tick={{ fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} tickFormatter={(value) => `${value}%`} />
+                    <Tooltip formatter={(value: number) => [`${value}%`, 'HbA1c']} labelFormatter={(label) => `${label}月`} />
+                    <ReferenceLine y={7} stroke="#10B981" strokeDasharray="5 5" />
+                    <Line type="monotone" dataKey="value" stroke="#2563EB" strokeWidth={2} dot={{ fill: '#2563EB', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Feedback */}
+            {getHba1cFeedback() && (
+              <div className={`flex items-center gap-3 p-4 rounded-lg ${
+                getHba1cFeedback()?.type === 'down' ? 'bg-green-50 text-green-700' :
+                getHba1cFeedback()?.type === 'up' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'
+              }`}>
+                <span className="text-2xl">{getHba1cFeedback()?.emoji}</span>
+                <span className="font-medium">{getHba1cFeedback()?.message}</span>
+              </div>
+            )}
+
+            {/* Add Button */}
+            {!showHba1cForm && (
+              <button type="button" onClick={() => setShowHba1cForm(true)} className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 transition-colors">
+                <Plus size={18} />
+                <span>新しい記録を追加</span>
+              </button>
+            )}
+
+            {/* Form */}
+            {showHba1cForm && (
+              <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900">{hba1cEditingId ? '記録を編集' : '新しい記録'}</h4>
+                  <button type="button" onClick={resetHba1cForm} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">測定月</label>
+                    <div className="flex gap-2">
+                      <select value={hba1cFormData.recorded_at.split('-')[0]} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${e.target.value}-${prev.recorded_at.split('-')[1] || '01'}` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
+                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map((year) => (<option key={year} value={year}>{year}年</option>))}
+                      </select>
+                      <select value={hba1cFormData.recorded_at.split('-')[1] || '01'} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${prev.recorded_at.split('-')[0]}-${e.target.value}` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
+                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((month) => (<option key={month} value={month}>{parseInt(month)}月</option>))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">HbA1c値（%）</label>
+                    <input type="number" step="0.1" min="4.0" max="15.0" value={hba1cFormData.value} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, value: e.target.value }))} placeholder="例: 6.5" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">メモ（任意）</label>
+                  <textarea value={hba1cFormData.memo} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, memo: e.target.value }))} placeholder="メモを入力..." rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none" />
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={hba1cFormData.is_public} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, is_public: e.target.checked }))} className="w-4 h-4 text-rose-500 rounded focus:ring-rose-500" />
+                  <span className="text-sm text-gray-700">この記録を公開する</span>
+                </label>
+                {hba1cError && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{hba1cError}</div>}
+                <div className="flex gap-3">
+                  <button type="button" onClick={handleHba1cSubmit} disabled={hba1cSaving} className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 disabled:opacity-50 transition-colors">
+                    {hba1cSaving && <Loader2 size={16} className="animate-spin" />}
+                    <span>{hba1cEditingId ? '更新する' : '記録する'}</span>
+                  </button>
+                  <button type="button" onClick={resetHba1cForm} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">キャンセル</button>
+                </div>
+              </div>
+            )}
+
+            {/* History Table */}
+            {hba1cRecords.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">記録履歴</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">測定月</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">HbA1c</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">メモ</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-600">公開</th>
+                        <th className="px-4 py-2 text-right font-medium text-gray-600">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {hba1cRecords.map((record) => (
+                        <tr key={record.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-900">{formatHba1cMonth(record.recorded_at)}</td>
+                          <td className="px-4 py-3"><span className={`font-medium ${record.value <= 7 ? 'text-green-600' : record.value <= 8 ? 'text-orange-600' : 'text-red-600'}`}>{record.value}%</span></td>
+                          <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{record.memo || '-'}</td>
+                          <td className="px-4 py-3">{record.is_public ? <span className="text-rose-500">公開</span> : <span className="text-gray-400">非公開</span>}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-2">
+                              <button type="button" onClick={() => handleHba1cEdit(record)} className="p-1 text-gray-400 hover:text-rose-500"><Edit2 size={16} /></button>
+                              <button type="button" onClick={() => handleHba1cDelete(record.id)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 size={16} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {hba1cRecords.length === 0 && !showHba1cForm && (
+              <div className="text-center py-8 text-gray-500">
+                <p>まだ記録がありません</p>
+                <p className="text-sm mt-1">「新しい記録を追加」ボタンから記録を始めましょう</p>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Notification Settings */}

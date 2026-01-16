@@ -21,14 +21,14 @@ import {
 } from 'lucide-react'
 
 interface RecordFormData {
-  record_month: string
+  recorded_at: string
   value: string
   memo: string
   is_public: boolean
 }
 
 const initialFormData: RecordFormData = {
-  record_month: new Date().toISOString().slice(0, 7),
+  recorded_at: new Date().toISOString().slice(0, 7),
   value: '',
   memo: '',
   is_public: false,
@@ -59,7 +59,7 @@ export function HbA1cRecords() {
       .from('hba1c_records')
       .select('*')
       .eq('user_id', user.id)
-      .order('record_month', { ascending: false })
+      .order('recorded_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching records:', error)
@@ -71,11 +71,11 @@ export function HbA1cRecords() {
 
   function getChartData() {
     const sortedRecords = [...records]
-      .sort((a, b) => a.record_month.localeCompare(b.record_month))
+      .sort((a, b) => a.recorded_at.localeCompare(b.recorded_at))
       .slice(-12)
 
     return sortedRecords.map((record) => ({
-      month: record.record_month.slice(5),
+      month: record.recorded_at.slice(5),
       value: record.value,
     }))
   }
@@ -107,7 +107,7 @@ export function HbA1cRecords() {
   function handleEdit(record: HbA1cRecord) {
     setEditingId(record.id)
     setFormData({
-      record_month: record.record_month,
+      recorded_at: record.recorded_at,
       value: record.value.toString(),
       memo: record.memo || '',
       is_public: record.is_public,
@@ -145,7 +145,7 @@ export function HbA1cRecords() {
       const { error } = await supabase
         .from('hba1c_records')
         .update({
-          record_month: formData.record_month,
+          recorded_at: formData.recorded_at,
           value,
           memo: formData.memo || null,
           is_public: formData.is_public,
@@ -163,7 +163,7 @@ export function HbA1cRecords() {
     } else {
       const { error } = await supabase.from('hba1c_records').insert({
         user_id: user.id,
-        record_month: formData.record_month,
+        recorded_at: formData.recorded_at,
         value,
         memo: formData.memo || null,
         is_public: formData.is_public,
@@ -303,10 +303,10 @@ export function HbA1cRecords() {
               </label>
               <div className="flex gap-2">
                 <select
-                  value={formData.record_month.split('-')[0]}
+                  value={formData.recorded_at.split('-')[0]}
                   onChange={(e) => {
-                    const month = formData.record_month.split('-')[1] || '01'
-                    setFormData((prev) => ({ ...prev, record_month: `${e.target.value}-${month}` }))
+                    const month = formData.recorded_at.split('-')[1] || '01'
+                    setFormData((prev) => ({ ...prev, recorded_at: `${e.target.value}-${month}` }))
                   }}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   required
@@ -316,10 +316,10 @@ export function HbA1cRecords() {
                   ))}
                 </select>
                 <select
-                  value={formData.record_month.split('-')[1] || '01'}
+                  value={formData.recorded_at.split('-')[1] || '01'}
                   onChange={(e) => {
-                    const year = formData.record_month.split('-')[0]
-                    setFormData((prev) => ({ ...prev, record_month: `${year}-${e.target.value}` }))
+                    const year = formData.recorded_at.split('-')[0]
+                    setFormData((prev) => ({ ...prev, recorded_at: `${year}-${e.target.value}` }))
                   }}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   required
@@ -432,7 +432,7 @@ export function HbA1cRecords() {
                 {records.map((record) => (
                   <tr key={record.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">
-                      {formatMonth(record.record_month)}
+                      {formatMonth(record.recorded_at)}
                     </td>
                     <td className="px-4 py-3">
                       <span

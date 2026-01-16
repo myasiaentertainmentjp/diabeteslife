@@ -155,7 +155,7 @@ export function AdminUserList() {
       const { data: hba1cData } = await supabase
         .from('hba1c_records')
         .select('*')
-        .order('record_month', { ascending: false })
+        .order('recorded_at', { ascending: false })
 
       // Fetch all likes
       const { data: threadLikesData } = await supabase
@@ -331,7 +331,7 @@ export function AdminUserList() {
         ...(hba1cData || []).map(h => [
           escapeCSV(h.id),
           escapeCSV(h.user_id),
-          escapeCSV(h.record_month),
+          escapeCSV(h.recorded_at),
           h.value,
           escapeCSV(h.memo),
           h.is_public ? '公開' : '非公開',
