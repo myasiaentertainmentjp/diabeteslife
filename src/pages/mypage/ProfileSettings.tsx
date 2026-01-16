@@ -43,7 +43,7 @@ interface HbA1cFormData {
 }
 
 const initialHbA1cFormData: HbA1cFormData = {
-  recorded_at: new Date().toISOString().slice(0, 7),
+  recorded_at: new Date().toISOString().slice(0, 10),
   value: '',
   memo: '',
   is_public: false,
@@ -1368,10 +1368,10 @@ export function ProfileSettings({}: ProfileSettingsProps) {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">測定月</label>
                     <div className="flex gap-2">
-                      <select value={hba1cFormData.recorded_at.split('-')[0]} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${e.target.value}-${prev.recorded_at.split('-')[1] || '01'}` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
+                      <select value={hba1cFormData.recorded_at.split('-')[0]} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${e.target.value}-${prev.recorded_at.split('-')[1] || '01'}-15` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
                         {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map((year) => (<option key={year} value={year}>{year}年</option>))}
                       </select>
-                      <select value={hba1cFormData.recorded_at.split('-')[1] || '01'} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${prev.recorded_at.split('-')[0]}-${e.target.value}` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
+                      <select value={hba1cFormData.recorded_at.split('-')[1] || '01'} onChange={(e) => setHba1cFormData((prev) => ({ ...prev, recorded_at: `${prev.recorded_at.split('-')[0]}-${e.target.value}-15` }))} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent">
                         {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((month) => (<option key={month} value={month}>{parseInt(month)}月</option>))}
                       </select>
                     </div>
