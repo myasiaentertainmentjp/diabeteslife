@@ -674,25 +674,25 @@ export function UserProfile() {
         {(showTreatment || showDevices || isPreviewMode) && (
           <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
             {/* In preview mode, show treatments directly from profileData */}
-            {isPreviewMode && (profileData?.treatment?.length ?? 0) > 0 && profileData!.treatment!.map((t) => (
+            {isPreviewMode && (profileData?.treatment?.length ?? 0) > 0 && profileData!.treatment!.filter(t => t && TREATMENT_TYPE_LABELS[t]).map((t) => (
               <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${!profileData?.treatment_public ? 'opacity-50' : ''}`}>
                 {TREATMENT_TYPE_LABELS[t]}
               </span>
             ))}
             {/* In normal mode, use showTreatment check */}
-            {!isPreviewMode && showTreatment && profileData!.treatment!.map((t) => (
+            {!isPreviewMode && showTreatment && profileData!.treatment!.filter(t => t && TREATMENT_TYPE_LABELS[t]).map((t) => (
               <span key={t} className={`px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs ${isOwnProfile && !profileData?.treatment_public ? 'opacity-50' : ''}`}>
                 {TREATMENT_TYPE_LABELS[t]}
               </span>
             ))}
             {/* In preview mode, show devices directly from profileData */}
-            {isPreviewMode && (profileData?.devices?.length ?? 0) > 0 && profileData!.devices!.map((d) => (
+            {isPreviewMode && (profileData?.devices?.length ?? 0) > 0 && profileData!.devices!.filter(d => d && DEVICE_TYPE_LABELS[d]).map((d) => (
               <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${!profileData?.device_public ? 'opacity-50' : ''}`}>
                 {DEVICE_TYPE_LABELS[d]}
               </span>
             ))}
             {/* In normal mode, use showDevices check */}
-            {!isPreviewMode && showDevices && profileData!.devices!.map((d) => (
+            {!isPreviewMode && showDevices && profileData!.devices!.filter(d => d && DEVICE_TYPE_LABELS[d]).map((d) => (
               <span key={d} className={`px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs ${isOwnProfile && !profileData?.device_public ? 'opacity-50' : ''}`}>
                 {DEVICE_TYPE_LABELS[d]}
               </span>
@@ -850,9 +850,7 @@ export function UserProfile() {
           <div className="flex items-center gap-2">
             <MessageSquare size={16} className="text-rose-500" />
             <h2 className="text-sm font-semibold text-gray-900">コメント</h2>
-            <span className="text-xs text-gray-500">({profileComments.length})</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">このユーザーへのコメントや応援メッセージを送れます</p>
         </div>
 
         {/* Comment Form */}
@@ -879,7 +877,7 @@ export function UserProfile() {
                       }
                     }
                   }}
-                  placeholder="コメントを入力..."
+                  placeholder="このユーザーへのコメントや応援メッセージを送れます"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none text-base leading-relaxed bg-white"
                   rows={4}
                   style={{ minHeight: '100px', maxHeight: '300px' }}
@@ -929,11 +927,7 @@ export function UserProfile() {
         </div>
 
         {/* Comments List */}
-        {profileComments.length === 0 ? (
-          <div className="px-4 py-6 text-center text-gray-500 text-sm">
-            まだコメントがありません
-          </div>
-        ) : (
+        {profileComments.length > 0 && (
           <div className="px-4 py-3">
             {profileComments.map((comment, index) => {
               const canDelete = currentUser && (

@@ -13,7 +13,8 @@ import {
 } from '../types/database'
 import { ReportButton } from '../components/ReportButton'
 import { Sidebar } from '../components/Sidebar'
-import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, Reply, Bookmark } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Send, AlertCircle, Loader2, Reply, Bookmark, Image, X } from 'lucide-react'
+import { compressImage, uploadToSupabaseStorage } from '../lib/imageUpload'
 
 const SITE_URL = 'https://diabeteslife.jp'
 const DEFAULT_OGP_IMAGE = `${SITE_URL}/images/ogp.png`
@@ -36,6 +37,12 @@ export function ThreadDetail() {
   const [imageModal, setImageModal] = useState<string | null>(null)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
+  
+  // 画像添付用state
+  const [commentImage, setCommentImage] = useState<File | null>(null)
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -254,12 +261,31 @@ export function ThreadDetail() {
       return
     }
 
+    // 画像がある場合はアップロード
+    let imageUrl: string | null = null
+    if (commentImage) {
+      try {
+        setUploadingImage(true)
+        const compressedImage = await compressImage(commentImage, 'content')
+        imageUrl = await uploadToSupabaseStorage(compressedImage, 'comment-images')
+      } catch (err) {
+        console.error('Image upload error:', err)
+        setError('画像のアップロードに失敗しました')
+        setSubmitting(false)
+        setUploadingImage(false)
+        return
+      } finally {
+        setUploadingImage(false)
+      }
+    }
+
     const { error: insertError } = await supabase
       .from('comments')
       .insert({
         thread_id: thread.id,
         user_id: user.id,
         body: commentContent,
+        image_url: imageUrl,
       } as never)
 
     if (insertError) {
@@ -267,6 +293,9 @@ export function ThreadDetail() {
       console.error('Error posting comment:', insertError)
     } else {
       setCommentContent('')
+      // 画像もクリア
+      setCommentImage(null)
+      setCommentImagePreview(null)
       await fetchComments(thread.id)
       // Update thread comments count with actual count from DB
       if (thread) {
@@ -421,6 +450,43 @@ export function ThreadDetail() {
     if (commentTextareaRef.current) {
       commentTextareaRef.current.focus()
       commentTextareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  // 画像選択ハンドラ
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // ファイルタイプチェック
+    if (!file.type.startsWith('image/')) {
+      setError('画像ファイルを選択してください')
+      return
+    }
+
+    // ファイルサイズチェック（10MB）
+    if (file.size > 10 * 1024 * 1024) {
+      setError('画像サイズは10MB以下にしてください')
+      return
+    }
+
+    setCommentImage(file)
+    
+    // プレビュー作成
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setCommentImagePreview(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+    setError('')
+  }
+
+  // 画像削除ハンドラ
+  function removeImage() {
+    setCommentImage(null)
+    setCommentImagePreview(null)
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
     }
   }
 
@@ -713,6 +779,18 @@ export function ThreadDetail() {
                             </button>
                           )}
                           {renderCommentWithAnchors((comment as any).body || comment.content || '', comments.length + 1)}
+                          
+                          {/* コメントに添付された画像 */}
+                          {(comment as any).image_url && (
+                            <div className="mt-2">
+                              <img
+                                src={(comment as any).image_url}
+                                alt="添付画像"
+                                className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setImageModal((comment as any).image_url)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     )
@@ -782,21 +860,58 @@ export function ThreadDetail() {
                       style={{ minHeight: '100px', maxHeight: '300px' }}
                       required
                     />
+
+                    {/* 画像プレビュー */}
+                    {commentImagePreview && (
+                      <div className="relative inline-block">
+                        <img
+                          src={commentImagePreview}
+                          alt="添付画像プレビュー"
+                          className="max-h-32 rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
-                      <p className="hidden md:block text-xs text-gray-400">
-                        Enter で送信 / Shift + Enter で改行
-                      </p>
+                      <div className="flex items-center gap-3">
+                        {/* 画像添付ボタン */}
+                        <input
+                          ref={imageInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                          id="comment-image-input"
+                        />
+                        <label
+                          htmlFor="comment-image-input"
+                          className="flex items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors text-sm"
+                        >
+                          <Image size={18} />
+                          <span className="hidden sm:inline">画像を添付</span>
+                        </label>
+                        <p className="hidden md:block text-xs text-gray-400">
+                          Enter で送信 / Shift + Enter で改行
+                        </p>
+                      </div>
                       <button
                         type="submit"
-                        disabled={submitting || !commentContent.trim()}
+                        disabled={submitting || uploadingImage || !commentContent.trim()}
                         className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed font-medium"
                       >
-                        {submitting ? (
+                        {submitting || uploadingImage ? (
                           <Loader2 size={18} className="animate-spin" />
                         ) : (
                           <Send size={18} />
                         )}
-                        <span>コメントする</span>
+                        <span>{uploadingImage ? 'アップロード中...' : 'コメントする'}</span>
                       </button>
                     </div>
                   </div>

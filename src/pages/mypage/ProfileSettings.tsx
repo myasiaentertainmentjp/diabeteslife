@@ -20,7 +20,7 @@ import {
   PREFECTURES,
   ExternalLink,
 } from '../../types/database'
-import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell } from 'lucide-react'
+import { Loader2, Save, Check, Plus, Trash2, Link as LinkIcon, Eye, EyeOff, Camera, User, AlertTriangle, Bell, Activity } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const PROFILE_DRAFT_KEY = 'profile_settings_draft'
@@ -52,7 +52,11 @@ const YES_NO_PRIVATES: YesNoPrivate[] = ['yes', 'no', 'private']
 
 const currentYear = new Date().getFullYear()
 
-export function ProfileSettings() {
+interface ProfileSettingsProps {
+  onNavigateToHbA1c?: () => void
+}
+
+export function ProfileSettings({ onNavigateToHbA1c }: ProfileSettingsProps) {
   const { user, profile: authProfile, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -1124,6 +1128,20 @@ export function ProfileSettings() {
             value={hba1cPublic}
             onChange={setHba1cPublic}
           />
+
+          {/* HbA1c記録へのショートカット */}
+          {onNavigateToHbA1c && (
+            <div className="pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={onNavigateToHbA1c}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+              >
+                <Activity size={18} />
+                <span>HbA1cを記録する →</span>
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

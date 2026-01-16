@@ -139,11 +139,13 @@ export function Home() {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
       const now = new Date().toISOString()
 
+      // 1週間以内のスレッドをコメント数順（人気順）で取得
       const queryPromise = supabase
         .from('threads')
-        .select('id, thread_number, title, category, created_at, user_id')
+        .select('id, thread_number, title, category, created_at, user_id, comments_count')
         .gte('created_at', oneWeekAgo.toISOString())
         .lte('created_at', now)
+        .order('comments_count', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(15)
 

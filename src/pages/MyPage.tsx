@@ -68,7 +68,7 @@ export function MyPage() {
 
       {/* Tab Content */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        {activeTab === 'profile' && <ProfileSettings />}
+        {activeTab === 'profile' && <ProfileSettings onNavigateToHbA1c={() => setActiveTab('hba1c')} />}
         {activeTab === 'hba1c' && <HbA1cRecords />}
         {activeTab === 'history' && <PostHistory />}
         {activeTab === 'bookmarks' && <Bookmarks />}
