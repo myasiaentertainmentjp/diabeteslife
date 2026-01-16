@@ -63,6 +63,7 @@ const ReportList = lazy(() => import('./pages/admin/ReportList').then(m => ({ de
 const PopularKeywordList = lazy(() => import('./pages/admin/PopularKeywordList').then(m => ({ default: m.PopularKeywordList })))
 const NotificationList = lazy(() => import('./pages/admin/NotificationList').then(m => ({ default: m.NotificationList })))
 const DummyReply = lazy(() => import('./pages/admin/DummyReply').then(m => ({ default: m.DummyReply })))
+const ScheduledPosts = lazy(() => import('./pages/admin/ScheduledPosts').then(m => ({ default: m.ScheduledPosts })))
 
 // Loading spinner component
 function PageLoader() {
@@ -167,6 +168,7 @@ function App() {
                 <Route path="keywords" element={<PopularKeywordList />} />
                 <Route path="notifications" element={<NotificationList />} />
                 <Route path="dummy-reply" element={<DummyReply />} />
+                <Route path="scheduled-posts" element={<ScheduledPosts />} />
               </Route>
               </Routes>
             </Suspense>

@@ -12,12 +12,14 @@ import {
   ArrowLeft,
   Menu,
   X,
+  Calendar,
 } from 'lucide-react'
 import { useState } from 'react'
 
 const MENU_ITEMS = [
   { path: '/admin', label: 'ダッシュボード', icon: LayoutDashboard, exact: true },
   { path: '/admin/notifications', label: '通知', icon: Bell },
+  { path: '/admin/scheduled-posts', label: 'スケジュール投稿', icon: Calendar },
   { path: '/admin/articles', label: '記事管理', icon: FileText },
   { path: '/admin/threads', label: 'スレッド管理', icon: MessageSquare },
   { path: '/admin/comments', label: 'コメント管理', icon: MessageCircle },
