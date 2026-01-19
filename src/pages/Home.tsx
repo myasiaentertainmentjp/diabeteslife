@@ -56,77 +56,32 @@ function ArticleSkeleton() {
 
 export function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
-  const [threads, setThreads] = useState<ThreadWithUser[]>([])
+  // 人気トピック用と新着トピック用を別々に管理
   const [popularThreads, setPopularThreads] = useState<ThreadWithUser[]>([])
+  const [newThreads, setNewThreads] = useState<ThreadWithUser[]>([])
+  // サイドバー用の1週間人気トピック
+  const [weeklyPopularThreads, setWeeklyPopularThreads] = useState<ThreadWithUser[]>([])
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   // 個別のローディング状態
-  const [loadingThreads, setLoadingThreads] = useState(true)
   const [loadingPopular, setLoadingPopular] = useState(true)
+  const [loadingNew, setLoadingNew] = useState(true)
+  const [loadingWeekly, setLoadingWeekly] = useState(true)
   const [loadingArticles, setLoadingArticles] = useState(true)
 
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // 初回マウント時にサイドバーのデータを取得
+  // 初回マウント時に全データを取得
   useEffect(() => {
     fetchPopularThreads()
+    fetchNewThreads()
+    fetchWeeklyPopularThreads()
     fetchFeaturedArticles()
   }, [])
 
-  // タブ切り替え時（初回含む）にメインコンテンツを取得
-  useEffect(() => {
-    fetchThreads()
-  }, [activeTab])
-
-  async function fetchThreads() {
-    setLoadingThreads(true)
-
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 5000)
-    })
-
-    try {
-      // 未来の日付を除外
-      const now = new Date().toISOString()
-
-      let query = supabase
-        .from('threads')
-        .select('id, thread_number, title, category, created_at, user_id, comments_count')
-        .lte('created_at', now)
-
-      if (activeTab === 'popular') {
-        // 人気トピック: コメント数の多い順、同数なら新しい順
-        query = query
-          .order('comments_count', { ascending: false })
-          .order('created_at', { ascending: false })
-      } else {
-        // 新着トピック: 作成日時の新しい順
-        query = query.order('created_at', { ascending: false })
-      }
-
-      const queryPromise = query.limit(25)
-
-      const result = await Promise.race([queryPromise, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch threads timeout')
-        setThreads([])
-      } else if (result.error) {
-        console.error('Error fetching threads:', result.error)
-        setThreads([])
-      } else {
-        setThreads((result.data || []) as unknown as ThreadWithUser[])
-      }
-    } catch (error) {
-      console.error('Error fetching threads:', error)
-      setThreads([])
-    } finally {
-      setLoadingThreads(false)
-    }
-  }
-
+  // 人気トピック: コメント数の多い順
   async function fetchPopularThreads() {
     setLoadingPopular(true)
 
@@ -135,19 +90,15 @@ export function Home() {
     })
 
     try {
-      const oneWeekAgo = new Date()
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
       const now = new Date().toISOString()
 
-      // 1週間以内のスレッドをコメント数順（人気順）で取得
       const queryPromise = supabase
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id, comments_count')
-        .gte('created_at', oneWeekAgo.toISOString())
         .lte('created_at', now)
         .order('comments_count', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(15)
+        .limit(25)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -168,6 +119,87 @@ export function Home() {
     }
   }
 
+  // 新着トピック: 1週間以内で作成日時の新しい順
+  async function fetchNewThreads() {
+    setLoadingNew(true)
+
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 5000)
+    })
+
+    try {
+      const now = new Date()
+      const oneWeekAgo = new Date()
+      oneWeekAgo.setDate(now.getDate() - 7)
+
+      const queryPromise = supabase
+        .from('threads')
+        .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gte('created_at', oneWeekAgo.toISOString())
+        .lte('created_at', now.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(25)
+
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch new threads timeout')
+        setNewThreads([])
+      } else if (result.error) {
+        console.error('Error fetching new threads:', result.error)
+        setNewThreads([])
+      } else {
+        setNewThreads((result.data || []) as unknown as ThreadWithUser[])
+      }
+    } catch (error) {
+      console.error('Error fetching new threads:', error)
+      setNewThreads([])
+    } finally {
+      setLoadingNew(false)
+    }
+  }
+
+  // サイドバー用: 1週間以内のコメント数順
+  async function fetchWeeklyPopularThreads() {
+    setLoadingWeekly(true)
+
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 5000)
+    })
+
+    try {
+      const oneWeekAgo = new Date()
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+      const now = new Date().toISOString()
+
+      const queryPromise = supabase
+        .from('threads')
+        .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gte('created_at', oneWeekAgo.toISOString())
+        .lte('created_at', now)
+        .order('comments_count', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      const result = await Promise.race([queryPromise, timeoutPromise])
+
+      if (result === null) {
+        console.warn('Fetch weekly popular threads timeout')
+        setWeeklyPopularThreads([])
+      } else if (result.error) {
+        console.error('Error fetching weekly popular threads:', result.error)
+        setWeeklyPopularThreads([])
+      } else {
+        setWeeklyPopularThreads((result.data || []) as unknown as ThreadWithUser[])
+      }
+    } catch (error) {
+      console.error('Error fetching weekly popular threads:', error)
+      setWeeklyPopularThreads([])
+    } finally {
+      setLoadingWeekly(false)
+    }
+  }
+
   async function fetchFeaturedArticles() {
     setLoadingArticles(true)
 
@@ -176,11 +208,12 @@ export function Home() {
     })
 
     try {
-      const queryPromise = supabase
+      // まずis_published=trueで試す、なければ全件から取得
+      let queryPromise = supabase
         .from('articles')
         .select('id, title, slug, thumbnail_url, created_at')
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(5)
 
       const result = await Promise.race([queryPromise, timeoutPromise])
 
@@ -222,37 +255,23 @@ export function Home() {
     e.preventDefault()
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchQuery('')
     }
   }
+
+  // 現在のタブに応じたスレッドリストを取得
+  const currentThreads = activeTab === 'popular' ? popularThreads : newThreads
+  const isLoadingThreads = activeTab === 'popular' ? loadingPopular : loadingNew
 
   return (
     <>
       <Helmet>
-        <title>Dライフ - 糖尿病コミュニティサイト</title>
-        <meta name="description" content="糖尿病と向き合う人々のためのコミュニティサイト。情報交換、HbA1c記録、経験談の共有ができます。" />
-        <link rel="canonical" href="https://diabeteslife.jp" />
-        <meta property="og:url" content="https://diabeteslife.jp" />
+        <title>D-LIFE | 糖尿病患者とその家族のためのコミュニティサイト</title>
+        <meta name="description" content="糖尿病患者とその家族のためのコミュニティサイト。食事、治療、運動、メンタルケアなど、糖尿病に関する情報を共有できます。" />
       </Helmet>
-      <div className="bg-rose-50 min-h-screen">
+
+      <div className="min-h-screen bg-gray-100">
         {/* Hero Slider */}
         <HeroSlider />
-
-        {/* Search Bar */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <form onSubmit={handleSearch} className="relative max-w-md mx-auto">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="キーワードで検索..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none shadow-sm"
-              />
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            </form>
-          </div>
-        </div>
 
         {/* Main Content */}
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -291,16 +310,16 @@ export function Home() {
 
             {/* Thread List */}
             <div className="bg-white rounded-b-lg shadow-sm pt-2">
-              {loadingThreads ? (
+              {isLoadingThreads ? (
                 <ThreadSkeleton />
-              ) : threads.length === 0 ? (
+              ) : currentThreads.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <MessageSquare size={40} className="mx-auto mb-3 text-gray-300" />
                   <p>トピックがありません</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
-                  {threads.map((thread) => (
+                  {currentThreads.map((thread) => (
                     <li key={thread.id}>
                       <Link
                         to={`/threads/${(thread as any).thread_number || thread.id}`}
@@ -313,6 +332,10 @@ export function Home() {
                             </h3>
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <MessageSquare size={14} />
+                              {(thread as any).comments_count || 0}
+                            </span>
                             <span className="hidden sm:inline">
                               {formatDate(thread.created_at)}
                             </span>
@@ -363,15 +386,15 @@ export function Home() {
               <div className="px-4 py-3 border-b border-gray-100">
                 <h2 className="font-bold text-gray-800">一週間の人気トピック</h2>
               </div>
-              {loadingPopular ? (
+              {loadingWeekly ? (
                 <SidebarSkeleton />
-              ) : popularThreads.length === 0 ? (
+              ) : weeklyPopularThreads.length === 0 ? (
                 <div className="px-4 py-6 text-center text-gray-500 text-sm">
                   まだトピックがありません
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
-                  {popularThreads.map((thread, index) => (
+                  {weeklyPopularThreads.map((thread, index) => (
                     <li key={thread.id}>
                       <Link
                         to={`/threads/${(thread as any).thread_number || thread.id}`}
