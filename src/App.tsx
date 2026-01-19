@@ -7,7 +7,7 @@ import { Layout } from './components/layout'
 import { Loader2 } from 'lucide-react'
 
 // Maintenance mode flag - set to true to enable maintenance page
-const MAINTENANCE_MODE = true
+const MAINTENANCE_MODE = false
 
 // Maintenance page
 import { Maintenance } from './pages/Maintenance'
