@@ -185,11 +185,13 @@ export function ThreadDetail() {
     if (!threadId) return
 
     try {
-      // Get comments
+      // Get comments (filter: is_hidden = false AND created_at <= now)
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
+        .eq('is_hidden', false)
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: true })
 
       if (commentsError) {
