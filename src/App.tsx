@@ -6,6 +6,12 @@ import { ToastProvider } from './contexts/ToastContext'
 import { Layout } from './components/layout'
 import { Loader2 } from 'lucide-react'
 
+// Maintenance mode flag - set to true to enable maintenance page
+const MAINTENANCE_MODE = true
+
+// Maintenance page
+import { Maintenance } from './pages/Maintenance'
+
 // Critical path - load immediately
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -98,6 +104,15 @@ function MyPageWrapper({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  // Maintenance mode - show only maintenance page
+  if (MAINTENANCE_MODE) {
+    return (
+      <HelmetProvider>
+        <Maintenance />
+      </HelmetProvider>
+    )
+  }
+
   return (
     <HelmetProvider>
       <BrowserRouter>
