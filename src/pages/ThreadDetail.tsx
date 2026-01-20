@@ -46,7 +46,7 @@ export function ThreadDetail() {
 
   const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
@@ -55,7 +55,7 @@ export function ThreadDetail() {
     if (threadNumber) {
       fetchData()
     }
-  }, [threadNumber])
+  }, [threadNumber, isAdmin])
 
   // Check bookmark status when thread and user are available
   useEffect(() => {
@@ -185,14 +185,22 @@ export function ThreadDetail() {
     if (!threadId) return
 
     try {
-      // Get comments (filter: is_hidden = false AND created_at <= now)
-      const { data: commentsData, error: commentsError } = await supabase
+      // Get comments
+      // Admin sees all comments, regular users only see non-hidden past comments
+      let query = supabase
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
-        .eq('is_hidden', false)
-        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: true })
+
+      if (!isAdmin) {
+        // Regular users: filter out future comments and hidden comments
+        query = query
+          .eq('is_hidden', false)
+          .lte('created_at', new Date().toISOString())
+      }
+
+      const { data: commentsData, error: commentsError } = await query
 
       if (commentsError) {
         console.error('Error fetching comments:', commentsError)
