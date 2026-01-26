@@ -51,12 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch user profile from database (with 3 second timeout)
+  // Fetch user profile from database (with 10 second timeout)
   const fetchUserData = useCallback(async (userId: string, userEmail: string): Promise<UserProfile> => {
     try {
-      // 3秒タイムアウト
+      // 10秒タイムアウト
       const timeoutPromise = new Promise<null>((resolve) => {
-        setTimeout(() => resolve(null), 3000)
+        setTimeout(() => resolve(null), 10000)
       })
 
       const queryPromise = supabase
@@ -94,13 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    // タイムアウト付きでセッション取得（5秒）
+    // タイムアウト付きでセッション取得（15秒）
     const sessionTimeout = setTimeout(() => {
       if (mounted && loading) {
         console.warn('[Auth] Session fetch timeout - proceeding without auth')
         setLoading(false)
       }
-    }, 5000)
+    }, 15000)
 
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
