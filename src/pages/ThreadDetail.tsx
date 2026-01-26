@@ -231,7 +231,23 @@ export function ThreadDetail() {
         },
       }))
 
-      setComments(commentsWithUsers as unknown as ThreadCommentWithUser[])
+      // Deduplicate comments (same user, same body, within 60 seconds)
+      const deduped = commentsWithUsers.filter((comment, index) => {
+        const body = (comment as any).body || (comment as any).content || ''
+        const time = new Date(comment.created_at).getTime()
+        return !commentsWithUsers.some((other, otherIndex) => {
+          if (otherIndex >= index) return false
+          const otherBody = (other as any).body || (other as any).content || ''
+          const otherTime = new Date(other.created_at).getTime()
+          return (
+            comment.user_id === other.user_id &&
+            body === otherBody &&
+            Math.abs(time - otherTime) < 60000
+          )
+        })
+      })
+
+      setComments(deduped as unknown as ThreadCommentWithUser[])
     } catch (error) {
       console.error('Error fetching comments:', error)
       setComments([])
@@ -728,17 +744,6 @@ export function ThreadDetail() {
                   const commentIdToNumber = new Map<string, number>()
                   comments.forEach((c, i) => {
                     commentIdToNumber.set(c.id, i + 2)
-                  })
-
-                  // Debug: Log the map and comments with parent_id
-                  console.log('=== Reply Debug ===')
-                  console.log('Total comments:', comments.length)
-                  console.log('Comments with parent_id:', comments.filter((c: any) => c.parent_id).length)
-                  comments.forEach((c: any, i) => {
-                    if (c.parent_id) {
-                      const found = commentIdToNumber.get(c.parent_id)
-                      console.log(`Comment ${i + 2}: parent_id=${c.parent_id}, found=${found}`)
-                    }
                   })
 
                   return comments.map((comment, index) => {
