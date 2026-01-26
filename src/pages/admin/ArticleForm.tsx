@@ -60,6 +60,7 @@ export function ArticleForm() {
   const isEdit = Boolean(id)
 
   const [formData, setFormData] = useState<FormData>(initialFormData)
+  const [originalIsPublished, setOriginalIsPublished] = useState(false)
   const [loading, setLoading] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -94,6 +95,7 @@ export function ArticleForm() {
         content: data.content,
         is_published: data.is_published,
       })
+      setOriginalIsPublished(data.is_published)
     } catch (error) {
       console.error('Error fetching article:', error)
       showToast('記事の取得に失敗しました', 'error')
@@ -166,12 +168,23 @@ export function ArticleForm() {
       excerpt: autoExcerpt || null,
       content: formData.content,
       is_published: formData.is_published,
-      published_at: formData.is_published ? now : null,
       updated_at: now,
     }
 
-    // Add created_at and author_id only for new articles
-    if (!isEdit) {
+    // Handle published_at based on context
+    if (isEdit) {
+      // Only update published_at when publish status actually changes
+      if (formData.is_published && !originalIsPublished) {
+        // Changing from unpublished to published
+        articleData.published_at = now
+      } else if (!formData.is_published && originalIsPublished) {
+        // Changing from published to unpublished
+        articleData.published_at = null
+      }
+      // If status unchanged, don't include published_at (preserve existing value)
+    } else {
+      // New article
+      articleData.published_at = formData.is_published ? now : null
       articleData.created_at = now
       articleData.author_id = user?.id || null
     }
@@ -191,16 +204,25 @@ export function ArticleForm() {
 
       if (isEdit && id) {
         console.log('Updating article:', id, articleData)
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('articles')
-          .update(articleData)
+          .update(articleData as never)
           .eq('id', id)
+          .select()
 
         if (error) {
           console.error('Error updating article:', error)
           console.error('Error details:', JSON.stringify(error, null, 2))
-          showToast('更新に失敗しました: ' + error.message, 'error')
+          if (error.code === '23505') {
+            showToast('このスラッグは既に使用されています', 'error')
+          } else {
+            showToast('更新に失敗しました: ' + error.message, 'error')
+          }
+        } else if (!data || data.length === 0) {
+          console.error('Update returned no rows - possible RLS policy issue')
+          showToast('更新に失敗しました。権限を確認してください。', 'error')
         } else {
+          console.log('Article updated successfully:', data)
           showToast('記事を更新しました', 'success')
           navigate('/admin/articles')
         }
