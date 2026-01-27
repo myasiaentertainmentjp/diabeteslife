@@ -193,13 +193,13 @@ export function ThreadDetail() {
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true })
 
-      // Always hide future comments (auto-reveal when time arrives)
-      query = query.lte('created_at', new Date().toISOString())
-
       if (!isAdmin) {
-        // Regular users also don't see hidden comments
-        query = query.eq('is_hidden', false)
+        // Regular users: hide future comments and hidden comments
+        query = query
+          .eq('is_hidden', false)
+          .lte('created_at', new Date().toISOString())
       }
+      // Admin sees all comments including future and hidden
 
       const { data: commentsData, error: commentsError } = await query
 
@@ -753,15 +753,20 @@ export function ThreadDetail() {
                     const parentId = (comment as any).parent_id
                     const parentNumber = parentId ? commentIdToNumber.get(parentId) : null
 
+                    const isFutureComment = new Date(comment.created_at) > new Date()
+
                     return (
                       <div
                         key={comment.id}
                         id={`comment-${index + 2}`}
-                        className="py-5 transition-colors duration-500"
+                        className={`py-5 transition-colors duration-500 ${isFutureComment ? 'opacity-50 bg-yellow-50 rounded-lg px-3' : ''}`}
                       >
                         {/* 2ch/ガルちゃん風ヘッダー: 番号: 名前 日時 (スレ主=1なのでコメントは2から) */}
                         <div className="flex flex-wrap items-baseline gap-1 mb-2">
                           <span className="font-bold text-rose-500">{index + 2}:</span>
+                          {isFutureComment && (
+                            <span className="px-1.5 py-0.5 text-xs font-medium bg-yellow-400 text-yellow-900 rounded">予約</span>
+                          )}
                           <Link
                             to={`/users/${comment.user_id}`}
                             className="font-medium text-blue-600 hover:underline"
