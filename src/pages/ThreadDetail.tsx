@@ -193,11 +193,12 @@ export function ThreadDetail() {
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true })
 
+      // Always hide future comments (auto-reveal when time arrives)
+      query = query.lte('created_at', new Date().toISOString())
+
       if (!isAdmin) {
-        // Regular users: filter out future comments and hidden comments
-        query = query
-          .eq('is_hidden', false)
-          .lte('created_at', new Date().toISOString())
+        // Regular users also don't see hidden comments
+        query = query.eq('is_hidden', false)
       }
 
       const { data: commentsData, error: commentsError } = await query
@@ -329,6 +330,7 @@ export function ThreadDetail() {
           .from('comments')
           .select('*', { count: 'exact', head: true })
           .eq('thread_id', thread.id)
+          .lte('created_at', new Date().toISOString())
 
         const newCount = count || 0
         await supabase
