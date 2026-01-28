@@ -708,7 +708,7 @@ export function ThreadDetail() {
             <span className="font-bold text-rose-500">1:</span>
             <Link
               to={`/users/${thread.user_id}`}
-              className="font-medium hover:underline" style={{ color: '#CDDEE4' }}
+              className="font-medium text-blue-400 hover:underline"
             >
               {thread.profiles?.display_name || '匿名'}
             </Link>
@@ -779,7 +779,7 @@ export function ThreadDetail() {
                           )}
                           <Link
                             to={`/users/${comment.user_id}`}
-                            className="font-medium hover:underline" style={{ color: '#CDDEE4' }}
+                            className="font-medium text-blue-400 hover:underline"
                           >
                             {comment.profiles?.display_name || '匿名'}
                           </Link>
