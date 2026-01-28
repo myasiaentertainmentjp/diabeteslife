@@ -74,11 +74,11 @@ export function ThreadDetail() {
   // PC版サイドバーのスクロール挙動
   // 最初は一緒にスクロール → サイドバー下端が画面下に達したら固定
   useEffect(() => {
-    const handleScroll = () => {
-      const sidebar = sidebarRef.current
-      const wrapper = sidebarWrapperRef.current
-      if (!sidebar || !wrapper) return
+    const sidebar = sidebarRef.current
+    const wrapper = sidebarWrapperRef.current
+    if (!sidebar || !wrapper) return
 
+    const handleScroll = () => {
       const sidebarHeight = sidebar.offsetHeight
       const viewportHeight = window.innerHeight
       const bottomMargin = 80 // 固定バーの高さ + 余白
@@ -87,36 +87,34 @@ export function ThreadDetail() {
       const sidebarOffsetTop = wrapper.offsetTop
 
       // サイドバー下端が画面下端に達するスクロール位置を計算
-      // スクロール位置 + 画面高さ - マージン = サイドバー上端 + サイドバー高さ
       const scrollThreshold = sidebarOffsetTop + sidebarHeight - viewportHeight + bottomMargin
 
       if (window.scrollY >= scrollThreshold && scrollThreshold > 0) {
         // 固定する
         const topValue = viewportHeight - sidebarHeight - bottomMargin
-        if (!sidebarSticky) {
-          setSidebarStickyTop(Math.max(topValue, 16))
-          setSidebarSticky(true)
-        }
+        setSidebarStickyTop(Math.max(topValue, 16))
+        setSidebarSticky(true)
       } else {
         // 固定解除
-        if (sidebarSticky) {
-          setSidebarSticky(false)
-        }
+        setSidebarSticky(false)
       }
     }
 
-    // 初回実行を少し遅延（サイドバー内コンテンツ読み込み待ち）
-    const timer = setTimeout(handleScroll, 500)
+    // サイドバーのサイズ変化を監視（非同期コンテンツ読み込み対応）
+    const resizeObserver = new ResizeObserver(() => {
+      handleScroll()
+    })
+    resizeObserver.observe(sidebar)
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleScroll)
 
     return () => {
-      clearTimeout(timer)
+      resizeObserver.disconnect()
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleScroll)
     }
-  }, [thread, comments, sidebarSticky])
+  }, [thread, comments])
 
   async function checkBookmarkStatus(threadId: string) {
     if (!user) return
