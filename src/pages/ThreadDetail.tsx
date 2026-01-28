@@ -49,7 +49,9 @@ export function ThreadDetail() {
 
   // PC版サイドバー用
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const [sidebarTop, setSidebarTop] = useState<number | null>(null)
+  const sidebarWrapperRef = useRef<HTMLDivElement>(null)
+  const [sidebarSticky, setSidebarSticky] = useState(false)
+  const [sidebarStickyTop, setSidebarStickyTop] = useState(16)
 
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -72,31 +74,47 @@ export function ThreadDetail() {
   // PC版サイドバーのスクロール挙動
   // 最初は一緒にスクロール → サイドバー下端が画面下に達したら固定
   useEffect(() => {
-    const calculateStickyTop = () => {
+    const handleScroll = () => {
       const sidebar = sidebarRef.current
-      if (!sidebar) return
+      const wrapper = sidebarWrapperRef.current
+      if (!sidebar || !wrapper) return
 
       const sidebarHeight = sidebar.offsetHeight
       const viewportHeight = window.innerHeight
       const bottomMargin = 80 // 固定バーの高さ + 余白
+      const wrapperRect = wrapper.getBoundingClientRect()
 
-      // サイドバー下端が画面下端に達した時に固定されるようtopを計算
-      const calculatedTop = viewportHeight - sidebarHeight - bottomMargin
+      // サイドバーが自然にスクロールした場合の下端位置
+      const sidebarNaturalBottom = wrapperRect.top + sidebarHeight
 
-      // 最低16pxは確保（画面上端より上には行かない）
-      setSidebarTop(Math.max(calculatedTop, 16))
+      // サイドバー下端が画面下端（- マージン）に達したか
+      if (sidebarNaturalBottom <= viewportHeight - bottomMargin) {
+        // 固定する
+        if (!sidebarSticky) {
+          const topValue = viewportHeight - sidebarHeight - bottomMargin
+          setSidebarStickyTop(Math.max(topValue, 16))
+          setSidebarSticky(true)
+        }
+      } else {
+        // 固定解除
+        if (sidebarSticky) {
+          setSidebarSticky(false)
+        }
+      }
     }
 
-    // 初回計算（少し遅延させてDOM確定後に）
-    const timer = setTimeout(calculateStickyTop, 100)
+    // 初回実行を少し遅延
+    const timer = setTimeout(handleScroll, 100)
 
-    window.addEventListener('resize', calculateStickyTop)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
 
     return () => {
       clearTimeout(timer)
-      window.removeEventListener('resize', calculateStickyTop)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
     }
-  }, [thread, comments])
+  }, [thread, comments, sidebarSticky])
 
   async function checkBookmarkStatus(threadId: string) {
     if (!user) return
@@ -884,11 +902,11 @@ export function ThreadDetail() {
       </div>
 
         {/* Sidebar - PC only */}
-        <div className="hidden lg:block lg:w-80 shrink-0">
+        <div ref={sidebarWrapperRef} className="hidden lg:block lg:w-80 shrink-0">
           <div
             ref={sidebarRef}
-            className="sticky"
-            style={{ top: sidebarTop !== null ? `${sidebarTop}px` : '16px' }}
+            className={sidebarSticky ? 'sticky' : ''}
+            style={sidebarSticky ? { top: `${sidebarStickyTop}px` } : undefined}
           >
             <Sidebar showPostButton={true} showCategories={false} />
           </div>
