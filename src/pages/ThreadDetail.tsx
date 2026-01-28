@@ -853,7 +853,7 @@ export function ThreadDetail() {
       </div>
 
         {/* Sidebar - PC only */}
-        <div className="hidden lg:block lg:w-80 space-y-6 sticky top-4 self-start h-fit">
+        <div className="hidden lg:block lg:w-80 space-y-6">
           <Sidebar showPostButton={true} showCategories={false} />
         </div>
       </div>
