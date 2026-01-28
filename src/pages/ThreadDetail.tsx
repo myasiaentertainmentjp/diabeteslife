@@ -47,11 +47,6 @@ export function ThreadDetail() {
   const mobileTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [mobileCommentOpen, setMobileCommentOpen] = useState(false)
 
-  // PC版サイドバー用
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const sidebarWrapperRef = useRef<HTMLDivElement>(null)
-  const [sidebarSticky, setSidebarSticky] = useState(false)
-  const [sidebarStickyTop, setSidebarStickyTop] = useState(16)
 
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -71,50 +66,6 @@ export function ThreadDetail() {
     }
   }, [thread?.id, user])
 
-  // PC版サイドバーのスクロール挙動
-  // 最初は一緒にスクロール → サイドバー下端が画面下に達したら固定
-  useEffect(() => {
-    const sidebar = sidebarRef.current
-    const wrapper = sidebarWrapperRef.current
-    if (!sidebar || !wrapper) return
-
-    const handleScroll = () => {
-      const sidebarHeight = sidebar.offsetHeight
-      const viewportHeight = window.innerHeight
-      const bottomMargin = 80 // 固定バーの高さ + 余白
-
-      // サイドバーのページ上端からの位置
-      const sidebarOffsetTop = wrapper.offsetTop
-
-      // サイドバー下端が画面下端に達するスクロール位置を計算
-      const scrollThreshold = sidebarOffsetTop + sidebarHeight - viewportHeight + bottomMargin
-
-      if (window.scrollY >= scrollThreshold && scrollThreshold > 0) {
-        // 固定する
-        const topValue = viewportHeight - sidebarHeight - bottomMargin
-        setSidebarStickyTop(Math.max(topValue, 16))
-        setSidebarSticky(true)
-      } else {
-        // 固定解除
-        setSidebarSticky(false)
-      }
-    }
-
-    // サイドバーのサイズ変化を監視（非同期コンテンツ読み込み対応）
-    const resizeObserver = new ResizeObserver(() => {
-      handleScroll()
-    })
-    resizeObserver.observe(sidebar)
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('resize', handleScroll)
-
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', handleScroll)
-    }
-  }, [thread, comments])
 
   async function checkBookmarkStatus(threadId: string) {
     if (!user) return
@@ -902,14 +853,8 @@ export function ThreadDetail() {
       </div>
 
         {/* Sidebar - PC only */}
-        <div ref={sidebarWrapperRef} className="hidden lg:block lg:w-80 shrink-0">
-          <div
-            ref={sidebarRef}
-            className={sidebarSticky ? 'sticky' : ''}
-            style={sidebarSticky ? { top: `${sidebarStickyTop}px` } : undefined}
-          >
-            <Sidebar showPostButton={true} showCategories={false} />
-          </div>
+        <div className="hidden lg:block lg:w-80 space-y-6">
+          <Sidebar showPostButton={true} showCategories={false} />
         </div>
       </div>
 
