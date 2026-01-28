@@ -143,17 +143,17 @@ export function ThreadList() {
   return (
     <>
       <Helmet>
-        <title>スレッド一覧 | Dライフ</title>
-        <meta name="description" content="糖尿病に関するスレッド一覧。食事、治療、運動、メンタルなど様々なカテゴリで情報交換できます。" />
+        <title>トピック一覧 | Dライフ</title>
+        <meta name="description" content="糖尿病に関するトピック一覧。食事、治療、運動、メンタルなど様々なカテゴリで情報交換できます。" />
         <link rel="canonical" href="https://diabeteslife.jp/threads" />
-        <meta property="og:title" content="スレッド一覧 | Dライフ" />
+        <meta property="og:title" content="トピック一覧 | Dライフ" />
         <meta property="og:url" content="https://diabeteslife.jp/threads" />
       </Helmet>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">スレッド一覧</h1>
+            <h1 className="text-2xl font-bold text-gray-800">トピック一覧</h1>
           <p className="text-gray-600 mt-1">みんなで情報交換しましょう</p>
         </div>
         {user && (
@@ -199,14 +199,14 @@ export function ThreadList() {
       {threads.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl">
           <MessageSquare size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">スレッドがありません</p>
+          <p className="text-gray-600">トピックがありません</p>
           {user && (
             <Link
               to="/threads/new"
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors"
             >
               <Plus size={20} />
-              <span>最初のスレッドを作成</span>
+              <span>最初のトピックを作成</span>
             </Link>
           )}
         </div>

@@ -220,7 +220,7 @@ export function Search() {
         >
           <span className="flex items-center gap-2">
             <MessageSquare size={16} />
-            スレッド（{results.threadCount}）
+            トピック（{results.threadCount}）
           </span>
         </button>
         <button
@@ -254,7 +254,7 @@ export function Search() {
               {results.threads.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                   <MessageSquare size={40} className="mx-auto mb-3 text-gray-300" />
-                  <p className="text-gray-500">該当するスレッドが見つかりませんでした</p>
+                  <p className="text-gray-500">該当するトピックが見つかりませんでした</p>
                 </div>
               ) : (
                 <>

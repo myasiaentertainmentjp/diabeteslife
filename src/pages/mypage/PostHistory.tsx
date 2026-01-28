@@ -106,7 +106,7 @@ export function PostHistory() {
           }`}
         >
           <FileText size={16} />
-          <span>スレッド</span>
+          <span>トピック</span>
           <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
             {threads.length}
           </span>
@@ -172,12 +172,12 @@ export function PostHistory() {
           ) : (
             <div className="text-center py-8 text-gray-500">
               <FileText size={32} className="mx-auto mb-2 text-gray-300" />
-              <p>まだスレッドを投稿していません</p>
+              <p>まだトピックを投稿していません</p>
               <Link
                 to="/threads/new"
                 className="inline-block mt-3 text-rose-500 hover:underline text-sm"
               >
-                最初のスレッドを投稿する
+                最初のトピックを投稿する
               </Link>
             </div>
           )}
@@ -210,7 +210,7 @@ export function PostHistory() {
                         <div className="flex items-center gap-2 mb-1">
                           {comment.threads && (
                             <span className="text-xs text-rose-500 truncate">
-                              スレッド: {comment.threads.title}
+                              トピック: {comment.threads.title}
                             </span>
                           )}
                           {isScheduled && (
@@ -253,7 +253,7 @@ export function PostHistory() {
                 to="/threads"
                 className="inline-block mt-3 text-rose-500 hover:underline text-sm"
               >
-                スレッドを見る
+                トピックを見る
               </Link>
             </div>
           )}

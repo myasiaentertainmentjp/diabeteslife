@@ -120,7 +120,7 @@ export function BlockedUsers() {
       </div>
 
       <p className="text-sm text-gray-600 mb-4">
-        ブロックしたユーザーはあなたのプロフィールやスレッドにコメントできません。
+        ブロックしたユーザーはあなたのプロフィールやトピックにコメントできません。
       </p>
 
       {blockedUsers.length === 0 ? (

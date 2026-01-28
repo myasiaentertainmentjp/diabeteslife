@@ -15,7 +15,7 @@ export function ThreadModes() {
         <span>前のページに戻る</span>
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">スレッドタイプについて</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">トピックタイプについて</h1>
       <p className="text-gray-600 text-sm mb-6">通常モードと日記モードの違い</p>
 
       {/* Normal Mode */}
@@ -26,7 +26,7 @@ export function ThreadModes() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">通常モード</h2>
-            <p className="text-sm text-blue-600">みんなで話し合うスレッド</p>
+            <p className="text-sm text-blue-600">みんなで話し合うトピック</p>
           </div>
         </div>
 
@@ -36,11 +36,11 @@ export function ThreadModes() {
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">-</span>
-                <span><strong>誰でも投稿・コメントできる</strong>オープンなスレッドです</span>
+                <span><strong>誰でも投稿・コメントできる</strong>オープンなトピックです</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">-</span>
-                <span>質問や相談、情報共有など<strong>議論向け</strong>のスレッドタイプ</span>
+                <span>質問や相談、情報共有など<strong>議論向け</strong>のトピックタイプ</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">-</span>
@@ -81,7 +81,7 @@ export function ThreadModes() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">日記モード</h2>
-            <p className="text-sm text-purple-600">自分だけの記録スレッド</p>
+            <p className="text-sm text-purple-600">自分だけの記録トピック</p>
           </div>
         </div>
 
@@ -91,7 +91,7 @@ export function ThreadModes() {
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-1">-</span>
-                <span><strong>スレッド作成者だけ</strong>が投稿できる専用モードです</span>
+                <span><strong>トピック作成者だけ</strong>が投稿できる専用モードです</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-1">-</span>
@@ -189,7 +189,7 @@ export function ThreadModes() {
           to="/threads/new"
           className="inline-flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-medium rounded-lg hover:bg-rose-600 transition-colors"
         >
-          スレッドを作成する
+          トピックを作成する
         </Link>
       </div>
     </div>

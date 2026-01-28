@@ -167,7 +167,7 @@ export function ThreadNew() {
       .single()
 
     if (insertError) {
-      setError('スレッドの作成に失敗しました')
+      setError('トピックの作成に失敗しました')
       console.error('Error creating thread:', insertError)
       setSubmitting(false)
     } else {
@@ -200,7 +200,7 @@ export function ThreadNew() {
       </button>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">新規スレッド作成</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">新規トピック作成</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
@@ -246,7 +246,7 @@ export function ThreadNew() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
-              placeholder="スレッドのタイトルを入力"
+              placeholder="トピックのタイトルを入力"
               maxLength={100}
               required
             />
@@ -265,7 +265,7 @@ export function ThreadNew() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors resize-none"
-              placeholder={category === 'todays_meal' ? '今日の食事を写真と一緒に共有しましょう!' : 'スレッドの本文を入力...'}
+              placeholder={category === 'todays_meal' ? '今日の食事を写真と一緒に共有しましょう!' : 'トピックの本文を入力...'}
               rows={8}
               maxLength={5000}
               required

@@ -115,12 +115,12 @@ export function Bookmarks() {
     return (
       <div className="text-center py-8 text-gray-500">
         <Bookmark size={32} className="mx-auto mb-2 text-gray-300" />
-        <p>ブックマークしたスレッドはありません</p>
+        <p>ブックマークしたトピックはありません</p>
         <Link
           to="/threads"
           className="inline-block mt-3 text-rose-500 hover:underline text-sm"
         >
-          スレッドを探す
+          トピックを探す
         </Link>
       </div>
     )

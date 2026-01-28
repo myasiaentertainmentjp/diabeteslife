@@ -58,7 +58,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/threads" className="hover:text-white transition-colors">
-                  スレッド一覧
+                  トピック一覧
                 </Link>
               </li>
               <li>

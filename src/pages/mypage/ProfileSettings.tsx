@@ -1462,8 +1462,8 @@ export function ProfileSettings({}: ProfileSettingsProps) {
 
         <div className="space-y-4">
           <PrivacySettingRow
-            label="スレッドへのコメント"
-            description="自分のスレッドに新しいコメントが付いたときに通知"
+            label="トピックへのコメント"
+            description="自分のトピックに新しいコメントが付いたときに通知"
             value={notifyThreadComment}
             onChange={setNotifyThreadComment}
           />
@@ -1475,7 +1475,7 @@ export function ProfileSettings({}: ProfileSettingsProps) {
           />
           <PrivacySettingRow
             label="いいね"
-            description="スレッドや日記にいいねされたときに通知"
+            description="トピックや日記にいいねされたときに通知"
             value={notifyLikes}
             onChange={setNotifyLikes}
           />
@@ -1565,7 +1565,7 @@ export function ProfileSettings({}: ProfileSettingsProps) {
       <section className="mt-12 pt-8 border-t-2 border-red-200">
         <h3 className="text-lg font-semibold text-red-600 mb-4">退会</h3>
         <p className="text-sm text-gray-600 mb-4">
-          退会すると、投稿したスレッド・コメント・HbA1c記録などすべてのデータが削除されます。この操作は取り消せません。
+          退会すると、投稿したトピック・コメント・HbA1c記録などすべてのデータが削除されます。この操作は取り消せません。
         </p>
         <button
           type="button"
@@ -1596,7 +1596,7 @@ export function ProfileSettings({}: ProfileSettingsProps) {
                 退会すると以下のデータがすべて削除されます：
               </p>
               <ul className="text-sm text-red-700 mt-2 space-y-1">
-                <li>• 投稿したスレッド・コメント</li>
+                <li>• 投稿したトピック・コメント</li>
                 <li>• HbA1c記録</li>
                 <li>• プロフィール情報</li>
                 <li>• その他すべてのデータ</li>

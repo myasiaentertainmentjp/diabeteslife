@@ -247,7 +247,7 @@ export function Header() {
               className="text-gray-600 hover:text-rose-500 font-medium transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              スレッド一覧
+              トピック一覧
             </Link>
             <Link
               to="/articles"

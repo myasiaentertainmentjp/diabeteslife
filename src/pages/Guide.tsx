@@ -164,7 +164,7 @@ export function Guide() {
                 className="inline-flex items-center gap-1 mt-2 text-rose-500 hover:text-rose-600 text-sm font-medium"
               >
                 <MessageSquare size={16} />
-                スレッド一覧を見る
+                トピック一覧を見る
               </Link>
             </div>
           </div>

@@ -802,14 +802,14 @@ export function UserProfile() {
         <div className="px-4 py-3 border-b border-gray-100 bg-rose-50">
           <div className="flex items-center gap-2">
             <FileText size={16} className="text-rose-500" />
-            <h2 className="text-sm font-semibold text-gray-900">投稿したスレッド</h2>
+            <h2 className="text-sm font-semibold text-gray-900">投稿したトピック</h2>
             <span className="text-xs text-gray-500">({threads.length})</span>
           </div>
         </div>
 
         {threads.length === 0 ? (
           <div className="px-4 py-6 text-center text-gray-500 text-sm">
-            まだスレッドを投稿していません
+            まだトピックを投稿していません
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
