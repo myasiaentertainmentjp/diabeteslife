@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import {
   ThreadCategory,
@@ -58,18 +58,14 @@ export function ThreadList() {
   }, [selectedCategory, currentPage])
 
   async function fetchThreads() {
-    // 10秒タイムアウト
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 10000)
-    })
-
     try {
       // 未来の日付を除外
       const now = new Date().toISOString()
 
-      let query = supabase
+      let query = supabasePublic
         .from('threads')
         .select('id, thread_number, user_id, title, category, comments_count, created_at', { count: 'exact' })
+        .gt('comments_count', 0)
         .lte('created_at', now)
         .order('created_at', { ascending: false })
 
@@ -81,16 +77,7 @@ export function ThreadList() {
       const to = from + ITEMS_PER_PAGE - 1
       query = query.range(from, to)
 
-      const result = await Promise.race([query, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch threads timeout')
-        setThreads([])
-        setTotalCount(0)
-        return
-      }
-
-      const { data, error, count } = result
+      const { data, error, count } = await query
 
       if (error) {
         console.error('Error fetching threads:', error)
@@ -107,7 +94,7 @@ export function ThreadList() {
 
       // Get user info for all threads
       const userIds = [...new Set(data.map((t) => t.user_id))]
-      const { data: usersData } = await supabase
+      const { data: usersData } = await supabasePublic
         .from('users')
         .select('id, display_name')
         .in('id', userIds)

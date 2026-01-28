@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { Article, ARTICLE_CATEGORY_LABELS } from '../types/database'
 import { ArrowLeft, Calendar, Tag, Loader2, FileText } from 'lucide-react'
 
@@ -64,7 +64,7 @@ export function ArticleDetail() {
     })
 
     try {
-      const queryPromise = supabase
+      const queryPromise = supabasePublic
         .from('articles')
         .select('*')
         .eq('slug', slug)
@@ -91,14 +91,14 @@ export function ArticleDetail() {
       setArticle(articleData)
 
       // Increment view count (fire and forget)
-      supabase
+      supabasePublic
         .from('articles')
         .update({ view_count: (articleData.view_count || 0) + 1 } as never)
         .eq('id', articleData.id)
         .then(() => {})
 
       // Fetch related articles with timeout
-      const relatedPromise = supabase
+      const relatedPromise = supabasePublic
         .from('articles')
         .select('*')
         .eq('is_published', true)

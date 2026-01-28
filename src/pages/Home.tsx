@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadWithUser, THREAD_CATEGORY_LABELS, ThreadCategory, Article } from '../types/database'
 import { PopularKeywords } from '../components/PopularKeywords'
@@ -82,37 +82,37 @@ export function Home() {
   }, [])
 
   // 人気トピック: コメント数の多い順
-  async function fetchPopularThreads() {
+  async function fetchPopularThreads(retryCount = 0) {
     setLoadingPopular(true)
-
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 5000)
-    })
 
     try {
       const now = new Date().toISOString()
 
-      const queryPromise = supabase
+      const { data, error } = await supabasePublic
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gt('comments_count', 0)
         .lte('created_at', now)
         .order('comments_count', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(25)
 
-      const result = await Promise.race([queryPromise, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch popular threads timeout')
-        setPopularThreads([])
-      } else if (result.error) {
-        console.error('Error fetching popular threads:', result.error)
+      if (error) {
+        console.error('Error fetching popular threads:', error)
+        if (retryCount < 2) {
+          setTimeout(() => fetchPopularThreads(retryCount + 1), 2000)
+          return
+        }
         setPopularThreads([])
       } else {
-        setPopularThreads((result.data || []) as unknown as ThreadWithUser[])
+        setPopularThreads((data || []) as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching popular threads:', error)
+      if (retryCount < 2) {
+        setTimeout(() => fetchPopularThreads(retryCount + 1), 2000)
+        return
+      }
       setPopularThreads([])
     } finally {
       setLoadingPopular(false)
@@ -120,39 +120,39 @@ export function Home() {
   }
 
   // 新着トピック: 1週間以内で作成日時の新しい順
-  async function fetchNewThreads() {
+  async function fetchNewThreads(retryCount = 0) {
     setLoadingNew(true)
-
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 5000)
-    })
 
     try {
       const now = new Date()
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(now.getDate() - 7)
 
-      const queryPromise = supabase
+      const { data, error } = await supabasePublic
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gt('comments_count', 0)
         .gte('created_at', oneWeekAgo.toISOString())
         .lte('created_at', now.toISOString())
         .order('created_at', { ascending: false })
         .limit(25)
 
-      const result = await Promise.race([queryPromise, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch new threads timeout')
-        setNewThreads([])
-      } else if (result.error) {
-        console.error('Error fetching new threads:', result.error)
+      if (error) {
+        console.error('Error fetching new threads:', error)
+        if (retryCount < 2) {
+          setTimeout(() => fetchNewThreads(retryCount + 1), 2000)
+          return
+        }
         setNewThreads([])
       } else {
-        setNewThreads((result.data || []) as unknown as ThreadWithUser[])
+        setNewThreads((data || []) as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching new threads:', error)
+      if (retryCount < 2) {
+        setTimeout(() => fetchNewThreads(retryCount + 1), 2000)
+        return
+      }
       setNewThreads([])
     } finally {
       setLoadingNew(false)
@@ -160,74 +160,72 @@ export function Home() {
   }
 
   // サイドバー用: 1週間以内のコメント数順
-  async function fetchWeeklyPopularThreads() {
+  async function fetchWeeklyPopularThreads(retryCount = 0) {
     setLoadingWeekly(true)
-
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 5000)
-    })
 
     try {
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
       const now = new Date().toISOString()
 
-      const queryPromise = supabase
+      const { data, error } = await supabasePublic
         .from('threads')
         .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gt('comments_count', 0)
         .gte('created_at', oneWeekAgo.toISOString())
         .lte('created_at', now)
         .order('comments_count', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(10)
 
-      const result = await Promise.race([queryPromise, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch weekly popular threads timeout')
-        setWeeklyPopularThreads([])
-      } else if (result.error) {
-        console.error('Error fetching weekly popular threads:', result.error)
+      if (error) {
+        console.error('Error fetching weekly popular threads:', error)
+        if (retryCount < 2) {
+          setTimeout(() => fetchWeeklyPopularThreads(retryCount + 1), 2000)
+          return
+        }
         setWeeklyPopularThreads([])
       } else {
-        setWeeklyPopularThreads((result.data || []) as unknown as ThreadWithUser[])
+        setWeeklyPopularThreads((data || []) as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching weekly popular threads:', error)
+      if (retryCount < 2) {
+        setTimeout(() => fetchWeeklyPopularThreads(retryCount + 1), 2000)
+        return
+      }
       setWeeklyPopularThreads([])
     } finally {
       setLoadingWeekly(false)
     }
   }
 
-  async function fetchFeaturedArticles() {
+  async function fetchFeaturedArticles(retryCount = 0) {
     setLoadingArticles(true)
 
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => resolve(null), 5000)
-    })
-
     try {
-      // まずis_published=trueで試す、なければ全件から取得
-      let queryPromise = supabase
+      const { data, error } = await supabasePublic
         .from('articles')
         .select('id, title, slug, thumbnail_url, created_at')
         .order('created_at', { ascending: false })
         .limit(5)
 
-      const result = await Promise.race([queryPromise, timeoutPromise])
-
-      if (result === null) {
-        console.warn('Fetch articles timeout')
-        setFeaturedArticles([])
-      } else if (result.error) {
-        console.error('Error fetching featured articles:', result.error)
+      if (error) {
+        console.error('Error fetching featured articles:', error)
+        if (retryCount < 2) {
+          setTimeout(() => fetchFeaturedArticles(retryCount + 1), 2000)
+          return
+        }
         setFeaturedArticles([])
       } else {
-        setFeaturedArticles((result.data || []) as Article[])
+        setFeaturedArticles((data || []) as Article[])
       }
     } catch (error) {
       console.error('Error fetching featured articles:', error)
+      if (retryCount < 2) {
+        setTimeout(() => fetchFeaturedArticles(retryCount + 1), 2000)
+        return
+      }
       setFeaturedArticles([])
     } finally {
       setLoadingArticles(false)

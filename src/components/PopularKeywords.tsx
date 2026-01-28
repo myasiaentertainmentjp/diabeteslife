@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { PopularKeyword } from '../types/database'
 import { TrendingUp, Loader2 } from 'lucide-react'
 
@@ -55,7 +55,7 @@ export function PopularKeywords() {
     }, 3000)
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabasePublic
         .from('popular_keywords')
         .select('id, keyword, display_order, is_active')
         .eq('is_active', true)

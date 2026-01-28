@@ -17,3 +17,12 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     storageKey: 'dlife-auth-token',
   },
 })
+
+// 認証不要の公開クエリ用クライアント（認証ロックの影響を受けない）
+export const supabasePublic = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+})

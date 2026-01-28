@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { supabase, supabasePublic } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import {
   Thread,
@@ -59,16 +59,17 @@ export function Search() {
       const futureBuffer = new Date()
       futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
 
-      const threadPromise = supabase
+      const threadPromise = supabasePublic
         .from('threads')
         .select('*', { count: 'exact' })
         .or(`title.ilike.%${query}%,body.ilike.%${query}%`)
+        .gt('comments_count', 0)
         .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .range(0, ITEMS_PER_PAGE - 1)
 
       // Search articles
-      const articlePromise = supabase
+      const articlePromise = supabasePublic
         .from('articles')
         .select('*', { count: 'exact' })
         .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)
@@ -117,10 +118,11 @@ export function Search() {
       const futureBuffer = new Date()
       futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
 
-      const { data } = await supabase
+      const { data } = await supabasePublic
         .from('threads')
         .select('*')
         .or(`title.ilike.%${query}%,body.ilike.%${query}%`)
+        .gt('comments_count', 0)
         .lte('created_at', futureBuffer.toISOString())
         .order('created_at', { ascending: false })
         .range(from, to)
@@ -143,7 +145,7 @@ export function Search() {
     const to = from + ITEMS_PER_PAGE - 1
 
     try {
-      const { data } = await supabase
+      const { data } = await supabasePublic
         .from('articles')
         .select('*')
         .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)

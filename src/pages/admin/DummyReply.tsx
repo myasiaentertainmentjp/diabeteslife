@@ -44,12 +44,13 @@ export function DummyReply() {
       }
       setThread(threadData as Thread)
 
-      // Fetch comments with user info
+      // Fetch comments with user info (admin: show all including hidden)
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true })
+      // Note: Admin RLS policy allows viewing all comments including is_hidden = true
 
       if (commentsError) {
         console.error('Error fetching comments:', commentsError)

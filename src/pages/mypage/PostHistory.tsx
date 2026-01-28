@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Thread, ThreadCommentWithUser, THREAD_CATEGORY_LABELS } from '../../types/database'
-import { Loader2, MessageSquare, FileText, Calendar, ChevronRight } from 'lucide-react'
+import { Loader2, MessageSquare, FileText, Calendar, ChevronRight, Clock } from 'lucide-react'
 
 type HistoryTab = 'threads' | 'comments'
 
@@ -50,6 +50,7 @@ export function PostHistory() {
   async function fetchComments() {
     if (!user) return
 
+    // 自分のコメントは全て取得（予約中含む）
     const { data, error } = await supabase
       .from('comments')
       .select(`
@@ -192,33 +193,57 @@ export function PostHistory() {
             </div>
           ) : comments.length > 0 ? (
             <div className="space-y-3">
-              {comments.map((comment) => (
-                <Link
-                  key={comment.id}
-                  to={`/threads/${comment.thread_id}`}
-                  className="block bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      {comment.threads && (
-                        <div className="text-xs text-rose-500 mb-1 truncate">
-                          スレッド: {comment.threads.title}
+              {comments.map((comment) => {
+                const isScheduled = (comment as any).is_hidden || new Date(comment.created_at) > new Date()
+                return (
+                  <Link
+                    key={comment.id}
+                    to={`/threads/${comment.thread_id}`}
+                    className={`block rounded-lg p-4 transition-colors ${
+                      isScheduled
+                        ? 'bg-yellow-50 hover:bg-yellow-100 border border-yellow-200'
+                        : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {comment.threads && (
+                            <span className="text-xs text-rose-500 truncate">
+                              スレッド: {comment.threads.title}
+                            </span>
+                          )}
+                          {isScheduled && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded">
+                              <Clock size={10} />
+                              予約中
+                            </span>
+                          )}
                         </div>
-                      )}
-                      <p className="text-sm text-gray-700 line-clamp-3">
-                        {comment.content}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                        <Calendar size={12} />
-                        <span>{formatRelativeTime(comment.created_at)}</span>
-                        <span className="text-gray-300">•</span>
-                        <span>#{comment.comment_number}</span>
+                        <p className="text-sm text-gray-700 line-clamp-3">
+                          {(comment as any).body || comment.content}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                          <Calendar size={12} />
+                          <span>
+                            {isScheduled
+                              ? `${formatDate(comment.created_at)} に公開予定`
+                              : formatRelativeTime(comment.created_at)
+                            }
+                          </span>
+                          {!isScheduled && (
+                            <>
+                              <span className="text-gray-300">•</span>
+                              <span>#{(comment as any).comment_number}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
+                      <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
                     </div>
-                    <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">

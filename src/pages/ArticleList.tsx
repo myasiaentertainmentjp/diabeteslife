@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { Article, ArticleCategory, ARTICLE_CATEGORY_LABELS } from '../types/database'
 import { Calendar, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 
@@ -25,7 +25,7 @@ export function ArticleList() {
     })
 
     try {
-      let query = supabase
+      let query = supabasePublic
         .from('articles')
         .select('*', { count: 'exact' })
         .eq('is_published', true)

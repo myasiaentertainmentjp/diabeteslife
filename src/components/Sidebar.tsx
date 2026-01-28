@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { supabasePublic } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ThreadWithUser, Article, THREAD_CATEGORY_LABELS, ThreadCategory } from '../types/database'
 import { PopularKeywords } from './PopularKeywords'
@@ -34,6 +34,8 @@ export function Sidebar({
   const { user } = useAuth()
   const [popularThreads, setPopularThreads] = useState<ThreadWithUser[]>([])
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([])
+  const [loadingThreads, setLoadingThreads] = useState(true)
+  const [loadingArticles, setLoadingArticles] = useState(true)
 
   useEffect(() => {
     if (showPopularThreads) fetchPopularThreads()
@@ -41,33 +43,37 @@ export function Sidebar({
   }, [showPopularThreads, showArticles])
 
   async function fetchPopularThreads() {
+    setLoadingThreads(true)
     try {
       const oneWeekAgo = new Date()
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+      const now = new Date().toISOString()
 
-      // 未来の日付を除外（1分のバッファを追加）
-      const futureBuffer = new Date()
-      futureBuffer.setMinutes(futureBuffer.getMinutes() + 1)
-
-      const { data, error } = await supabase
+      // 1週間以内のスレッドをコメント数順で取得
+      const { data, error } = await supabasePublic
         .from('threads')
-        .select('id, thread_number, title, category, created_at, user_id')
+        .select('id, thread_number, title, category, created_at, user_id, comments_count')
+        .gt('comments_count', 0)
         .gte('created_at', oneWeekAgo.toISOString())
-        .lte('created_at', futureBuffer.toISOString())
+        .lte('created_at', now)
+        .order('comments_count', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(5)
+        .limit(10)
 
       if (!error && data) {
         setPopularThreads(data as unknown as ThreadWithUser[])
       }
     } catch (error) {
       console.error('Error fetching popular threads:', error)
+    } finally {
+      setLoadingThreads(false)
     }
   }
 
   async function fetchFeaturedArticles() {
+    setLoadingArticles(true)
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabasePublic
         .from('articles')
         .select('id, title, slug, thumbnail_url, created_at')
         .order('created_at', { ascending: false })
@@ -78,6 +84,8 @@ export function Sidebar({
       }
     } catch (error) {
       console.error('Error fetching featured articles:', error)
+    } finally {
+      setLoadingArticles(false)
     }
   }
 
@@ -110,7 +118,16 @@ export function Sidebar({
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="font-bold text-gray-800">一週間の人気トピック</h2>
           </div>
-          {popularThreads.length === 0 ? (
+          {loadingThreads ? (
+            <div className="animate-pulse px-4 py-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-start gap-3 py-2">
+                  <div className="w-4 h-4 bg-gray-200 rounded shrink-0"></div>
+                  <div className="h-3 bg-gray-200 rounded flex-1"></div>
+                </div>
+              ))}
+            </div>
+          ) : popularThreads.length === 0 ? (
             <div className="px-4 py-6 text-center text-gray-500 text-sm">
               まだトピックがありません
             </div>
@@ -142,7 +159,19 @@ export function Sidebar({
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="font-bold text-gray-800">おすすめ記事</h2>
           </div>
-          {featuredArticles.length === 0 ? (
+          {loadingArticles ? (
+            <div className="animate-pulse p-4 space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-20 bg-gray-200 rounded shrink-0" style={{ aspectRatio: '1.91 / 1' }}></div>
+                  <div className="flex-1 space-y-1">
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : featuredArticles.length === 0 ? (
             <div className="px-4 py-6 text-center text-gray-500 text-sm">
               <FileText size={24} className="mx-auto mb-2 text-gray-300" />
               <p>おすすめ記事がありません</p>

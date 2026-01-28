@@ -879,10 +879,13 @@ export function ProfileSettings({}: ProfileSettingsProps) {
             <label className="text-sm font-medium text-gray-700">自己紹介</label>
             <PrivacyToggle value={bioPublic} onChange={setBioPublic} />
           </div>
+          <p className="text-xs text-gray-500 mb-2">
+            糖尿病のタイプ・経過年数・治療法・趣味など、自由に書いてみましょう
+          </p>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="自己紹介を入力..."
+            placeholder={"例）2型糖尿病3年目です。食事管理と運動を中心に頑張ってます。同じ境遇の方と情報交換できたら嬉しいです！"}
             rows={3}
             maxLength={500}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"

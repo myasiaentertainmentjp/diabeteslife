@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { supabase } from '../lib/supabase'
+import { supabase, supabasePublic } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { sendCommentNotificationEmail } from '../lib/email'
 import {
@@ -45,6 +45,8 @@ export function ThreadDetail() {
   const imageInputRef = useRef<HTMLInputElement>(null)
 
   const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const mobileTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [mobileCommentOpen, setMobileCommentOpen] = useState(false)
 
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -140,7 +142,7 @@ export function ThreadDetail() {
       const isNumeric = /^\d+$/.test(threadNumber)
 
       // First get the thread data
-      let query = supabase.from('threads').select('*')
+      let query = supabasePublic.from('threads').select('*')
 
       if (isNumeric) {
         query = query.eq('thread_number', parseInt(threadNumber, 10))
@@ -159,7 +161,7 @@ export function ThreadDetail() {
       // Then get the author info from users table
       let authorInfo = null
       if (threadData?.user_id) {
-        const { data: userData } = await supabase
+        const { data: userData } = await supabasePublic
           .from('users')
           .select('email, display_name')
           .eq('id', threadData.user_id)
@@ -187,7 +189,7 @@ export function ThreadDetail() {
     try {
       // Get comments
       // Admin sees all comments, regular users only see non-hidden past comments
-      let query = supabase
+      let query = supabasePublic
         .from('comments')
         .select('*')
         .eq('thread_id', threadId)
@@ -217,7 +219,7 @@ export function ThreadDetail() {
       const userIds = [...new Set(commentsData.map((c) => c.user_id))]
 
       // Fetch user info for all commenters
-      const { data: usersData } = await supabase
+      const { data: usersData } = await supabasePublic
         .from('users')
         .select('id, display_name')
         .in('id', userIds)
@@ -474,10 +476,18 @@ export function ThreadDetail() {
     if (!commentContent.includes(`>>${commentNumber}`)) {
       setCommentContent((prev) => prev ? `${prev}${anchor}` : anchor)
     }
-    // Focus and scroll to comment textarea
-    if (commentTextareaRef.current) {
-      commentTextareaRef.current.focus()
-      commentTextareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // Mobile: open bottom sheet and focus
+    if (window.innerWidth < 768) {
+      setMobileCommentOpen(true)
+      setTimeout(() => {
+        mobileTextareaRef.current?.focus()
+      }, 300)
+    } else {
+      // PC: scroll to inline form
+      if (commentTextareaRef.current) {
+        commentTextareaRef.current.focus()
+        commentTextareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
     }
   }
 
@@ -844,8 +854,8 @@ export function ThreadDetail() {
               </div>
             )}
 
-            {/* Comment Form */}
-            <div className="px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-200">
+            {/* Comment Form - PC only (inline) */}
+            <div className="hidden md:block px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-200">
               {user ? (
                 <form onSubmit={handleSubmitComment}>
                   {error && (
@@ -860,14 +870,11 @@ export function ThreadDetail() {
                       value={commentContent}
                       onChange={(e) => {
                         setCommentContent(e.target.value)
-                        // Auto-resize textarea
                         e.target.style.height = '100px'
                         e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px'
                       }}
                       onKeyDown={(e) => {
-                        // PC: Enter to send, Shift+Enter for newline
                         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                          // Only on non-mobile
                           if (window.innerWidth >= 768) {
                             e.preventDefault()
                             if (commentContent.trim() && !submitting) {
@@ -882,57 +889,25 @@ export function ThreadDetail() {
                       style={{ minHeight: '100px', maxHeight: '300px' }}
                       required
                     />
-
-                    {/* 画像プレビュー */}
                     {commentImagePreview && (
                       <div className="relative inline-block">
-                        <img
-                          src={commentImagePreview}
-                          alt="添付画像プレビュー"
-                          className="max-h-32 rounded-lg border border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={removeImage}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                        >
+                        <img src={commentImagePreview} alt="添付画像プレビュー" className="max-h-32 rounded-lg border border-gray-200" />
+                        <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
                           <X size={14} />
                         </button>
                       </div>
                     )}
-
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {/* 画像添付ボタン */}
-                        <input
-                          ref={imageInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageSelect}
-                          className="hidden"
-                          id="comment-image-input"
-                        />
-                        <label
-                          htmlFor="comment-image-input"
-                          className="flex items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors text-sm"
-                        >
+                        <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" id="comment-image-input" />
+                        <label htmlFor="comment-image-input" className="flex items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors text-sm">
                           <Image size={18} />
                           <span className="hidden sm:inline">画像を添付</span>
                         </label>
-                        <p className="hidden md:block text-xs text-gray-400">
-                          Enter で送信 / Shift + Enter で改行
-                        </p>
+                        <p className="hidden md:block text-xs text-gray-400">Enter で送信 / Shift + Enter で改行</p>
                       </div>
-                      <button
-                        type="submit"
-                        disabled={submitting || uploadingImage || !commentContent.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed font-medium"
-                      >
-                        {submitting || uploadingImage ? (
-                          <Loader2 size={18} className="animate-spin" />
-                        ) : (
-                          <Send size={18} />
-                        )}
+                      <button type="submit" disabled={submitting || uploadingImage || !commentContent.trim()} className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:bg-rose-400 disabled:cursor-not-allowed font-medium">
+                        {submitting || uploadingImage ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                         <span>{uploadingImage ? 'アップロード中...' : 'コメントする'}</span>
                       </button>
                     </div>
@@ -940,21 +915,11 @@ export function ThreadDetail() {
                 </form>
               ) : (
                 <div className="flex flex-col gap-3">
-                  <div
-                    onClick={() => navigate('/login', { state: { from: currentPath } })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white cursor-pointer hover:border-rose-300 transition-colors"
-                    style={{ minHeight: '100px' }}
-                  >
-                    <p className="text-gray-400 text-base">
-                      コメントするには<span className="text-rose-500 font-medium mx-1 hover:underline">ログイン</span>してください
-                    </p>
+                  <div onClick={() => navigate('/login', { state: { from: currentPath } })} className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white cursor-pointer hover:border-rose-300 transition-colors" style={{ minHeight: '100px' }}>
+                    <p className="text-gray-400 text-base">コメントするには<span className="text-rose-500 font-medium mx-1 hover:underline">ログイン</span>してください</p>
                   </div>
                   <div className="flex items-center justify-end">
-                    <button
-                      type="button"
-                      onClick={() => navigate('/login', { state: { from: currentPath } })}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium"
-                    >
+                    <button type="button" onClick={() => navigate('/login', { state: { from: currentPath } })} className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium">
                       <Send size={18} />
                       <span>コメントする</span>
                     </button>
@@ -962,6 +927,9 @@ export function ThreadDetail() {
                 </div>
               )}
             </div>
+
+            {/* Mobile: spacer so content isn't hidden behind fixed bar */}
+            <div className="md:hidden h-16" />
         </div>
       </div>
 
@@ -971,6 +939,112 @@ export function ThreadDetail() {
             <Sidebar showPostButton={true} showCategories={false} />
           </div>
         </div>
+      </div>
+
+      {/* Mobile: Fixed bottom comment bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
+        {/* Overlay when panel is open */}
+        {mobileCommentOpen && (
+          <div
+            className="fixed inset-0 bg-black/30"
+            onClick={() => setMobileCommentOpen(false)}
+          />
+        )}
+
+        {/* Expandable comment panel */}
+        <div
+          className={`relative bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out ${
+            mobileCommentOpen ? 'max-h-[70vh]' : 'max-h-0 overflow-hidden'
+          }`}
+        >
+          {user ? (
+            <form onSubmit={(e) => {
+              handleSubmitComment(e)
+              setMobileCommentOpen(false)
+            }} className="p-4">
+              {error && (
+                <div className="flex items-center gap-2 p-2 mb-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <AlertCircle size={16} />
+                  <span className="text-xs">{error}</span>
+                </div>
+              )}
+              <textarea
+                ref={mobileTextareaRef}
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                placeholder="コメントを入力..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none text-base leading-relaxed bg-white"
+                rows={4}
+                style={{ maxHeight: '200px' }}
+              />
+              {commentImagePreview && (
+                <div className="relative inline-block mt-2">
+                  <img src={commentImagePreview} alt="添付画像プレビュー" className="max-h-24 rounded-lg border border-gray-200" />
+                  <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center justify-between mt-3">
+                <div>
+                  <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" id="mobile-comment-image-input" />
+                  <label htmlFor="mobile-comment-image-input" className="flex items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-rose-500 rounded-lg cursor-pointer text-sm">
+                    <Image size={18} />
+                    <span>画像</span>
+                  </label>
+                </div>
+                <button type="submit" disabled={submitting || uploadingImage || !commentContent.trim()} className="flex items-center gap-2 px-5 py-2 bg-rose-500 text-white rounded-lg disabled:bg-rose-400 disabled:cursor-not-allowed font-medium text-sm">
+                  {submitting || uploadingImage ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  <span>{uploadingImage ? 'アップロード中...' : '送信'}</span>
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="p-4">
+              <button
+                type="button"
+                onClick={() => navigate('/login', { state: { from: currentPath } })}
+                className="w-full py-3 bg-rose-500 text-white rounded-lg font-medium text-sm"
+              >
+                ログインしてコメントする
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Fixed thin bar (always visible) */}
+        {!mobileCommentOpen && (
+          <div
+            className="bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3"
+            onClick={() => {
+              if (user) {
+                setMobileCommentOpen(true)
+                setTimeout(() => mobileTextareaRef.current?.focus(), 300)
+              } else {
+                navigate('/login', { state: { from: currentPath } })
+              }
+            }}
+          >
+            <div className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-gray-400 text-sm">
+              コメントを入力...
+            </div>
+            <div className="text-rose-500">
+              <Send size={20} />
+            </div>
+          </div>
+        )}
+
+        {/* Close button when panel is open */}
+        {mobileCommentOpen && (
+          <div
+            className="bg-white border-t border-gray-100 px-4 py-2 flex justify-center"
+            onClick={() => setMobileCommentOpen(false)}
+          >
+            <button type="button" className="text-xs text-gray-400 py-1">
+              閉じる
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Image Modal */}
