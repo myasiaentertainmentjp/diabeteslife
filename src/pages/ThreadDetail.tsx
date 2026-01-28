@@ -47,6 +47,10 @@ export function ThreadDetail() {
   const mobileTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [mobileCommentOpen, setMobileCommentOpen] = useState(false)
 
+  // PC版サイドバー用
+  const sidebarRef = useRef<HTMLDivElement>(null)
+  const [sidebarTop, setSidebarTop] = useState<number | null>(null)
+
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -64,6 +68,35 @@ export function ThreadDetail() {
       checkBookmarkStatus(thread.id)
     }
   }, [thread?.id, user])
+
+  // PC版サイドバーのスクロール挙動
+  // 最初は一緒にスクロール → サイドバー下端が画面下に達したら固定
+  useEffect(() => {
+    const calculateStickyTop = () => {
+      const sidebar = sidebarRef.current
+      if (!sidebar) return
+
+      const sidebarHeight = sidebar.offsetHeight
+      const viewportHeight = window.innerHeight
+      const bottomMargin = 80 // 固定バーの高さ + 余白
+
+      // サイドバー下端が画面下端に達した時に固定されるようtopを計算
+      const calculatedTop = viewportHeight - sidebarHeight - bottomMargin
+
+      // 最低16pxは確保（画面上端より上には行かない）
+      setSidebarTop(Math.max(calculatedTop, 16))
+    }
+
+    // 初回計算（少し遅延させてDOM確定後に）
+    const timer = setTimeout(calculateStickyTop, 100)
+
+    window.addEventListener('resize', calculateStickyTop)
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', calculateStickyTop)
+    }
+  }, [thread, comments])
 
   async function checkBookmarkStatus(threadId: string) {
     if (!user) return
@@ -852,7 +885,11 @@ export function ThreadDetail() {
 
         {/* Sidebar - PC only */}
         <div className="hidden lg:block lg:w-80 shrink-0">
-          <div className="sticky top-4">
+          <div
+            ref={sidebarRef}
+            className="sticky"
+            style={{ top: sidebarTop !== null ? `${sidebarTop}px` : '16px' }}
+          >
             <Sidebar showPostButton={true} showCategories={false} />
           </div>
         </div>
