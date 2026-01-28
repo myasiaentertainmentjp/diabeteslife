@@ -82,16 +82,18 @@ export function ThreadDetail() {
       const sidebarHeight = sidebar.offsetHeight
       const viewportHeight = window.innerHeight
       const bottomMargin = 80 // 固定バーの高さ + 余白
-      const wrapperRect = wrapper.getBoundingClientRect()
 
-      // サイドバーが自然にスクロールした場合の下端位置
-      const sidebarNaturalBottom = wrapperRect.top + sidebarHeight
+      // サイドバーのページ上端からの位置
+      const sidebarOffsetTop = wrapper.offsetTop
 
-      // サイドバー下端が画面下端（- マージン）に達したか
-      if (sidebarNaturalBottom <= viewportHeight - bottomMargin) {
+      // サイドバー下端が画面下端に達するスクロール位置を計算
+      // スクロール位置 + 画面高さ - マージン = サイドバー上端 + サイドバー高さ
+      const scrollThreshold = sidebarOffsetTop + sidebarHeight - viewportHeight + bottomMargin
+
+      if (window.scrollY >= scrollThreshold && scrollThreshold > 0) {
         // 固定する
+        const topValue = viewportHeight - sidebarHeight - bottomMargin
         if (!sidebarSticky) {
-          const topValue = viewportHeight - sidebarHeight - bottomMargin
           setSidebarStickyTop(Math.max(topValue, 16))
           setSidebarSticky(true)
         }
@@ -103,8 +105,8 @@ export function ThreadDetail() {
       }
     }
 
-    // 初回実行を少し遅延
-    const timer = setTimeout(handleScroll, 100)
+    // 初回実行を少し遅延（サイドバー内コンテンツ読み込み待ち）
+    const timer = setTimeout(handleScroll, 500)
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleScroll)
