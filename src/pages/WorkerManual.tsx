@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   FileText,
   UserPlus,
@@ -10,10 +10,13 @@ import {
   CheckCircle,
   XCircle,
   ChevronRight,
-  LogIn
+  LogIn,
+  X
 } from 'lucide-react'
 
 export function WorkerManual() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
   // スムーズスクロール
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
@@ -389,27 +392,27 @@ export function WorkerManual() {
           <p className="text-gray-600 mb-4">このような形で投稿してください。</p>
 
           <div className="grid grid-cols-2 gap-3">
-            <img
-              src="/images/sample-meal-1.jpg"
-              alt="サンプル：和食の朝食"
-              className="w-full h-40 object-cover rounded-xl"
-            />
-            <img
-              src="/images/sample-meal-2.jpg"
-              alt="サンプル：クロワッサンと野菜"
-              className="w-full h-40 object-cover rounded-xl"
-            />
-            <img
-              src="/images/sample-meal-3.jpg"
-              alt="サンプル：野菜中心の食事"
-              className="w-full h-40 object-cover rounded-xl"
-            />
-            <img
-              src="/images/sample-meal-4.jpg"
-              alt="サンプル：焼き魚定食"
-              className="w-full h-40 object-cover rounded-xl"
-            />
+            {[
+              { src: '/images/sample-meal-1.jpg', alt: 'サンプル：和食の朝食' },
+              { src: '/images/sample-meal-2.jpg', alt: 'サンプル：クロワッサンと野菜' },
+              { src: '/images/sample-meal-3.jpg', alt: 'サンプル：野菜中心の食事' },
+              { src: '/images/sample-meal-4.jpg', alt: 'サンプル：焼き魚定食' },
+            ].map((img) => (
+              <button
+                key={img.src}
+                onClick={() => setSelectedImage(img.src)}
+                className="w-full h-44 bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-full h-full object-contain"
+                />
+              </button>
+            ))}
           </div>
+
+          <p className="text-xs text-gray-400 mt-2 text-center">※画像をタップで拡大表示</p>
 
           <div className="mt-4 bg-rose-50 rounded-xl p-4">
             <p className="text-sm text-gray-600">
@@ -426,6 +429,27 @@ export function WorkerManual() {
           </p>
         </div>
       </div>
+
+      {/* 画像ポップアップ */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300"
+          >
+            <X size={32} />
+          </button>
+          <img
+            src={selectedImage}
+            alt="拡大画像"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   )
 }
