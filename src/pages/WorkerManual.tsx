@@ -259,7 +259,7 @@ export function WorkerManual() {
                 </li>
                 <li className="flex items-start gap-2 text-gray-700">
                   <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
-                  <span>食事内容は自由です（糖尿病食でなくてもOK、ジャンクフードや脂っこいものでも可）</span>
+                  <span>食事内容は自由です（特別な糖尿病食でなくても、普段の食事でOKです）</span>
                 </li>
                 <li className="flex items-start gap-2 text-gray-700">
                   <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
@@ -388,18 +388,27 @@ export function WorkerManual() {
 
           <p className="text-gray-600 mb-4">このような形で投稿してください。</p>
 
-          {/* プレースホルダー */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px]">
-              <Image size={48} className="text-gray-400 mb-2" />
-              <p className="text-gray-400 text-sm">サンプル画像1</p>
-              <p className="text-gray-400 text-xs">（後日追加予定）</p>
-            </div>
-            <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px]">
-              <Image size={48} className="text-gray-400 mb-2" />
-              <p className="text-gray-400 text-sm">サンプル画像2</p>
-              <p className="text-gray-400 text-xs">（後日追加予定）</p>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <img
+              src="/images/sample-meal-1.jpg"
+              alt="サンプル：和食の朝食"
+              className="w-full h-40 object-cover rounded-xl"
+            />
+            <img
+              src="/images/sample-meal-2.jpg"
+              alt="サンプル：クロワッサンと野菜"
+              className="w-full h-40 object-cover rounded-xl"
+            />
+            <img
+              src="/images/sample-meal-3.jpg"
+              alt="サンプル：野菜中心の食事"
+              className="w-full h-40 object-cover rounded-xl"
+            />
+            <img
+              src="/images/sample-meal-4.jpg"
+              alt="サンプル：焼き魚定食"
+              className="w-full h-40 object-cover rounded-xl"
+            />
           </div>
 
           <div className="mt-4 bg-rose-50 rounded-xl p-4">
