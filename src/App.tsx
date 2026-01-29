@@ -43,6 +43,7 @@ const Guide = lazy(() => import('./pages/Guide').then(m => ({ default: m.Guide }
 const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })))
 const ContactComplete = lazy(() => import('./pages/ContactComplete').then(m => ({ default: m.ContactComplete })))
 const FAQ = lazy(() => import('./pages/FAQ').then(m => ({ default: m.FAQ })))
+const WorkerManual = lazy(() => import('./pages/WorkerManual').then(m => ({ default: m.WorkerManual })))
 
 // Help pages
 const ThreadModes = lazy(() => import('./pages/help/ThreadModes').then(m => ({ default: m.ThreadModes })))
@@ -152,6 +153,7 @@ function App() {
                 <Route path="contact" element={<Contact />} />
                 <Route path="contact/complete" element={<ContactComplete />} />
                 <Route path="faq" element={<FAQ />} />
+                <Route path="worker-manual" element={<WorkerManual />} />
                 <Route path="help/thread-modes" element={<ThreadModes />} />
 
                 {/* Error pages */}

@@ -1,0 +1,392 @@
+import { useEffect } from 'react'
+import {
+  FileText,
+  UserPlus,
+  Camera,
+  AlertTriangle,
+  Coins,
+  HelpCircle,
+  Image,
+  CheckCircle,
+  XCircle,
+  ChevronRight
+} from 'lucide-react'
+
+export function WorkerManual() {
+  // スムーズスクロール
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  useEffect(() => {
+    // ページタイトル設定
+    document.title = '食事記録モニター マニュアル | Dライフ'
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white">
+      {/* ヘッダー */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white py-10 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            Dライフ 食事記録モニター
+          </h1>
+          <p className="text-teal-100 text-lg">作業マニュアル</p>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        {/* 目次 */}
+        <nav className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <FileText size={20} className="text-teal-500" />
+            目次
+          </h2>
+          <ul className="space-y-2">
+            {[
+              { id: 'overview', label: 'お仕事の概要' },
+              { id: 'registration', label: '会員登録の手順' },
+              { id: 'posting', label: '食事記録の投稿方法' },
+              { id: 'rules', label: '投稿ルール・注意事項' },
+              { id: 'reward', label: '報酬について' },
+              { id: 'faq', label: 'よくある質問（FAQ）' },
+              { id: 'sample', label: '投稿サンプル' },
+            ].map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => scrollToSection(item.id)}
+                  className="flex items-center gap-2 text-teal-600 hover:text-teal-800 hover:bg-teal-50 w-full text-left px-3 py-2 rounded-lg transition-colors"
+                >
+                  <ChevronRight size={16} />
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* 1. お仕事の概要 */}
+        <section id="overview" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <FileText size={20} className="text-teal-500" />
+            お仕事の概要
+          </h2>
+
+          <div className="bg-teal-50 rounded-xl p-5 mb-4">
+            <p className="text-gray-700 leading-relaxed">
+              Dライフに会員登録し、<strong className="text-teal-700">食事の写真を投稿する</strong>モニター業務です。
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700 w-1/3">契約期間</td>
+                  <td className="py-3 px-4 text-gray-900">契約日から1ヶ月間</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">投稿頻度</td>
+                  <td className="py-3 px-4 text-gray-900">最低3日に1回以上（毎日投稿も歓迎）</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">投稿回数</td>
+                  <td className="py-3 px-4 text-gray-900">1日最大5回まで</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">投稿タイミング</td>
+                  <td className="py-3 px-4 text-gray-900">朝食・昼食・夕食・おやつなど自由</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">報酬</td>
+                  <td className="py-3 px-4 text-gray-900">
+                    <span className="text-teal-600 font-bold">1投稿あたり3円</span>
+                    <span className="text-gray-500 text-xs ml-2">（月末締め、投稿数×単価で計算）</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 2. 会員登録の手順 */}
+        <section id="registration" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <UserPlus size={20} className="text-teal-500" />
+            会員登録の手順
+          </h2>
+
+          <div className="space-y-4">
+            {[
+              { step: 1, title: '登録ページにアクセス', content: '下記URLから会員登録ページを開きます。' },
+              { step: 2, title: 'メールアドレスを入力', content: 'メールアドレスを入力し、登録ボタンを押します。' },
+              { step: 3, title: '確認メールをチェック', content: '届いたメールのリンクをクリックして登録を完了します。' },
+              { step: 4, title: 'プロフィールを設定', content: 'ニックネームを設定します。実名は不要です。' },
+            ].map((item) => (
+              <div key={item.step} className="flex gap-4">
+                <div className="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">
+                  {item.step}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                  <p className="text-gray-600 text-sm">{item.content}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-teal-50 rounded-xl">
+            <p className="text-sm text-gray-600 mb-2">登録URL</p>
+            <a
+              href="https://diabeteslife.jp/register"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-600 font-medium hover:underline break-all"
+            >
+              https://diabeteslife.jp/register
+            </a>
+          </div>
+        </section>
+
+        {/* 3. 食事記録の投稿方法 */}
+        <section id="posting" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <Camera size={20} className="text-teal-500" />
+            食事記録の投稿方法
+          </h2>
+
+          <div className="space-y-4">
+            {[
+              { step: 1, title: 'ログイン', content: 'Dライフにログインします。' },
+              { step: 2, title: '食事記録メニューを開く', content: 'メニューから「食事記録」を選択します。' },
+              { step: 3, title: '新規投稿', content: '「新規投稿」ボタンをタップします。' },
+              { step: 4, title: '写真を選択', content: '撮影した食事の写真を選択します。' },
+              { step: 5, title: 'コメント入力（任意）', content: '必要に応じてコメントを入力します。' },
+              { step: 6, title: '投稿', content: '「投稿する」ボタンを押して完了です。' },
+            ].map((item) => (
+              <div key={item.step} className="flex gap-4">
+                <div className="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">
+                  {item.step}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                  <p className="text-gray-600 text-sm">{item.content}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. 投稿ルール・注意事項 */}
+        <section id="rules" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <AlertTriangle size={20} className="text-teal-500" />
+            投稿ルール・注意事項
+          </h2>
+
+          {/* 投稿頻度・回数 */}
+          <div className="mb-6">
+            <h3 className="font-bold text-gray-900 mb-3">投稿頻度・回数</h3>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2 text-gray-700">
+                <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                <span>最低3日に1回は投稿してください</span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-700">
+                <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                <span>毎日の投稿を歓迎します</span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-700">
+                <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                <span>1日最大5回まで投稿可能</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* 食事写真について */}
+          <div className="mb-6">
+            <h3 className="font-bold text-gray-900 mb-3">食事写真について</h3>
+            <div className="bg-green-50 rounded-xl p-5">
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2 text-gray-700">
+                  <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                  <span>実際に食べた食事の写真を撮影してください</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                  <span>食事内容は自由です（糖尿病食でなくてもOK、ジャンクフードや脂っこいものでも可）</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                  <span>本人でなくても家族（親・パートナー等）の食事でもOK</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <CheckCircle size={18} className="text-green-500 mt-0.5 shrink-0" />
+                  <span>写真は鮮明で料理がはっきり見えるもの</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 禁止事項 */}
+          <div className="mb-6">
+            <h3 className="font-bold text-red-600 mb-3 flex items-center gap-2">
+              <XCircle size={18} />
+              禁止事項
+            </h3>
+            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-5">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded shrink-0">絶対NG</span>
+                  <span className="text-gray-900 font-medium">他サイトからの画像転載</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded shrink-0">絶対NG</span>
+                  <span className="text-gray-900 font-medium">フリー素材の使用</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded shrink-0">NG</span>
+                  <span className="text-gray-900 font-medium">過去に撮影した古い写真の使い回し</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 注意事項 */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-xs text-gray-500 leading-relaxed">
+              <span className="font-medium">注意事項：</span>
+              こちらが不適切と判断した写真（フリー素材、他サイトからの転載、使い回し等）については、削除依頼を行い、報酬には反映されません。
+            </p>
+          </div>
+        </section>
+
+        {/* 5. 報酬について */}
+        <section id="reward" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <Coins size={20} className="text-teal-500" />
+            報酬について
+          </h2>
+
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700 w-1/3">報酬単価</td>
+                  <td className="py-3 px-4 text-gray-900">
+                    <span className="text-teal-600 font-bold text-lg">1投稿あたり3円</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">計算方法</td>
+                  <td className="py-3 px-4 text-gray-900">月間投稿数 × 単価 = 報酬額</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 bg-gray-50 font-medium text-gray-700">支払日</td>
+                  <td className="py-3 px-4 text-gray-900">月末締め、翌月払い（クラウドワークス経由）</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-teal-50 rounded-xl p-5">
+            <h3 className="font-bold text-teal-700 mb-3">計算例</h3>
+            <div className="bg-white rounded-lg p-4">
+              <p className="text-gray-700">
+                1日2回 × 30日 = <strong>60投稿</strong>
+              </p>
+              <p className="text-gray-700 mt-1">
+                60投稿 × 3円 = <strong className="text-teal-600 text-lg">180円/月</strong>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. よくある質問（FAQ） */}
+        <section id="faq" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <HelpCircle size={20} className="text-teal-500" />
+            よくある質問（FAQ）
+          </h2>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: '自分は糖尿病ではないのですが、参加できますか？',
+                a: 'はい、参加可能です。ご家族の食事を撮影いただいても構いません。'
+              },
+              {
+                q: '糖尿病向けの食事じゃないとダメですか？',
+                a: 'いいえ、食事内容は自由です。普段の食事をそのまま撮影してください。'
+              },
+              {
+                q: 'コメントは必ず書かないといけませんか？',
+                a: 'いいえ、コメントは任意です。写真のみの投稿でもOKです。'
+              },
+              {
+                q: '1日に何回まで投稿できますか？',
+                a: '1日最大5回までです。'
+              },
+              {
+                q: '質問や困ったことがあった場合は？',
+                a: 'クラウドワークスのメッセージ機能でご連絡ください。'
+              },
+            ].map((item, index) => (
+              <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <div className="flex gap-2 mb-2">
+                  <span className="bg-teal-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0">Q</span>
+                  <p className="font-medium text-gray-900">{item.q}</p>
+                </div>
+                <div className="flex gap-2 ml-8">
+                  <span className="bg-gray-200 text-gray-600 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0">A</span>
+                  <p className="text-gray-600">{item.a}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 7. 投稿サンプル */}
+        <section id="sample" className="bg-white rounded-xl shadow-sm p-6 mb-6 scroll-mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 pl-4 border-l-4 border-teal-500 flex items-center gap-2">
+            <Image size={20} className="text-teal-500" />
+            投稿サンプル
+          </h2>
+
+          <p className="text-gray-600 mb-4">このような形で投稿してください。</p>
+
+          {/* プレースホルダー */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px]">
+              <Image size={48} className="text-gray-400 mb-2" />
+              <p className="text-gray-400 text-sm">サンプル画像1</p>
+              <p className="text-gray-400 text-xs">（後日追加予定）</p>
+            </div>
+            <div className="bg-gray-100 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px]">
+              <Image size={48} className="text-gray-400 mb-2" />
+              <p className="text-gray-400 text-sm">サンプル画像2</p>
+              <p className="text-gray-400 text-xs">（後日追加予定）</p>
+            </div>
+          </div>
+
+          <div className="mt-4 bg-teal-50 rounded-xl p-4">
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">ポイント：</span>
+              料理全体が見えるように撮影し、明るい場所で撮ると綺麗に写ります。
+            </p>
+          </div>
+        </section>
+
+        {/* フッター注意書き */}
+        <div className="text-center py-6 border-t border-gray-200 mt-8">
+          <p className="text-xs text-gray-400">
+            本資料は業務委託者様専用です。無断転載・共有はご遠慮ください。
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
