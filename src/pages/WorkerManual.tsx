@@ -212,12 +212,12 @@ export function WorkerManual() {
           <div className="mt-6 p-4 bg-rose-50 rounded-xl">
             <p className="text-sm text-gray-600 mb-2">食事記録ページURL</p>
             <a
-              href="https://diabeteslife.jp/meals"
+              href="https://diabeteslife.jp/threads?category=todays_meal"
               target="_blank"
               rel="noopener noreferrer"
               className="text-rose-600 font-medium hover:underline break-all"
             >
-              https://diabeteslife.jp/meals
+              https://diabeteslife.jp/threads?category=todays_meal
             </a>
           </div>
         </section>
