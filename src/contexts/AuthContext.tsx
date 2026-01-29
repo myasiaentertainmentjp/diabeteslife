@@ -20,6 +20,7 @@ interface AuthContextType {
   isAdmin: boolean
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signInWithGoogle: () => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -188,6 +189,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function signInWithGoogle() {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://diabeteslife.jp',
+        },
+      })
+      return { error: error as Error | null }
+    } catch (error) {
+      return { error: error as Error }
+    }
+  }
+
   async function signOut() {
     try {
       await supabase.auth.signOut()
@@ -236,6 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       signUp,
       signIn,
+      signInWithGoogle,
       signOut,
       refreshProfile,
     }}>
