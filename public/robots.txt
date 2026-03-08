@@ -1,0 +1,14 @@
+# Robots.txt for diabeteslife.jp
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://diabeteslife.jp/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin/
+
+# Disallow API and auth routes
+Disallow: /reset-password
+Disallow: /register/complete
