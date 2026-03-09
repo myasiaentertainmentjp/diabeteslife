@@ -186,7 +186,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
             <span className="text-sm text-gray-500">この記事をシェア:</span>
             <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://diabeteslife.jp'}/articles/${slug}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"

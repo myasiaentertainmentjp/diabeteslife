@@ -11,10 +11,16 @@ export const metadata = {
 
 export const revalidate = 60
 
-export default async function ArticlesPage() {
+interface Props {
+  searchParams: Promise<{ category?: string }>
+}
+
+export default async function ArticlesPage({ searchParams }: Props) {
+  const { category: selectedCategory } = await searchParams
   const supabase = await createServerSupabaseClient()
 
-  const { data: articles } = await supabase
+  // まず全記事を取得してカテゴリ一覧を作成
+  const { data: allArticles } = await supabase
     .from('articles')
     .select('id, slug, title, excerpt, category, thumbnail_url, published_at, created_at')
     .eq('is_published', true)
@@ -22,8 +28,13 @@ export default async function ArticlesPage() {
     .limit(50)
 
   const categories = Array.from(
-    new Set((articles || []).map((a) => a.category).filter(Boolean))
+    new Set((allArticles || []).map((a) => a.category).filter(Boolean))
   )
+
+  // カテゴリでフィルター
+  const articles = selectedCategory
+    ? (allArticles || []).filter((a) => a.category === selectedCategory)
+    : allArticles
 
   function formatDate(dateString: string) {
     const date = new Date(dateString)
@@ -51,7 +62,11 @@ export default async function ArticlesPage() {
         <div className="flex flex-wrap gap-2 mb-6">
           <Link
             href="/articles"
-            className="px-3 py-1 bg-rose-500 text-white text-sm rounded-full"
+            className={`px-3 py-1 text-sm rounded-full transition-colors ${
+              !selectedCategory
+                ? 'bg-rose-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
           >
             すべて
           </Link>
@@ -59,7 +74,11 @@ export default async function ArticlesPage() {
             <Link
               key={category}
               href={`/articles?category=${encodeURIComponent(category!)}`}
-              className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full hover:bg-gray-200 transition-colors"
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                selectedCategory === category
+                  ? 'bg-rose-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             >
               {category}
             </Link>

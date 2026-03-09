@@ -18,8 +18,9 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://diabeteslife.jp'
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${siteUrl}/reset-password`,
     })
 
     if (error) {
