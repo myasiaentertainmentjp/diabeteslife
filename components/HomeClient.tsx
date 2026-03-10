@@ -233,6 +233,8 @@ export function HomeClient({
                           alt={article.title}
                           className="w-20 object-cover rounded shrink-0"
                           style={{ aspectRatio: '1.91 / 1' }}
+                          loading="eager"
+                          fetchPriority="high"
                         />
                       ) : (
                         <div
