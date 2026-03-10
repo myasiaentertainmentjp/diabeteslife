@@ -130,10 +130,6 @@ export function HomeClient({
                             </h3>
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <MessageSquare size={14} />
-                              {thread.comments_count || 0}
-                            </span>
                             <span className="hidden sm:inline">
                               {formatDate(thread.created_at)}
                             </span>
