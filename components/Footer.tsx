@@ -101,6 +101,11 @@ export function Footer() {
             <h3 className="text-white font-bold mb-4">運営情報</h3>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link href="/about" className="hover:text-white transition-colors">
+                  Dライフとは
+                </Link>
+              </li>
+              <li>
                 <Link href="/company" className="hover:text-white transition-colors">
                   会社概要
                 </Link>
