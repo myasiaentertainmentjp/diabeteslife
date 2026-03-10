@@ -67,32 +67,6 @@ export function RichTextEditor({
       attributes: {
         class: 'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[400px] px-4 py-3',
       },
-      handlePaste: (view, event) => {
-        const text = event.clipboardData?.getData('text/plain') || ''
-        const html = event.clipboardData?.getData('text/html') || ''
-        // クリップボードにhtmlデータがある場合はTiptapデフォルト処理に任せる
-        if (html) return false
-        // テキストがHTMLタグを含む場合はHTMLとして挿入
-        if (/<(h[1-6]|p|ul|ol|li|strong|em|a|br|div|blockquote|table|tr|td|th)[^>]*>/i.test(text)) {
-          event.preventDefault()
-          view.dispatch(
-            view.state.tr.replaceSelectionWith(
-              view.state.schema.nodeFromJSON
-                ? view.state.schema.text(text) // fallback
-                : view.state.schema.text(text)
-            )
-          )
-          // insertContentHTMLとして処理
-          const editor = (view as any)._props?.editor
-          if (editor) {
-            editor.commands.insertContent(text, {
-              parseOptions: { preserveWhitespace: false }
-            })
-          }
-          return true
-        }
-        return false
-      },
     },
   })
 
