@@ -216,8 +216,10 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
                       src={related.thumbnail_url}
                       alt={related.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
+                      sizes="(max-width: 768px) 33vw, 280px"
                       className="object-cover"
+                      quality={70}
+                      loading="lazy"
                     />
                   </div>
                 )}
