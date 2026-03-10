@@ -94,7 +94,7 @@ export default function ThreadNewPage() {
       try {
         // WebP変換・圧縮（最大1200px、85%品質）してR2にアップロード
         imageUrl = await uploadImage(imageFile, 'content')
-      } catch (_err) {
+      } catch {
         setError('画像のアップロードに失敗しました。画像なしで投稿するか、再度お試しください。')
         setSubmitting(false)
         setUploadingImage(false)
