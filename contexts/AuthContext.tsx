@@ -5,7 +5,6 @@ import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase'
 import type { UserRole } from '@/types/database'
 
-// Extended profile that includes role from users table
 interface UserProfile {
   id: string
   email?: string
@@ -29,10 +28,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-/**
- * Clear all Supabase auth-related items from localStorage
- * Only called on explicit sign out
- */
 function clearSupabaseAuthStorage(): void {
   try {
     const keysToRemove: string[] = []
@@ -43,8 +38,8 @@ function clearSupabaseAuthStorage(): void {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key))
-  } catch (e) {
-    console.error('[Auth] Error clearing storage:', e)
+  } catch {
+    // ignore
   }
 }
 
@@ -56,26 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const supabase = createClient()
 
-  // Fetch user profile from database (with 10 second timeout)
+  // プロフィール取得（バックグラウンドで実行、3秒タイムアウト）
   const fetchUserData = useCallback(async (userId: string, userEmail: string): Promise<UserProfile> => {
     try {
-      // 10秒タイムアウト
-      const timeoutPromise = new Promise<null>((resolve) => {
-        setTimeout(() => resolve(null), 10000)
-      })
-
-      const queryPromise = supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+      const queryPromise = supabase.from('users').select('id, email, role, display_name').eq('id', userId).single()
       const result = await Promise.race([queryPromise, timeoutPromise])
 
-      if (result === null) {
-        console.warn('[Auth] User data fetch timeout')
-      } else if ((result as any).data) {
-        const data = (result as any).data
+      if (result && (result as { data?: unknown }).data) {
+        const data = (result as { data: { email: string; role: UserRole; display_name: string | null } }).data
         return {
           id: userId,
           email: data.email,
@@ -83,12 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           display_name: data.display_name,
         }
       }
-    } catch (err) {
-      console.error('[Auth] Error fetching user data:', err)
+    } catch {
+      // fallthrough to default
     }
 
-    // Default profile fallback
-    const isAdminEmail = userEmail === 'info@diabeteslife.jp'
+    const isAdminEmail = userEmail === 'info@diabeteslife.jp' || userEmail === 'admin@diabeteslife.jp'
     return {
       id: userId,
       email: userEmail,
@@ -100,22 +83,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    // タイムアウト付きでセッション取得（15秒）
-    const sessionTimeout = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn('[Auth] Session fetch timeout - proceeding without auth')
-        setLoading(false)
-      }
-    }, 15000)
-
-    // Get initial session
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       if (!mounted) return
-      clearTimeout(sessionTimeout)
 
       setSession(initialSession)
       setUser(initialSession?.user ?? null)
 
+      // ★ セッション取得直後にloading=falseにして画面を即表示
+      setLoading(false)
+
+      // プロフィールはバックグラウンドで取得
       if (initialSession?.user) {
         const userProfile = await fetchUserData(
           initialSession.user.id,
@@ -123,22 +100,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         )
         if (mounted) setProfile(userProfile)
       }
-
-      setLoading(false)
-    }).catch((error) => {
-      console.error('[Auth] Session fetch error:', error)
-      if (mounted) {
-        clearTimeout(sessionTimeout)
-        setLoading(false)
-      }
+    }).catch(() => {
+      if (mounted) setLoading(false)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return
 
-        // Only handle explicit sign out
         if (event === 'SIGNED_OUT') {
           setSession(null)
           setUser(null)
@@ -163,7 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false
-      clearTimeout(sessionTimeout)
       subscription.unsubscribe()
     }
   }, [fetchUserData, supabase])
@@ -178,7 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
         },
       })
-
       return { error: error as Error | null }
     } catch (error) {
       return { error: error as Error }
@@ -198,9 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-        },
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` },
       })
       return { error: error as Error | null }
     } catch (error) {
@@ -211,9 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     try {
       await supabase.auth.signOut()
-    } catch (error) {
-      console.error('[Auth] Sign out error:', error)
-      // Even if signOut fails, clear local state
+    } catch {
       clearSupabaseAuthStorage()
     }
     setProfile(null)
@@ -222,43 +185,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function refreshProfile() {
-    if (user) {
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (userData) {
-          setProfile({
-            id: user.id,
-            email: userData.email,
-            role: userData.role || 'user',
-            display_name: userData.display_name,
-          })
-        }
-      } catch (error) {
-        console.error('[Auth] Refresh profile error:', error)
+    if (!user) return
+    try {
+      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      if (data) {
+        setProfile({
+          id: user.id,
+          email: data.email,
+          role: data.role || 'user',
+          display_name: data.display_name,
+        })
       }
+    } catch {
+      // ignore
     }
   }
 
-  // Compute isAdmin from profile - check both role and email
-  const isAdmin = profile?.role === 'admin' || profile?.email === 'info@diabeteslife.jp'
+  const isAdmin = profile?.role === 'admin' ||
+    profile?.email === 'info@diabeteslife.jp' ||
+    profile?.email === 'admin@diabeteslife.jp'
 
   return (
     <AuthContext.Provider value={{
-      user,
-      profile,
-      session,
-      loading,
-      isAdmin,
-      signUp,
-      signIn,
-      signInWithGoogle,
-      signOut,
-      refreshProfile,
+      user, profile, session, loading, isAdmin,
+      signUp, signIn, signInWithGoogle, signOut, refreshProfile,
     }}>
       {children}
     </AuthContext.Provider>
