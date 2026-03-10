@@ -106,9 +106,10 @@ export function RichTextEditor({
   useEffect(() => {
     if (!editor) return
     const el = editor.view.dom
-    const onPaste = (e: ClipboardEvent) => {
-      const clipHtml = e.clipboardData?.getData('text/html') || ''
-      const clipText = e.clipboardData?.getData('text/plain') || ''
+    const onPaste = (e: Event) => {
+      const clip = e as ClipboardEvent
+      const clipHtml = clip.clipboardData?.getData('text/html') || ''
+      const clipText = clip.clipboardData?.getData('text/plain') || ''
       if (clipHtml) return // ブラウザがhtmlとして認識済みならスルー
       if (/<(h[1-6]|p|ul|ol|li|strong|em|blockquote|br|div)[\s/>]/i.test(clipText)) {
         e.preventDefault()
