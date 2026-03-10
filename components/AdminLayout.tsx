@@ -67,13 +67,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
     const { data: userData } = await supabase
       .from('users')
-      .select('role, is_admin')
+      .select('role')
       .eq('id', user.id)
       .single()
 
     const hasAdminAccess =
       userData?.role === 'admin' ||
-      userData?.is_admin ||
+      
       ADMIN_EMAILS.includes(user.email)
 
     if (!hasAdminAccess) {
