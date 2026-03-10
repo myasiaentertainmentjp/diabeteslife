@@ -1,19 +1,19 @@
 import imageCompression from 'browser-image-compression'
 
 const COMPRESSION_OPTIONS = {
-  maxSizeMB: 1,
+  maxSizeMB: 0.5,
   maxWidthOrHeight: 1200,
   useWebWorker: true,
   fileType: 'image/webp' as const,
-  initialQuality: 0.85,
+  initialQuality: 0.75,
 }
 
 const THUMBNAIL_OPTIONS = {
-  maxSizeMB: 0.5,
+  maxSizeMB: 0.3,
   maxWidthOrHeight: 1280,
   useWebWorker: true,
   fileType: 'image/webp' as const,
-  initialQuality: 0.85,
+  initialQuality: 0.72,
 }
 
 export async function compressImage(
