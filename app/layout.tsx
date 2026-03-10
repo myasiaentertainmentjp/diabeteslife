@@ -129,7 +129,8 @@ export default function RootLayout({
               <Header />
             </Suspense>
             <main className="flex-1">{children}</main>
-            <ProfileReviewModal />
+            <ProfileSetupModal />
+        <ProfileReviewModal />
             <Footer />
           </div>
         </Providers>
