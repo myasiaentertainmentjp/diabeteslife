@@ -813,7 +813,7 @@ export default function MyPage() {
                   {hba1cRecords.slice(0, 12).map(r => (
                     <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="py-2 text-gray-600">{r.recorded_at.substring(0, 7)}</td>
-                      <td className="py-2 font-medium text-rose-600">{r.value}%</td>
+                      <td className="py-2 font-medium text-rose-600">{Number(r.value).toFixed(1)}%</td>
                       <td className="py-2 text-gray-500 truncate max-w-[100px]">{r.memo}</td>
                       <td className="py-2">
                         <div className="flex gap-1">
@@ -915,7 +915,7 @@ export default function MyPage() {
                   {weightRecords.slice(0, 12).map(r => (
                     <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="py-2 text-gray-600">{r.recorded_at.substring(0, 7)}</td>
-                      <td className="py-2 font-medium text-blue-600">{r.value}kg</td>
+                      <td className="py-2 font-medium text-blue-600">{Number(r.value).toFixed(1)}kg</td>
                       <td className="py-2 text-gray-500 truncate max-w-[100px]">{r.memo}</td>
                       <td className="py-2">
                         <div className="flex gap-1">
