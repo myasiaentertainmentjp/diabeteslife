@@ -202,6 +202,8 @@ export default function MyPage() {
       prefecture_public: e?.prefecture_public ?? false,
       diabetes_type: e?.diabetes_type || null,
       diagnosis_year: e?.diagnosis_year || null,
+      illness_duration: e?.illness_duration || null,
+      illness_duration_public: e?.illness_duration_public ?? false,
       treatment_methods: e?.treatment_methods || [],
       treatment_public: e?.treatment_public ?? true,
       device: e?.device || null,
