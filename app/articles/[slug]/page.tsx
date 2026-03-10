@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { ArrowLeft, Calendar, Tag, Clock, Share2 } from 'lucide-react'
+import { ArrowLeft, Calendar, Tag, Clock } from 'lucide-react'
+import { ShareButtons } from '@/components/ShareButtons'
 import type { Metadata } from 'next'
 
 
@@ -185,17 +186,10 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
 
         {/* Share */}
         <div className="px-6 md:px-8 pb-6 md:pb-8">
-          <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
-            <span className="text-sm text-gray-500">この記事をシェア:</span>
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://diabeteslife.jp'}/articles/${slug}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <Share2 size={18} className="text-gray-600" />
-            </a>
-          </div>
+          <ShareButtons
+            title={article.title}
+            url={`https://diabeteslife.jp/articles/${slug}`}
+          />
         </div>
       </article>
 
