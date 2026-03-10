@@ -1,21 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import { ARTICLE_CATEGORY_LABELS, ArticleCategory } from '@/types/database'
-import { Loader2, ArrowLeft, Save } from 'lucide-react'
+import { RichTextEditor } from '@/components/RichTextEditor'
+import { uploadImage } from '@/lib/imageUpload'
+import { Loader2, ArrowLeft, Save, Upload, X } from 'lucide-react'
 
 export default function NewArticlePage() {
   const router = useRouter()
   const supabase = createClient()
+  const { user } = useAuth()
   const [saving, setSaving] = useState(false)
+  const [thumbnailUploading, setThumbnailUploading] = useState(false)
+  const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     excerpt: '',
     content: '',
+    thumbnail_url: '',
     category: 'basics' as ArticleCategory,
     is_published: false,
   })
@@ -37,6 +44,23 @@ export default function NewArticlePage() {
     }))
   }
 
+  async function handleThumbnailUpload(file: File) {
+    setThumbnailUploading(true)
+    try {
+      const url = await uploadImage(file, 'thumbnail')
+      setFormData(prev => ({ ...prev, thumbnail_url: url }))
+    } catch (error) {
+      console.error('Thumbnail upload failed:', error)
+      alert('サムネイルのアップロードに失敗しました: ' + (error instanceof Error ? error.message : '不明なエラー'))
+    } finally {
+      setThumbnailUploading(false)
+    }
+  }
+
+  async function handleContentImageUpload(file: File): Promise<string> {
+    return uploadImage(file, 'content')
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -44,13 +68,11 @@ export default function NewArticlePage() {
       alert('タイトルを入力してください')
       return
     }
-
     if (!formData.slug.trim()) {
       alert('スラッグを入力してください')
       return
     }
-
-    if (!formData.content.trim()) {
+    if (!formData.content.trim() || formData.content === '<p></p>') {
       alert('本文を入力してください')
       return
     }
@@ -62,9 +84,11 @@ export default function NewArticlePage() {
       slug: formData.slug.trim(),
       excerpt: formData.excerpt.trim() || null,
       content: formData.content.trim(),
+      thumbnail_url: formData.thumbnail_url || null,
       category: formData.category,
       is_published: formData.is_published,
       published_at: formData.is_published ? new Date().toISOString() : null,
+      author_id: user?.id || null,
     })
 
     if (error) {
@@ -72,7 +96,7 @@ export default function NewArticlePage() {
       if (error.code === '23505') {
         alert('このスラッグは既に使用されています')
       } else {
-        alert('保存に失敗しました')
+        alert(`保存に失敗しました\n\nエラー: ${error.message}\nコード: ${error.code}`)
       }
       setSaving(false)
       return
@@ -95,6 +119,7 @@ export default function NewArticlePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -130,9 +155,7 @@ export default function NewArticlePage() {
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              カテゴリ
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">カテゴリ</label>
             <select
               value={formData.category}
               onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ArticleCategory }))}
@@ -144,11 +167,65 @@ export default function NewArticlePage() {
             </select>
           </div>
 
+          {/* Thumbnail */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">サムネイル画像</label>
+            {formData.thumbnail_url ? (
+              <div className="relative inline-block">
+                <img
+                  src={formData.thumbnail_url}
+                  alt="サムネイル"
+                  className="w-64 h-36 object-cover rounded-lg border border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, thumbnail_url: '' }))}
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={() => thumbnailInputRef.current?.click()}
+                className="flex flex-col items-center justify-center w-64 h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors"
+              >
+                {thumbnailUploading ? (
+                  <Loader2 size={24} className="animate-spin text-rose-500" />
+                ) : (
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">クリックしてアップロード</span>
+                    <span className="text-xs text-gray-400 mt-1">推奨: 1280×670px</span>
+                  </>
+                )}
+              </div>
+            )}
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleThumbnailUpload(file)
+              }}
+            />
+            {/* URL直接入力 */}
+            <div className="mt-2">
+              <input
+                type="url"
+                value={formData.thumbnail_url}
+                onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm"
+                placeholder="またはURLを直接入力"
+              />
+            </div>
+          </div>
+
           {/* Excerpt */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              抜粋
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">抜粋</label>
             <textarea
               value={formData.excerpt}
               onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
@@ -163,14 +240,12 @@ export default function NewArticlePage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               本文 <span className="text-red-500">*</span>
             </label>
-            <textarea
-              value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              rows={15}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono text-sm"
-              placeholder="マークダウン形式で本文を入力"
+            <RichTextEditor
+              content={formData.content}
+              onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+              placeholder="記事の内容を入力..."
+              onImageUpload={handleContentImageUpload}
             />
-            <p className="mt-1 text-xs text-gray-500">マークダウン形式に対応しています</p>
           </div>
 
           {/* Publish Toggle */}
@@ -198,14 +273,10 @@ export default function NewArticlePage() {
           </Link>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || thumbnailUploading}
             className="inline-flex items-center gap-2 px-6 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-50"
           >
-            {saving ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             保存
           </button>
         </div>
