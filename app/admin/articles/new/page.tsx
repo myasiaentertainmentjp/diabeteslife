@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ARTICLE_CATEGORY_LABELS, ArticleCategory } from '@/types/database'
 import { RichTextEditor } from '@/components/RichTextEditor'
 import { uploadImage } from '@/lib/imageUpload'
-import { Loader2, ArrowLeft, Save, Upload, X } from 'lucide-react'
+import { Loader2, ArrowLeft, Save, Upload, X, Eye } from 'lucide-react'
 
 export default function NewArticlePage() {
   const router = useRouter()
@@ -61,7 +61,6 @@ export default function NewArticlePage() {
     return uploadImage(file, 'content')
   }
 
-  const [previewSlug, setPreviewSlug] = useState<string | null>(null)
   const [previewing, setPreviewing] = useState(false)
   const [htmlPasteMode, setHtmlPasteMode] = useState(false)
   const [htmlPasteValue, setHtmlPasteValue] = useState('')
@@ -105,7 +104,6 @@ export default function NewArticlePage() {
       })
     }
 
-    setPreviewSlug(slug)
     window.open(`/articles/${slug}?preview=1`, '_blank')
     setPreviewing(false)
   }
