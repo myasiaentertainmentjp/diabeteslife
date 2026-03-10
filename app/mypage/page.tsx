@@ -143,6 +143,7 @@ export default function MyPage() {
     gender: null, gender_public: false,
     prefecture: null, prefecture_public: false,
     diabetes_type: null, diagnosis_year: null,
+    illness_duration: null, illness_duration_public: false,
     treatment_methods: [], treatment_public: true,
     device: null, device_public: true,
     hba1c_public: false,
