@@ -16,9 +16,9 @@ import {
   Bell, Link as LinkIcon, CheckCircle, Camera, ChevronRight,
 } from 'lucide-react'
 import {
-  DiabetesType, TreatmentType, AgeGroup, Gender, DeviceType,
+  DiabetesType, TreatmentType, AgeGroup, Gender, DeviceType, IllnessDuration,
   DIABETES_TYPE_LABELS, TREATMENT_TYPE_LABELS, AGE_GROUP_LABELS,
-  GENDER_LABELS, DEVICE_TYPE_LABELS, PREFECTURES,
+  GENDER_LABELS, DEVICE_TYPE_LABELS, PREFECTURES, ILLNESS_DURATION_LABELS,
 } from '@/types/database'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -35,6 +35,8 @@ interface ProfileState {
   prefecture_public: boolean
   diabetes_type: DiabetesType
   diagnosis_year: number | null
+  illness_duration: IllnessDuration | null
+  illness_duration_public: boolean
   treatment_methods: TreatmentType[]
   treatment_public: boolean
   device: DeviceType | null
@@ -289,6 +291,8 @@ export default function MyPage() {
         prefecture_public: prof.prefecture_public,
         diabetes_type: prof.diabetes_type,
         diagnosis_year: prof.diagnosis_year,
+        illness_duration: prof.illness_duration,
+        illness_duration_public: prof.illness_duration_public,
         treatment_methods: prof.treatment_methods.length > 0 ? prof.treatment_methods : null,
         treatment_public: prof.treatment_public,
         device: prof.device,
@@ -630,6 +634,21 @@ export default function MyPage() {
                   </span>
                 )}
               </div>
+            </div>
+
+            {/* 罹患期間 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700">罹患期間</label>
+                <TogglePublic value={prof.illness_duration_public} onChange={v => setProf(p => ({ ...p, illness_duration_public: v }))} />
+              </div>
+              <select value={prof.illness_duration || ''} onChange={e => setProf(p => ({ ...p, illness_duration: e.target.value as IllnessDuration || null }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none bg-white">
+                <option value="">選択してください</option>
+                {Object.entries(ILLNESS_DURATION_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
             </div>
 
             {/* 治療方法 */}
