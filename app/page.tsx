@@ -45,6 +45,7 @@ export default async function Home() {
   const { data: featuredArticles } = await supabase
     .from('articles')
     .select('id, title, slug, thumbnail_url, created_at')
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(5)
 
