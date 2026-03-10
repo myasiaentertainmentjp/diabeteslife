@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, Link } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 
 interface ShareButtonsProps {
   title: string
@@ -31,8 +31,6 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
 
   const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`
-  const instaUrl = `https://www.instagram.com/`  // Instagramはリンク共有非対応のためプロフへ
-
   return (
     <div className="pt-6 border-t border-gray-100">
       <p className="text-sm font-medium text-gray-500 mb-3">この記事をシェア</p>
