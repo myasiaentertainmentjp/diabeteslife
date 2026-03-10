@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 
 interface Props {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ preview?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,20 +41,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const revalidate = 60
 
-export default async function ArticleDetailPage({ params }: Props) {
+export default async function ArticleDetailPage({ params, searchParams }: Props) {
   const { slug } = await params
+  const { preview } = await searchParams
+  const isPreview = preview === '1'
   const supabase = await createServerSupabaseClient()
 
-  const { data: article, error } = await supabase
-    .from('articles')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single()
+  const query = supabase.from('articles').select('*').eq('slug', slug)
+  if (!isPreview) query.eq('is_published', true)
+  const { data: article, error } = await query.single()
 
   if (error || !article) {
     notFound()
   }
+
+  const previewBanner = isPreview ? (
+    <div style={{background:'#f59e0b',color:'#000',textAlign:'center',padding:'8px',fontSize:'13px',fontWeight:'bold',position:'sticky',top:0,zIndex:50}}>
+      📝 プレビュー表示中（非公開）— この記事はまだ公開されていません
+    </div>
+  ) : null
 
   // Fetch related articles
   const { data: relatedArticles } = await supabase
