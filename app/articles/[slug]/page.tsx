@@ -56,7 +56,34 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
     notFound()
   }
 
-
+  // Article構造化データ
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.excerpt || article.title,
+    image: article.thumbnail_url || undefined,
+    datePublished: article.published_at || article.created_at,
+    dateModified: article.updated_at || article.created_at,
+    author: {
+      '@type': 'Organization',
+      name: 'Dライフ編集部',
+      url: 'https://diabeteslife.jp',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Dライフ',
+      url: 'https://diabeteslife.jp',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://diabeteslife.jp/logo.png',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://diabeteslife.jp/articles/${slug}`,
+    },
+  }
 
   // Fetch related articles
   const { data: relatedArticles } = await supabase
@@ -130,6 +157,10 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
         <span>記事一覧に戻る</span>
       </Link>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Thumbnail */}
         {article.thumbnail_url && (
