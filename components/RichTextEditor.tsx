@@ -102,6 +102,26 @@ export function RichTextEditor({
     }
   }, [content, editor])
 
+  // プレーンテキストとして貼られたHTMLタグをHTMLとして解釈して挿入
+  useEffect(() => {
+    if (!editor) return
+    const el = editor.view.dom
+    const onPaste = (e: ClipboardEvent) => {
+      const clipHtml = e.clipboardData?.getData('text/html') || ''
+      const clipText = e.clipboardData?.getData('text/plain') || ''
+      if (clipHtml) return // ブラウザがhtmlとして認識済みならスルー
+      if (/<(h[1-6]|p|ul|ol|li|strong|em|blockquote|br|div)[\s/>]/i.test(clipText)) {
+        e.preventDefault()
+        e.stopPropagation()
+        editor.commands.insertContent(clipText, {
+          parseOptions: { preserveWhitespace: false },
+        })
+      }
+    }
+    el.addEventListener('paste', onPaste, true)
+    return () => el.removeEventListener('paste', onPaste, true)
+  }, [editor])
+
   const setLink = useCallback(() => {
     if (!editor) return
     const previousUrl = editor.getAttributes('link').href
