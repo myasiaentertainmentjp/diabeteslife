@@ -55,11 +55,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
     notFound()
   }
 
-  const previewBanner = isPreview ? (
-    <div style={{background:'#f59e0b',color:'#000',textAlign:'center',padding:'8px',fontSize:'13px',fontWeight:'bold',position:'sticky',top:0,zIndex:50}}>
-      📝 プレビュー表示中（非公開）— この記事はまだ公開されていません
-    </div>
-  ) : null
+
 
   // Fetch related articles
   const { data: relatedArticles } = await supabase
