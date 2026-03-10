@@ -141,7 +141,7 @@ export default function GuidePage() {
               </div>
               {user ? (
                 <Link
-                  href="/mypage/profile"
+                  href="/mypage"
                   className="inline-flex items-center gap-1 mt-3 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 text-sm font-medium transition-colors"
                 >
                   <Settings size={16} />
