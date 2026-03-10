@@ -123,6 +123,26 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
+      <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Dライフ',
+              url: 'https://diabeteslife.jp',
+              description: '糖尿病と向き合うすべての人のためのコミュニティサイト',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: 'https://diabeteslife.jp/search?q={search_term_string}',
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
       <body className={inter.className}>
         <Providers>
           <div className="min-h-screen flex flex-col">
