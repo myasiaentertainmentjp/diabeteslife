@@ -1,6 +1,13 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { HomeClient } from '@/components/HomeClient'
 
+export const metadata = {
+  title: 'ディーライフ | 糖尿病と向き合う人のためのコミュニティ',
+  description: '糖尿病患者・ご家族・支える人たちが安心して話せるコミュニティサイト。HbA1c記録、食事管理、トピック掲示板などの機能が無料で使えます。',
+}
+
+
+
 // 1時間キャッシュ
 export const revalidate = 3600
 
