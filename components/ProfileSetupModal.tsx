@@ -127,10 +127,15 @@ export function ProfileSetupModal() {
       return
     }
 
+    // 「家族・サポーター」の場合は illness_duration ステップをスキップ
+    const nextIndex = stepIndex + 1
+    const nextStep = STEPS[nextIndex]
+    const skipIllness = nextStep === 'illness_duration' && diabetesType === 'family'
+
     setAnimDir('forward')
     setAnimating(true)
     setTimeout(() => {
-      setStepIndex(i => i + 1)
+      setStepIndex(skipIllness ? nextIndex + 1 : nextIndex)
       setAnimating(false)
     }, 220)
   }, [animating, currentStep, stepIndex, user, diabetesType, illnessDuration, treatments, ageGroup, gender, prefecture, supabase])
