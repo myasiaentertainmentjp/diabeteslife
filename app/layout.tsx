@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { Providers } from "@/components/Providers"
 import { ProfileReviewModal } from "@/components/ProfileReviewModal"
+import { ProfileSetupModal } from "@/components/ProfileSetupModal"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 
