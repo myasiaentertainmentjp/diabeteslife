@@ -23,7 +23,7 @@ export default function NewArticlePage() {
     excerpt: '',
     content: '',
     thumbnail_url: '',
-    category: 'basics' as ArticleCategory,
+    category: 'chat_other' as ArticleCategory,
     is_published: false,
   })
 
