@@ -61,6 +61,52 @@ export default function NewArticlePage() {
     return uploadImage(file, 'content')
   }
 
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null)
+  const [previewing, setPreviewing] = useState(false)
+
+  async function handlePreview() {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      alert('タイトルと本文を入力してからプレビューしてください')
+      return
+    }
+    setPreviewing(true)
+    const slug = formData.slug.trim() || 'preview-draft'
+
+    // 既存のプレビュー下書きがあれば更新、なければ作成
+    const { data: existing } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .eq('is_published', false)
+      .maybeSingle()
+
+    if (existing) {
+      await supabase.from('articles').update({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        excerpt: formData.excerpt.trim() || null,
+        thumbnail_url: formData.thumbnail_url || null,
+        category: formData.category,
+        is_published: false,
+      }).eq('id', existing.id)
+    } else {
+      await supabase.from('articles').insert({
+        title: formData.title.trim(),
+        slug: slug,
+        content: formData.content.trim(),
+        excerpt: formData.excerpt.trim() || null,
+        thumbnail_url: formData.thumbnail_url || null,
+        category: formData.category,
+        is_published: false,
+        author_id: user?.id || null,
+      })
+    }
+
+    setPreviewSlug(slug)
+    window.open(`/articles/${slug}?preview=1`, '_blank')
+    setPreviewing(false)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -271,6 +317,15 @@ export default function NewArticlePage() {
           >
             キャンセル
           </Link>
+          <button
+            type="button"
+            onClick={handlePreview}
+            disabled={previewing}
+            className="inline-flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            {previewing ? <Loader2 size={18} className="animate-spin" /> : <Eye size={18} />}
+            プレビュー
+          </button>
           <button
             type="submit"
             disabled={saving || thumbnailUploading}
