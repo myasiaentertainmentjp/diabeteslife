@@ -759,7 +759,7 @@ export default function MyPage() {
                       onChange={e => setHba1cForm(f => ({ ...f, recorded_at: e.target.value + '-' + (f.recorded_at.split('-')[1] || '01') }))}
                       className="w-20 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500">
                       <option value="">年</option>
-                      {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(y => (
+                      {Array.from({length: 20}, (_, i) => new Date().getFullYear() - i).map(y => (
                         <option key={y} value={y}>{y}</option>
                       ))}
                     </select>
@@ -862,7 +862,7 @@ export default function MyPage() {
                       onChange={e => setWeightForm(f => ({ ...f, recorded_at: e.target.value + '-' + (f.recorded_at.split('-')[1] || '01') }))}
                       className="w-20 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500">
                       <option value="">年</option>
-                      {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(y => (
+                      {Array.from({length: 20}, (_, i) => new Date().getFullYear() - i).map(y => (
                         <option key={y} value={y}>{y}</option>
                       ))}
                     </select>
