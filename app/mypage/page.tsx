@@ -933,7 +933,6 @@ export default function MyPage() {
 
         {/* ⑨ 各種ページリンク */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <SectionTitle></SectionTitle>
           {[
             { href: '/mypage/posts', label: '投稿履歴', desc: 'トピック・コメント' },
             { href: '/mypage/bookmarks', label: 'ブックマーク', desc: '保存したトピック' },
