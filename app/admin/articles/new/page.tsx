@@ -63,6 +63,8 @@ export default function NewArticlePage() {
 
   const [previewSlug, setPreviewSlug] = useState<string | null>(null)
   const [previewing, setPreviewing] = useState(false)
+  const [htmlPasteMode, setHtmlPasteMode] = useState(false)
+  const [htmlPasteValue, setHtmlPasteValue] = useState('')
 
   async function handlePreview() {
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -283,15 +285,48 @@ export default function NewArticlePage() {
 
           {/* Content */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              本文 <span className="text-red-500">*</span>
-            </label>
-            <RichTextEditor
-              content={formData.content}
-              onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
-              placeholder="記事の内容を入力..."
-              onImageUpload={handleContentImageUpload}
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                本文 <span className="text-red-500">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setHtmlPasteMode(v => !v)}
+                className="text-xs px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                {htmlPasteMode ? '✏️ エディタに戻る' : '📋 HTMLで貼り付け'}
+              </button>
+            </div>
+            {htmlPasteMode ? (
+              <div className="space-y-2">
+                <textarea
+                  value={htmlPasteValue}
+                  onChange={e => setHtmlPasteValue(e.target.value)}
+                  placeholder="ClaudeなどからコピーしたHTMLをここに貼り付けてください"
+                  className="w-full h-64 p-3 border border-gray-300 rounded-lg text-sm font-mono resize-y"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (htmlPasteValue.trim()) {
+                      setFormData(prev => ({ ...prev, content: htmlPasteValue.trim() }))
+                      setHtmlPasteMode(false)
+                      setHtmlPasteValue('')
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  本文に適用する
+                </button>
+              </div>
+            ) : (
+              <RichTextEditor
+                content={formData.content}
+                onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+                placeholder="記事の内容を入力..."
+                onImageUpload={handleContentImageUpload}
+              />
+            )}
           </div>
 
           {/* Publish Toggle */}
