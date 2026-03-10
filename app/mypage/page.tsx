@@ -250,7 +250,7 @@ export default function MyPage() {
         await refreshProfile()
       }
     } catch {
-      console.error(err)
+      // upload failed silently
     }
     setAvatarUploading(false)
   }
@@ -415,7 +415,7 @@ export default function MyPage() {
       URL.revokeObjectURL(url)
       setShowExportModal(false)
     } catch {
-      console.error(err)
+      // upload failed silently
     }
     setExporting(false)
   }
