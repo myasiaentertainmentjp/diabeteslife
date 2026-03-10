@@ -19,7 +19,6 @@ interface User {
   email: string
   display_name: string | null
   role: string
-  is_admin: boolean
   is_banned: boolean
   created_at: string
   thread_count?: number
@@ -56,7 +55,7 @@ export default function AdminUsersPage() {
 
       const { data: usersData } = await supabase
         .from('users')
-        .select('id, email, display_name, role, is_admin, is_banned, created_at')
+        .select('id, email, display_name, role, is_banned, created_at')
         .order('created_at', { ascending: false })
         .range(from, to)
 
@@ -82,7 +81,7 @@ export default function AdminUsersPage() {
     try {
       const { data: usersData, count } = await supabase
         .from('users')
-        .select('id, email, display_name, role, is_admin, is_banned, created_at', { count: 'exact' })
+        .select('id, email, display_name, role, is_banned, created_at', { count: 'exact' })
         .or(`email.ilike.%${searchQuery}%,display_name.ilike.%${searchQuery}%`)
         .order('created_at', { ascending: false })
         .limit(ITEMS_PER_PAGE)
@@ -105,7 +104,7 @@ export default function AdminUsersPage() {
     setUpdating(userId)
     const { error } = await supabase
       .from('users')
-      .update({ is_admin: !currentStatus } as never)
+      .update({ role: !currentStatus ? 'admin' : 'user' })
       .eq('id', userId)
 
     if (error) {
@@ -208,7 +207,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      {user.is_admin && (
+                      {user.role === 'admin' && (
                         <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded flex items-center gap-1">
                           <Shield size={12} />
                           管理者
@@ -233,18 +232,18 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => toggleAdmin(user.id, user.is_admin)}
+                        onClick={() => toggleAdmin(user.id, user.role === 'admin')}
                         disabled={updating === user.id}
                         className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
-                          user.is_admin
+                          user.role === 'admin'
                             ? 'text-purple-600 hover:bg-purple-50'
                             : 'text-gray-400 hover:bg-gray-100'
                         }`}
-                        title={user.is_admin ? '管理者権限を剥奪' : '管理者にする'}
+                        title={user.role === 'admin' ? '管理者権限を剥奪' : '管理者にする'}
                       >
                         {updating === user.id ? (
                           <Loader2 size={18} className="animate-spin" />
-                        ) : user.is_admin ? (
+                        ) : user.role === 'admin' ? (
                           <ShieldOff size={18} />
                         ) : (
                           <Shield size={18} />
