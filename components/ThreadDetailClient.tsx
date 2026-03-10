@@ -160,7 +160,7 @@ export function ThreadDetailClient({
       setUploadingImage(true)
       try {
         imageUrl = await uploadImage(commentImage, 'content')
-      } catch (_err) {
+      } catch {
         setError('画像のアップロードに失敗しました')
         setSubmitting(false)
         setUploadingImage(false)
