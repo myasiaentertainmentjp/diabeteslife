@@ -17,9 +17,6 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /var/www/diabeteslife && git pull origin main && npm install && rm -rf .next && mkdir -p .next/export .next/server/pages && npm run build && (pm2 restart diabeteslife || pm2 start ecosystem.config.js) && pm2 save && echo Deploy complete"
+            "cd /var/www/diabeteslife && git fetch origin && git reset --hard origin/main && npm install && rm -rf .next && mkdir -p .next/export .next/server/pages && npm run build && (pm2 restart diabeteslife || pm2 start ecosystem.config.js) && pm2 save && echo Deploy complete"
