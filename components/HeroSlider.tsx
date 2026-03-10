@@ -9,7 +9,7 @@ const slides = [
     eyebrow: 'D-LIFEとは',
     title: '糖尿病と向き合う\nすべての人へ',
     body: '患者さん・ご家族・支える人たちが\n安心して話せる場所がここにあります。',
-    cta: { label: 'トピックを見る', href: '/threads' },
+    cta: { label: 'Dライフとは', href: '/about' },
     accent: '#be185d',
     overlay: 'rgba(190,24,93,0.72)',
     image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&fit=crop',
