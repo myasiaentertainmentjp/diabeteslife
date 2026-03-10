@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { MessageSquare, PenSquare, ChevronRight, FileText } from 'lucide-react'
+import { HeroSlider } from '@/components/HeroSlider'
 
 type TabType = 'popular' | 'new'
 
@@ -73,6 +74,8 @@ export function HomeClient({
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Hero Slider */}
+      <HeroSlider />
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
