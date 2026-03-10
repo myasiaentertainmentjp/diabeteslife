@@ -124,19 +124,19 @@ export default function GuidePage() {
               <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-sm text-gray-600">
                 <p className="flex items-center gap-2">
                   <span className="text-rose-400">●</span>
-                  <span><strong>糖尿病タイプ</strong>：1型・2型など</span>
+                  <span><strong>糖尿病のタイプ</strong>：1型・2型・妊娠糖尿病など</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <span className="text-rose-400">●</span>
-                  <span><strong>発症時期</strong>：いつ頃からか</span>
+                  <span><strong>診断年・罹患期間</strong>：いつ頃からか</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <span className="text-rose-400">●</span>
-                  <span><strong>治療法</strong>：インスリン、内服薬など</span>
+                  <span><strong>治療方法</strong>：インスリン注射・経口薬・食事療法など</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <span className="text-rose-400">●</span>
-                  <span><strong>自己紹介</strong>：あなたのことを教えてください</span>
+                  <span><strong>年代・性別・都道府県</strong>：任意で設定できます</span>
                 </p>
               </div>
               {user ? (
