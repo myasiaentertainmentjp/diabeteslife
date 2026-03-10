@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function ProfileSettingsPage() {
+export default function ProfilePage() {
   redirect('/mypage')
 }
