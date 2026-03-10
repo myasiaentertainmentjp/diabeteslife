@@ -175,10 +175,10 @@ export default function MyPage() {
 
     const [userRes, extRes, hba1cRes, weightRes, notifRes] = await Promise.all([
       supabase.from('users').select('display_name, avatar_url').eq('id', user.id).single(),
-      supabase.from('extended_user_profiles').select('*').eq('user_id', user.id).single(),
+      supabase.from('extended_user_profiles').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('hba1c_records').select('*').eq('user_id', user.id).order('recorded_at', { ascending: false }),
       supabase.from('weight_records').select('*').eq('user_id', user.id).order('recorded_at', { ascending: false }),
-      supabase.from('notification_settings').select('*').eq('user_id', user.id).single(),
+      supabase.from('notification_settings').select('*').eq('user_id', user.id).maybeSingle(),
     ])
 
     const u = userRes.data
