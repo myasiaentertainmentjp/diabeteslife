@@ -249,7 +249,7 @@ export default function MyPage() {
         setAvatarUrl(url)
         await refreshProfile()
       }
-    } catch (err) {
+    } catch (_err) {
       console.error(err)
     }
     setAvatarUploading(false)
@@ -308,7 +308,7 @@ export default function MyPage() {
       await refreshProfile()
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
-    } catch (err) {
+    } catch (_err) {
       setSaveError('保存に失敗しました。再度お試しください。')
     } finally {
       setSaving(false)
@@ -414,7 +414,7 @@ export default function MyPage() {
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       URL.revokeObjectURL(url)
       setShowExportModal(false)
-    } catch (err) {
+    } catch (_err) {
       console.error(err)
     }
     setExporting(false)
