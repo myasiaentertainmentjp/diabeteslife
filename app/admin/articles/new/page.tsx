@@ -65,6 +65,7 @@ export default function NewArticlePage() {
   const [previewing, setPreviewing] = useState(false)
   const [htmlPasteMode, setHtmlPasteMode] = useState(false)
   const [htmlPasteValue, setHtmlPasteValue] = useState('')
+  const [editorKey, setEditorKey] = useState(0)
 
   async function handlePreview() {
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -310,6 +311,7 @@ export default function NewArticlePage() {
                   onClick={() => {
                     if (htmlPasteValue.trim()) {
                       setFormData(prev => ({ ...prev, content: htmlPasteValue.trim() }))
+                      setEditorKey(k => k + 1)
                       setHtmlPasteMode(false)
                       setHtmlPasteValue('')
                     }
@@ -321,6 +323,7 @@ export default function NewArticlePage() {
               </div>
             ) : (
               <RichTextEditor
+                key={editorKey}
                 content={formData.content}
                 onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
                 placeholder="記事の内容を入力..."
