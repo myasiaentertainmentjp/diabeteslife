@@ -183,7 +183,7 @@ export default function MyPage() {
 
     const u = userRes.data
     const e = extRes.data
-    const links = e?.external_links || []
+    const links = Array.isArray(e?.external_links) ? e.external_links : []
     const customLink = links.find((l: { title: string; url: string }) => !['X', 'Instagram', 'YouTube', 'TikTok'].includes(l.title))
 
     setAvatarUrl(u?.avatar_url || null)
