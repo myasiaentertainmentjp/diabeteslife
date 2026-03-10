@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase'
 import type { UserRole } from '@/types/database'
@@ -10,7 +10,6 @@ interface UserProfile {
   email?: string
   role: UserRole
   display_name?: string | null
-  username?: string
 }
 
 interface AuthContextType {
@@ -33,7 +32,7 @@ function clearSupabaseAuthStorage(): void {
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
-      if (key && (key.startsWith('sb-') || key.includes('supabase') || key === 'dlife-auth-token')) {
+      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
         keysToRemove.push(key)
       }
     }
@@ -51,15 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const supabase = createClient()
 
-  // プロフィール取得（バックグラウンドで実行、3秒タイムアウト）
-  const fetchUserData = useCallback(async (userId: string, userEmail: string): Promise<UserProfile> => {
+  async function fetchProfile(userId: string, userEmail: string): Promise<UserProfile> {
     try {
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
-      const queryPromise = supabase.from('users').select('id, email, role, display_name').eq('id', userId).single()
-      const result = await Promise.race([queryPromise, timeoutPromise])
+      const { data } = await supabase
+        .from('users')
+        .select('id, email, role, display_name')
+        .eq('id', userId)
+        .single()
 
-      if (result && (result as { data?: unknown }).data) {
-        const data = (result as { data: { email: string; role: UserRole; display_name: string | null } }).data
+      if (data) {
         return {
           id: userId,
           email: data.email,
@@ -68,42 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-      // fallthrough to default
+      // fallthrough
     }
 
-    const isAdminEmail = userEmail === 'info@diabeteslife.jp' || userEmail === 'admin@diabeteslife.jp'
+    const isAdmin = userEmail === 'info@diabeteslife.jp' || userEmail === 'admin@diabeteslife.jp'
     return {
       id: userId,
       email: userEmail,
-      role: isAdminEmail ? 'admin' : 'user' as UserRole,
+      role: isAdmin ? 'admin' : 'user' as UserRole,
       display_name: null,
     }
-  }, [supabase])
+  }
 
   useEffect(() => {
     let mounted = true
 
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
-      if (!mounted) return
-
-      setSession(initialSession)
-      setUser(initialSession?.user ?? null)
-
-      // ★ セッション取得直後にloading=falseにして画面を即表示
-      setLoading(false)
-
-      // プロフィールはバックグラウンドで取得
-      if (initialSession?.user) {
-        const userProfile = await fetchUserData(
-          initialSession.user.id,
-          initialSession.user.email || ''
-        )
-        if (mounted) setProfile(userProfile)
-      }
-    }).catch(() => {
-      if (mounted) setLoading(false)
-    })
-
+    // onAuthStateChange だけで管理する（getSession+onAuthStateChangeの二重実行を避ける）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return
@@ -112,18 +91,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null)
           setUser(null)
           setProfile(null)
+          setLoading(false)
           return
         }
 
         setSession(newSession)
         setUser(newSession?.user ?? null)
+        setLoading(false)  // ← セッション状態確定時点で即表示
 
+        // プロフィールはバックグラウンドで取得
         if (newSession?.user) {
-          const userProfile = await fetchUserData(
-            newSession.user.id,
-            newSession.user.email || ''
-          )
-          if (mounted) setProfile(userProfile)
+          fetchProfile(newSession.user.id, newSession.user.email || '').then(p => {
+            if (mounted) setProfile(p)
+          })
         } else {
           setProfile(null)
         }
@@ -134,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [fetchUserData, supabase])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function signUp(email: string, password: string, displayName: string) {
     try {
@@ -178,10 +158,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut()
     } catch {
       clearSupabaseAuthStorage()
+      setProfile(null)
+      setUser(null)
+      setSession(null)
     }
-    setProfile(null)
-    setUser(null)
-    setSession(null)
   }
 
   async function refreshProfile() {
