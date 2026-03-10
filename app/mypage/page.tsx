@@ -739,7 +739,7 @@ export default function MyPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                     <YAxis domain={[4, 12]} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => [`${v}%`, 'HbA1c']} />
+                    <Tooltip formatter={(v: unknown) => [`${v}%`, 'HbA1c']} />
                     <ReferenceLine y={7} stroke="#22c55e" strokeDasharray="4 4" label={{ value: '目標7%', position: 'right', fontSize: 10, fill: '#22c55e' }} />
                     <Line type="monotone" dataKey="value" stroke="#f43f5e" strokeWidth={2} dot={{ r: 4, fill: '#f43f5e' }} />
                   </LineChart>
@@ -831,7 +831,7 @@ export default function MyPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                   <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => [`${v}kg`, '体重']} />
+                  <Tooltip formatter={(v: unknown) => [`${v}kg`, '体重']} />
                   <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4, fill: '#3b82f6' }} />
                 </LineChart>
               </ResponsiveContainer>
