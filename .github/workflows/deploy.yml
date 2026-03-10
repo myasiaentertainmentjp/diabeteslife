@@ -19,4 +19,4 @@ jobs:
       - name: Deploy
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /var/www/diabeteslife && git pull origin main && npm install --omit=dev && npm run build && (pm2 restart diabeteslife || pm2 start ecosystem.config.js) && pm2 save && echo Deploy complete"
+            "cd /var/www/diabeteslife && git pull origin main && npm install --omit=dev && rm -rf .next && npm run build && (pm2 restart diabeteslife || pm2 start ecosystem.config.js) && pm2 save && echo Deploy complete"
