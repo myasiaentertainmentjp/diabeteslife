@@ -1,16 +1,24 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Client-side Supabase client (untyped for flexibility)
-export function createClient() {
-  return createBrowserClient(
+// シングルトン: 同一クライアントを使い回してLock競合を防ぐ
+let browserClient: SupabaseClient | null = null
+
+export function createClient(): SupabaseClient {
+  if (browserClient) return browserClient
+  browserClient = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+  return browserClient
 }
 
-// Public client for non-auth queries (no session management)
-export function createPublicClient() {
-  return createBrowserClient(
+// Public client（セッション不要なクエリ用）
+let publicClient: SupabaseClient | null = null
+
+export function createPublicClient(): SupabaseClient {
+  if (publicClient) return publicClient
+  publicClient = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -21,4 +29,5 @@ export function createPublicClient() {
       },
     }
   )
+  return publicClient
 }
