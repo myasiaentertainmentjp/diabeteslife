@@ -704,16 +704,10 @@ export default function MyPage() {
             ))}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500 w-28 shrink-0">カスタム</span>
-              <div className="flex flex-1 gap-2">
-                <input type="text" value={prof.custom_link_title}
-                  onChange={e => setProf(p => ({ ...p, custom_link_title: e.target.value }))}
-                  placeholder="タイトル"
-                  className="w-1/3 px-3 py-3 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500" />
-                <input type="url" value={prof.custom_link_url}
-                  onChange={e => setProf(p => ({ ...p, custom_link_url: e.target.value }))}
-                  placeholder="https://..."
-                  className="flex-1 px-3 py-3 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500" />
-              </div>
+              <input type="url" value={prof.custom_link_url}
+                onChange={e => setProf(p => ({ ...p, custom_link_url: e.target.value }))}
+                placeholder="https://..."
+                className="flex-1 px-3 py-3 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500" />
             </div>
           </div>
         </div>
@@ -760,9 +754,24 @@ export default function MyPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">測定月</label>
-                  <input type="month" value={hba1cForm.recorded_at}
-                    onChange={e => setHba1cForm(f => ({ ...f, recorded_at: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500" />
+                  <div className="flex gap-1">
+                    <select value={hba1cForm.recorded_at.split('-')[0] || ''}
+                      onChange={e => setHba1cForm(f => ({ ...f, recorded_at: e.target.value + '-' + (f.recorded_at.split('-')[1] || '01') }))}
+                      className="w-20 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500">
+                      <option value="">年</option>
+                      {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                    <select value={hba1cForm.recorded_at.split('-')[1] || ''}
+                      onChange={e => setHba1cForm(f => ({ ...f, recorded_at: (f.recorded_at.split('-')[0] || String(new Date().getFullYear())) + '-' + e.target.value }))}
+                      className="flex-1 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-rose-500">
+                      <option value="">月</option>
+                      {Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map(m => (
+                        <option key={m} value={m}>{parseInt(m)}月</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">HbA1c値（%）</label>
@@ -848,9 +857,24 @@ export default function MyPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">記録月</label>
-                  <input type="month" value={weightForm.recorded_at}
-                    onChange={e => setWeightForm(f => ({ ...f, recorded_at: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500" />
+                  <div className="flex gap-1">
+                    <select value={weightForm.recorded_at.split('-')[0] || ''}
+                      onChange={e => setWeightForm(f => ({ ...f, recorded_at: e.target.value + '-' + (f.recorded_at.split('-')[1] || '01') }))}
+                      className="w-20 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500">
+                      <option value="">年</option>
+                      {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                    <select value={weightForm.recorded_at.split('-')[1] || ''}
+                      onChange={e => setWeightForm(f => ({ ...f, recorded_at: (f.recorded_at.split('-')[0] || String(new Date().getFullYear())) + '-' + e.target.value }))}
+                      className="flex-1 px-2 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500">
+                      <option value="">月</option>
+                      {Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map(m => (
+                        <option key={m} value={m}>{parseInt(m)}月</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">体重（kg）</label>
