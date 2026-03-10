@@ -73,7 +73,7 @@ export function HeroSlider() {
         .hero-wrap{position:relative;width:100%;overflow:hidden;min-height:300px}
         .hero-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .4s ease}
         .hero-overlay{position:absolute;inset:0}
-        .hero-content{position:relative;z-index:10;padding:2rem 1.5rem 3.5rem;max-width:32rem;margin:0 auto}
+        .hero-content{position:relative;z-index:10;padding:2rem 1.5rem 3.5rem;max-width:32rem;margin:0 auto;text-align:center}
         .hero-fade{transition:opacity .25s ease,transform .25s ease}
         .hero-fade.out{opacity:0;transform:translateY(8px)}
         .hero-fade.in{opacity:1;transform:translateY(0)}
@@ -95,7 +95,7 @@ export function HeroSlider() {
 
         {/* コンテンツ */}
         <div className={`hero-content hero-fade ${fading?'out':'in'}`}>
-          <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',marginBottom:'12px'}}>
             <span style={{width:'16px',height:'1px',background:'white',opacity:.6,display:'block'}}/>
             <span style={{color:'white',fontSize:'11px',letterSpacing:'0.15em',textTransform:'uppercase',opacity:.8,fontWeight:500}}>
               {s.eyebrow}
@@ -116,6 +116,7 @@ export function HeroSlider() {
             padding:'10px 20px',fontSize:'14px',fontWeight:'bold',
             color:s.accent,textDecoration:'none',
             transition:'transform .15s',
+            margin:'0 auto',
           }}>
             {s.cta.label}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
