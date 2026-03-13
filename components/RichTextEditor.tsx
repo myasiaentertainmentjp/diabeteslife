@@ -48,12 +48,6 @@ export function RichTextEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        // Link・Underline は個別に追加するため StarterKit 側を無効化
-        // （バージョンによっては StarterKit に含まれ重複エラーが出るため）
-        // @ts-ignore
-        link: false,
-        // @ts-ignore
-        underline: false,
       }),
       Link.configure({
         openOnClick: false,
