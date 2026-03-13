@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createPublicServerClient } from '@/lib/supabase-server'
 import { ThreadDetailClient } from '@/components/ThreadDetailClient'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -9,7 +9,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { threadNumber } = await params
-  const supabase = await createServerSupabaseClient()
+  const supabase = createPublicServerClient()
 
   const isNumeric = /^\d+$/.test(threadNumber)
 
