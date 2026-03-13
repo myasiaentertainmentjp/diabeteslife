@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createPublicServerClient } from '@/lib/supabase-server'
 import { ArrowLeft, Calendar, Tag, Clock } from 'lucide-react'
 import { ShareButtons } from '@/components/ShareButtons'
 import type { Metadata } from 'next'
@@ -14,7 +14,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createServerSupabaseClient()
+  const supabase = createPublicServerClient()
 
   const { data: article } = await supabase
     .from('articles')
