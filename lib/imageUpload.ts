@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase'
 import imageCompression from 'browser-image-compression'
 
 const COMPRESSION_OPTIONS = {
@@ -34,42 +35,8 @@ export async function compressImage(
 function generateFileName(originalName: string, prefix: string = 'img'): string {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 8)
-  const extension = originalName.includes('.webp') ? '.webp' : originalName.replace(/.*\./, '.')
-  return `${prefix}_${timestamp}_${random}${extension}`
-}
-
-export async function uploadToR2(
-  file: File,
-  folder: 'articles' | 'thumbnails' = 'articles'
-): Promise<string> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Supabase環境変数が設定されていません')
-  }
-
-  const fileName = generateFileName(file.name, folder === 'thumbnails' ? 'thumb' : 'img')
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('folder', folder)
-  formData.append('fileName', fileName)
-
-  const response = await fetch(`${supabaseUrl}/functions/v1/upload-image`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${supabaseAnonKey}`,
-    },
-    body: formData,
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Upload failed' }))
-    throw new Error(error.message || '画像のアップロードに失敗しました')
-  }
-
-  const result = await response.json()
-  return result.url
+  const ext = '.webp'
+  return `${prefix}_${timestamp}_${random}${ext}`
 }
 
 export async function uploadImage(
@@ -82,7 +49,29 @@ export async function uploadImage(
   if (file.size > 10 * 1024 * 1024) {
     throw new Error('ファイルサイズは10MB以下にしてください')
   }
+
   const compressedFile = await compressImage(file, type)
-  const folder = type === 'thumbnail' ? 'thumbnails' : 'articles'
-  return uploadToR2(compressedFile, folder)
+
+  const supabase = createClient()
+  const bucket = type === 'thumbnail' ? 'thumbnails' : 'images'
+  const prefix = type === 'thumbnail' ? 'thumb' : 'img'
+  const fileName = generateFileName(compressedFile.name, prefix)
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(fileName, compressedFile, {
+      contentType: 'image/webp',
+      upsert: false,
+    })
+
+  if (error) {
+    console.error('Storage upload error:', error)
+    throw new Error('画像のアップロードに失敗しました: ' + error.message)
+  }
+
+  const { data: urlData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(data.path)
+
+  return urlData.publicUrl
 }
