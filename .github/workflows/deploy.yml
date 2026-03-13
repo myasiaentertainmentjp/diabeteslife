@@ -13,17 +13,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-
-      - name: Add host to known_hosts
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p 2222 -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy
-        env:
-          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -e ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          ssh -p 2222 -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "cd /var/www/diabeteslife && git fetch origin && git reset --hard origin/main && npm install && rm -rf .next && npm run build && pm2 restart dlife-nextjs || pm2 start ecosystem.config.js && pm2 save && echo Deploy complete"
