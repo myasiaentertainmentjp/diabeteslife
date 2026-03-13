@@ -377,7 +377,7 @@ export function ThreadDetailClient({
                     width={800}
                     height={600}
                     className="max-w-full max-h-96 object-contain rounded-lg border border-gray-200 cursor-pointer"
-                    onClick={() => setImageModal(thread.image_url)}
+                    onClick={() => setImageModal(thread.image_url ?? null)}
                   />
                 </div>
               )}
