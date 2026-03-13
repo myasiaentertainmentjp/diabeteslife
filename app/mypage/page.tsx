@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -507,7 +508,7 @@ export default function MyPage() {
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-rose-100 overflow-hidden flex items-center justify-center border-2 border-rose-200">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="アバター" className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt="アバター" fill sizes="96px" className="object-cover" />
                 ) : (
                   <User size={36} className="text-rose-400" />
                 )}
