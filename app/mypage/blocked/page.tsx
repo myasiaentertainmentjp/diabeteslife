@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -175,11 +176,7 @@ export default function BlockedUsersPage() {
                     className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden"
                   >
                     {block.blocked_user?.avatar_url ? (
-                      <img
-                        src={block.blocked_user.avatar_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                      <Image src={block.blocked_user.avatar_url} alt="" fill sizes="40px" className="object-cover" />
                     ) : (
                       <User size={20} className="text-rose-400" />
                     )}
