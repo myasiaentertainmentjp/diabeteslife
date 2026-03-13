@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
@@ -370,11 +371,13 @@ export function ThreadDetailClient({
               <div className="pl-4 text-gray-900 whitespace-pre-wrap leading-relaxed">{threadContent}</div>
               {thread.image_url && (
                 <div className="mt-4 pl-4">
-                  <img
+                  <Image
                     src={thread.image_url}
                     alt="投稿画像"
-                    className="max-w-full max-h-96 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-90"
-                    onClick={() => setImageModal(thread.image_url!)}
+                    width={800}
+                    height={600}
+                    className="max-w-full max-h-96 object-contain rounded-lg border border-gray-200 cursor-pointer"
+                    onClick={() => setImageModal(thread.image_url)}
                   />
                 </div>
               )}
@@ -419,11 +422,13 @@ export function ThreadDetailClient({
                         {renderCommentWithAnchors(comment.body || comment.content || '', comments.length + 1)}
                         {comment.image_url && (
                           <div className="mt-2">
-                            <img
+                            <Image
                               src={comment.image_url}
                               alt="添付画像"
-                              className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90"
-                              onClick={() => setImageModal(comment.image_url!)}
+                              width={300}
+                              height={200}
+                              className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setImageModal(comment.image_url)}
                             />
                           </div>
                         )}
