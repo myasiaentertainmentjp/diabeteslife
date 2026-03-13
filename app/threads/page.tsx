@@ -3,12 +3,19 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { ThreadListClient } from '@/components/ThreadListClient'
 
 export const metadata: Metadata = {
-  title: 'トピック一覧',
-  description: '糖尿病患者とその家族のためのコミュニティ。食事、治療、運動、メンタルケアなど、様々なカテゴリでトピックを探せます。',
+  title: '掲示板・トピック一覧',
+  description: '糖尿病患者・ご家族が集まる掲示板。食事・治療・運動・メンタルケアなどカテゴリ別にトピックを探したり、自分でトピックを立てることができます。',
   openGraph: {
-    title: 'トピック一覧 | Dライフ',
-    description: '糖尿病患者とその家族のためのコミュニティ。食事、治療、運動、メンタルケアなど、様々なカテゴリでトピックを探せます。',
+    title: '掲示板・トピック一覧 | Dライフ',
+    description: '糖尿病患者・ご家族が集まる掲示板。食事・治療・運動・メンタルケアなどカテゴリ別にトピックを探せます。',
     type: 'website',
+    siteName: 'Dライフ',
+    images: [{ url: '/images/ogp.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '掲示板・トピック一覧 | Dライフ',
+    description: '糖尿病患者・ご家族が集まる掲示板。',
   },
 }
 
