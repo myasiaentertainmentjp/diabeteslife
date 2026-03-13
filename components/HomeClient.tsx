@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { MessageSquare, PenSquare, ChevronRight, FileText } from 'lucide-react'
@@ -234,13 +235,12 @@ export function HomeClient({
                       className="flex items-start gap-3 group"
                     >
                       {article.thumbnail_url ? (
-                        <img
+                        <Image
                           src={article.thumbnail_url}
                           alt={article.title}
+                          width={80}
+                          height={80}
                           className="w-20 object-cover rounded shrink-0"
-                          style={{ aspectRatio: '1.91 / 1' }}
-                          loading="eager"
-                          fetchPriority="high"
                         />
                       ) : (
                         <div
