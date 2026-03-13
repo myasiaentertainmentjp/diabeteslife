@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
@@ -51,7 +51,13 @@ export function HomeClient({
   initialFeaturedArticles,
 }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
+  const [mounted, setMounted] = useState(false)
   const { user } = useAuth()
+
+  // ハイドレーション後にのみクライアント状態を使う
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const currentThreads = activeTab === 'popular' ? initialPopularThreads : initialNewThreads
 
@@ -133,8 +139,9 @@ export function HomeClient({
                             </h3>
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-sm text-gray-500">
-                            <span className="hidden sm:inline">
-                              {formatDate(thread.created_at)}
+                            {/* suppressHydrationWarning: new Date() はSSRとクライアントで値が異なるため */}
+                            <span className="hidden sm:inline" suppressHydrationWarning>
+                              {mounted ? formatDate(thread.created_at) : ''}
                             </span>
                           </div>
                         </div>
@@ -159,8 +166,8 @@ export function HomeClient({
 
           {/* Right Column - Sidebar */}
           <div className="lg:w-80 space-y-6">
-            {/* Post Button */}
-            {user ? (
+            {/* Post Button - mountedになってから user を参照してハイドレーションエラーを防ぐ */}
+            {mounted && user ? (
               <Link
                 href="/threads/new"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium shadow-sm"
