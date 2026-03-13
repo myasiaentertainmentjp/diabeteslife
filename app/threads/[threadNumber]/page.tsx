@@ -16,12 +16,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { data: thread } = isNumeric
     ? await supabase
         .from('threads')
-        .select('title, content')
+        .select('title, body')
         .eq('thread_number', parseInt(threadNumber, 10))
         .single()
     : await supabase
         .from('threads')
-        .select('title, content')
+        .select('title, body')
         .eq('id', threadNumber)
         .single()
 
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // HTMLタグ除去・改行正規化して120文字
-  const description = (thread.content || '')
+  const description = (thread.body || '')
     .replace(/<[^>]+>/g, '')
     .replace(/\s+/g, ' ')
     .trim()
