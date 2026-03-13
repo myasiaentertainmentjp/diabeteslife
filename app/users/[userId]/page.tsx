@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -534,11 +535,7 @@ export default function UserProfilePage() {
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
             {userData.avatar_url ? (
-              <img
-                src={userData.avatar_url}
-                alt={userData.display_name || 'ユーザー'}
-                className="w-full h-full object-cover"
-              />
+              <Image src={userData.avatar_url} alt={userData.display_name || 'ユーザー'} fill sizes="96px" className="object-cover" />
             ) : (
               <User size={32} className="text-rose-500" />
             )}
