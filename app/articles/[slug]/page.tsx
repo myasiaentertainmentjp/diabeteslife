@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, excerpt, thumbnail_url')
+    .select('title, excerpt, content, thumbnail_url')
     .eq('slug', slug)
     .eq('is_published', true)
     .single()
@@ -29,12 +29,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  // excerpt未入力の場合は本文HTMLからプレーンテキストを抽出して120文字
+  const description = article.excerpt ||
+    (article.content
+      ? article.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
+      : article.title)
+
   return {
     title: article.title,
-    description: article.excerpt || `${article.title}についての記事`,
+    description,
     openGraph: {
       title: article.title,
-      description: article.excerpt || undefined,
+      description,
       images: article.thumbnail_url ? [article.thumbnail_url] : undefined,
     },
   }
