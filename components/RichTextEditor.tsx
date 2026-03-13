@@ -44,9 +44,11 @@ export function RichTextEditor({
   onImageUpload,
 }: RichTextEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        // link と underline は個別に追加するため除外
       }),
       Link.configure({
         openOnClick: false,
