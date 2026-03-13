@@ -1,19 +1,10 @@
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '使い方ガイド',
-  description: 'Dライフの使い方をご紹介します。アカウント登録、プロフィール設定、トピックへの参加方法など、はじめての方向けのガイドです。',
-  openGraph: {
-    title: '使い方ガイド | Dライフ',
-    description: 'Dライフの使い方をご紹介します。アカウント登録、プロフィール設定、トピックへの参加方法など。',
-    type: 'website',
-  },
+  title: 'Dライフの使い方・ガイド',
+  description: 'Dライフの使い方をわかりやすく解説。掲示板への投稿、日記の書き方、HbA1cや食事の記録方法など、各機能の利用ガイドをまとめています。',
 }
 
-export default function GuideLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return children
+export default function GuideLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
