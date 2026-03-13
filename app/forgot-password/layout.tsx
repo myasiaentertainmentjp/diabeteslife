@@ -1,23 +1,11 @@
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'パスワードリセット',
-  description: 'パスワードをお忘れの方はこちらからリセットできます。登録したメールアドレスを入力してください。',
-  openGraph: {
-    title: 'パスワードリセット | Dライフ',
-    description: 'パスワードをお忘れの方はこちらからリセットできます。',
-    type: 'website',
-  },
-  robots: {
-    index: false,
-    follow: true,
-  },
+  title: 'パスワードをお忘れの方',
+  description: 'Dライフのパスワード再設定ページ。登録済みのメールアドレスに再設定リンクをお送りします。',
+  robots: { index: false, follow: false },
 }
 
-export default function ForgotPasswordLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return children
+export default function ForgotPasswordLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
