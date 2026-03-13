@@ -35,11 +35,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? article.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
       : article.title)
 
+  const fullTitle = `${article.title} | Dライフ`
+
   return {
     title: article.title,
     description,
     openGraph: {
-      title: article.title,
+      title: fullTitle,
+      description,
+      type: 'article',
+      siteName: 'Dライフ',
+      images: article.thumbnail_url
+        ? [{ url: article.thumbnail_url, width: 1280, height: 670, alt: article.title }]
+        : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
       description,
       images: article.thumbnail_url ? [article.thumbnail_url] : undefined,
     },
