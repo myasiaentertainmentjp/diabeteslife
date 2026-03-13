@@ -46,8 +46,11 @@ export function RichTextEditor({
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (StarterKit as any).configure({
         heading: { levels: [1, 2, 3] },
+        link: false,
+        underline: false,
       }),
       Link.configure({
         openOnClick: false,
