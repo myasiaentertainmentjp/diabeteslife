@@ -270,11 +270,12 @@ export function Sidebar({
                   className="flex items-start gap-3 group"
                 >
                   {article.thumbnail_url ? (
-                    <img
+                    <Image
                       src={article.thumbnail_url}
                       alt={article.title}
+                      width={80}
+                      height={80}
                       className="w-20 object-cover rounded shrink-0"
-                      style={{ aspectRatio: '1.91 / 1' }}
                     />
                   ) : (
                     <div className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center" style={{ aspectRatio: '1.91 / 1' }}>
