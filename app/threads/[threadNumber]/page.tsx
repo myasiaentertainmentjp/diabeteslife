@@ -29,18 +29,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'トピックが見つかりません' }
   }
 
-  const description = (thread.content || '').substring(0, 150)
+  // HTMLタグ除去・改行正規化して120文字
+  const description = (thread.content || '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120)
+
+  const title = `${thread.title} | Dライフ掲示板`
 
   return {
-    title: thread.title,
+    title,
     description,
     openGraph: {
-      title: thread.title,
+      title,
       description,
       type: 'article',
+      siteName: 'Dライフ',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
     },
   }
 }
+
+export const revalidate = 60
 
 export default async function ThreadDetailPage({ params }: PageProps) {
   const { threadNumber } = await params
