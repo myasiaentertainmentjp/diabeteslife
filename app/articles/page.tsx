@@ -5,8 +5,8 @@ import { FileText, Calendar, ChevronRight, Tag } from 'lucide-react'
 
 
 export const metadata = {
-  title: '記事一覧',
-  description: '糖尿病に関する役立つ情報や知識をお届けします。',
+  title: '糖尿病の記事・コラム一覧',
+  description: '糖尿病の食事・治療・運動・メンタルケアなど、専門的な知識と患者さんの視点で役立つ情報をお届けします。カテゴリ別に記事を探せます。',
 }
 
 export const revalidate = 60
