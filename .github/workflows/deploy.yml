@@ -23,5 +23,14 @@ jobs:
 
       - name: Deploy
         run: |
-          ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /var/www/diabeteslife && git fetch origin && git reset --hard origin/main && npm install && rm -rf .next && npm run build && pm2 restart dlife-nextjs || pm2 start ecosystem.config.js && pm2 save && echo Deploy complete"
+          ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'ENDSSH'
+            set -e
+            cd /var/www/diabeteslife
+            git fetch origin
+            git reset --hard origin/main
+            npm install
+            npm run build
+            pm2 restart dlife-nextjs || pm2 start ecosystem.config.js
+            pm2 save
+            echo "Deploy complete"
+          ENDSSH
