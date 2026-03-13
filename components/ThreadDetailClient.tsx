@@ -428,7 +428,7 @@ export function ThreadDetailClient({
                               width={300}
                               height={200}
                               className="max-w-xs max-h-48 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => setImageModal(comment.image_url)}
+                              onClick={() => setImageModal(comment.image_url ?? null)}
                             />
                           </div>
                         )}
@@ -497,8 +497,8 @@ export function ThreadDetailClient({
       )}
 
       {imageModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setImageModal(null)}>
-          <button className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300" onClick={() => setImageModal(null)}>×</button>
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setImageModal(null ?? null)}>
+          <button className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300" onClick={() => setImageModal(null ?? null)}>×</button>
           <img src={imageModal} alt="拡大画像" className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
