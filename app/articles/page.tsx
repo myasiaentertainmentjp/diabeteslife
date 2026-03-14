@@ -108,7 +108,9 @@ export default async function ArticlesPage({ searchParams }: Props) {
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
-                  />
+                  
+                  unoptimized
+                />
                 </div>
               )}
               <div className="p-4">
