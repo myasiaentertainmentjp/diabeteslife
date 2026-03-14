@@ -222,7 +222,7 @@ export function ThreadDetailClient({
   }
 
   function renderCommentWithAnchors(text: string, totalComments: number) {
-    const anchorRegex = />>(\\d+)(?:-(\\d+))?/g
+    const anchorRegex = />>(\d+)(?:-(\d+))?/g
     const parts: (string | JSX.Element)[] = []
     let lastIndex = 0
     let match
