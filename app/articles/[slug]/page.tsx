@@ -190,6 +190,7 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
               sizes="(max-width: 768px) 100vw, 896px"
               className="object-cover"
               priority
+              unoptimized
             />
           </div>
         )}
