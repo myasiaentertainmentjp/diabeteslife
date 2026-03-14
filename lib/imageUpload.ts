@@ -5,16 +5,14 @@ const COMPRESSION_OPTIONS = {
   maxSizeMB: 0.5,
   maxWidthOrHeight: 1200,
   useWebWorker: true,
-  fileType: 'image/webp' as const,
-  initialQuality: 0.75,
+  initialQuality: 0.82,
 }
 
 const THUMBNAIL_OPTIONS = {
   maxSizeMB: 0.3,
   maxWidthOrHeight: 1280,
   useWebWorker: true,
-  fileType: 'image/webp' as const,
-  initialQuality: 0.72,
+  initialQuality: 0.82,
 }
 
 export async function compressImage(
@@ -24,8 +22,8 @@ export async function compressImage(
   const options = type === 'thumbnail' ? THUMBNAIL_OPTIONS : COMPRESSION_OPTIONS
   try {
     const compressedFile = await imageCompression(file, options)
-    const newFileName = file.name.replace(/\.[^/.]+$/, '.webp')
-    return new File([compressedFile], newFileName, { type: 'image/webp' })
+    // 元のファイル形式を維持（WebPへの強制変換なし）
+    return new File([compressedFile], file.name, { type: file.type })
   } catch (error) {
     console.error('Image compression failed:', error)
     throw new Error('画像の圧縮に失敗しました')
@@ -35,7 +33,7 @@ export async function compressImage(
 function generateFileName(originalName: string, prefix: string = 'img'): string {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 8)
-  const ext = '.webp'
+  const ext = originalName.match(/\.[^.]+$/)?.[0] || '.jpg'
   return `${prefix}_${timestamp}_${random}${ext}`
 }
 
@@ -60,7 +58,7 @@ export async function uploadImage(
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(fileName, compressedFile, {
-      contentType: 'image/webp',
+      contentType: file.type,
       upsert: false,
     })
 
