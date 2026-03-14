@@ -112,6 +112,21 @@ export default function EditArticlePage() {
       return
     }
 
+    // キャッシュを即時リフレッシュ（サムネイル・記事内容を即反映）
+    try {
+      await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-revalidate-secret': 'dlife-revalidate-2025',
+        },
+        body: JSON.stringify({ slug: formData.slug.trim() }),
+      })
+    } catch (e) {
+      // revalidateに失敗しても保存は完了しているので続行
+      console.warn('Revalidate failed:', e)
+    }
+
     router.push('/admin/articles')
   }
 
