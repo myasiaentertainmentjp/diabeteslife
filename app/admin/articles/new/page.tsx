@@ -149,6 +149,20 @@ export default function NewArticlePage() {
       return
     }
 
+    // キャッシュを即時リフレッシュ
+    try {
+      await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-revalidate-secret': 'dlife-revalidate-2025',
+        },
+        body: JSON.stringify({ slug: formData.slug.trim() }),
+      })
+    } catch (e) {
+      console.warn('Revalidate failed:', e)
+    }
+
     router.push('/admin/articles')
   }
 
