@@ -276,6 +276,7 @@ export function Sidebar({
                       width={80}
                       height={80}
                       className="w-20 object-cover rounded shrink-0"
+                    unoptimized
                     />
                   ) : (
                     <div className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center" style={{ aspectRatio: '1.91 / 1' }}>
