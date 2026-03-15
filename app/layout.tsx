@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   },
   description: "糖尿病患者とその家族のためのコミュニティサイト。食事、治療、運動、メンタルケアなど、糖尿病に関する情報を共有できます。",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://diabeteslife.jp"),
+  manifest: "/manifest.json",
+  themeColor: "#f87171",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Dライフ",
+  },
   openGraph: {
     title: "D-LIFE | 糖尿病患者とその家族のためのコミュニティサイト",
     description: "糖尿病患者とその家族のためのコミュニティサイト。食事、治療、運動、メンタルケアなど、糖尿病に関する情報を共有できます。",

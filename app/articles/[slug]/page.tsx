@@ -37,14 +37,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const fullTitle = `${article.title} | Dライフ`
 
+  const canonicalUrl = `https://diabeteslife.jp/articles/${slug}`
+
   return {
     title: article.title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: fullTitle,
       description,
       type: 'article',
       siteName: 'Dライフ',
+      url: canonicalUrl,
       images: article.thumbnail_url
         ? [{ url: article.thumbnail_url, width: 1280, height: 670, alt: article.title }]
         : undefined,
