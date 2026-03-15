@@ -1,15 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createPublicServerClient } from '@/lib/supabase-server'
+import { ARTICLE_CATEGORY_LABELS } from '@/types/database'
 import { FileText, Calendar, ChevronRight, Tag } from 'lucide-react'
-
 
 export const metadata = {
   title: '糖尿病の記事・コラム一覧',
   description: '糖尿病の食事・治療・運動・メンタルケアなど、専門的な知識と患者さんの視点で役立つ情報をお届けします。カテゴリ別に記事を探せます。',
 }
 
-export const revalidate = 60
+// 記事一覧はログイン不要のためpublicクライアントを使用
+export const revalidate = 3600
 
 interface Props {
   searchParams: Promise<{ category?: string }>
@@ -17,9 +18,8 @@ interface Props {
 
 export default async function ArticlesPage({ searchParams }: Props) {
   const { category: selectedCategory } = await searchParams
-  const supabase = await createServerSupabaseClient()
+  const supabase = createPublicServerClient()
 
-  // まず全記事を取得してカテゴリ一覧を作成
   const { data: allArticles } = await supabase
     .from('articles')
     .select('id, slug, title, excerpt, category, thumbnail_url, published_at, created_at')
@@ -31,7 +31,6 @@ export default async function ArticlesPage({ searchParams }: Props) {
     new Set((allArticles || []).map((a) => a.category).filter(Boolean))
   )
 
-  // カテゴリでフィルター
   const articles = selectedCategory
     ? (allArticles || []).filter((a) => a.category === selectedCategory)
     : allArticles
@@ -93,7 +92,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
           <p className="text-gray-500">記事がありません</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {articles.map((article) => (
             <Link
               key={article.id}
@@ -108,9 +107,8 @@ export default async function ArticlesPage({ searchParams }: Props) {
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
-                  
-                  unoptimized
-                />
+                    loading="lazy"
+                  />
                 </div>
               )}
               <div className="p-4">
@@ -120,20 +118,19 @@ export default async function ArticlesPage({ searchParams }: Props) {
                     <span>{ARTICLE_CATEGORY_LABELS[article.category as keyof typeof ARTICLE_CATEGORY_LABELS] || article.category}</span>
                   </div>
                 )}
-                <h2 className="font-bold text-gray-900 line-clamp-2 mb-2">
-                  {article.title}
-                </h2>
+                <h2 className="font-bold text-gray-900 mb-2 line-clamp-2">{article.title}</h2>
                 {article.excerpt && (
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-                    {article.excerpt}
-                  </p>
+                  <p className="text-sm text-gray-500 line-clamp-2 mb-3">{article.excerpt}</p>
                 )}
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
                     <Calendar size={12} />
                     <span>{formatDate(article.published_at || article.created_at)}</span>
                   </div>
-                  <ChevronRight size={16} />
+                  <div className="flex items-center gap-1 text-xs text-rose-500">
+                    <span>続きを読む</span>
+                    <ChevronRight size={12} />
+                  </div>
                 </div>
               </div>
             </Link>
