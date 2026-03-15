@@ -366,7 +366,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                           {AGE_GROUP_OPTIONS.find(o => o.value === selectedPost.age_group)?.label}
                         </span>
                       )}
-                      <span className="text-xs text-gray-400">{formatDate(selectedPost.created_at)}</span>
+                      
                     </div>
                   </div>
                 </div>
