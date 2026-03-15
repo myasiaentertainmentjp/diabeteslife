@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build
         env:
@@ -43,16 +43,25 @@ jobs:
 
       - name: Sync files to VPS
         run: |
-          rsync -az --delete             -e "ssh -p 2222"             .next/             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/.next/
-          rsync -az             -e "ssh -p 2222"             public/             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/public/
-          rsync -az             -e "ssh -p 2222"             package.json package-lock.json             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/
+          rsync -az --delete \
+            -e "ssh -p 2222" \
+            .next/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/.next/
+          rsync -az \
+            -e "ssh -p 2222" \
+            public/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/public/
+          rsync -az \
+            -e "ssh -p 2222" \
+            package.json package-lock.json \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/diabeteslife/
 
       - name: Restart PM2
         run: |
           ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'ENDSSH'
             set -e
             cd /var/www/diabeteslife
-            npm ci --omit=dev
+            npm install --omit=dev
             pm2 restart dlife-nextjs || pm2 start ecosystem.config.js
             pm2 save
             echo "Deploy complete"
