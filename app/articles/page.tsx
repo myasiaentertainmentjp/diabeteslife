@@ -80,7 +80,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {category}
+              {ARTICLE_CATEGORY_LABELS[category as keyof typeof ARTICLE_CATEGORY_LABELS] || category}
             </Link>
           ))}
         </div>
@@ -117,7 +117,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 {article.category && (
                   <div className="flex items-center gap-1 text-xs text-rose-500 mb-2">
                     <Tag size={12} />
-                    <span>{article.category}</span>
+                    <span>{ARTICLE_CATEGORY_LABELS[article.category as keyof typeof ARTICLE_CATEGORY_LABELS] || article.category}</span>
                   </div>
                 )}
                 <h2 className="font-bold text-gray-900 line-clamp-2 mb-2">
