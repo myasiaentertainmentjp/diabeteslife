@@ -71,6 +71,7 @@ export default function MealsNewPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!user) { router.push('/login'); return }
     if (!imageFile) { setError('写真を選択してください'); return }
     setSubmitting(true)
     setError('')
