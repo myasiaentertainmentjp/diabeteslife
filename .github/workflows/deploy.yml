@@ -62,8 +62,6 @@ jobs:
           ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'ENDSSH'
             set -e
             cd /var/www/diabeteslife
-            npm install --omit=dev
             pm2 restart dlife-nextjs || pm2 start ecosystem.config.js
-            pm2 save
             echo "Deploy complete"
           ENDSSH
