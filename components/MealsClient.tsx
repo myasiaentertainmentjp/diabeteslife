@@ -73,7 +73,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       .eq('user_id', user.id)
       .in('meal_post_id', postIds)
       .then(({ data }) => {
-        setLikedIds(new Set((data || []).map((l: any) => l.meal_post_id)))
+        setLikedIds(new Set((data || []).map((l: { meal_post_id: string }) => l.meal_post_id)))
       })
   }, [user, posts.length])
 
@@ -96,7 +96,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
     const isLiked = likedIds.has(postId)
     setLikedIds(prev => {
       const next = new Set(prev)
-      isLiked ? next.delete(postId) : next.add(postId)
+      if (isLiked) { next.delete(postId) } else { next.add(postId) }
       return next
     })
     setPosts(prev => prev.map(p =>
@@ -119,10 +119,10 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       .order('created_at', { ascending: true })
 
     if (data && data.length > 0) {
-      const userIds = [...new Set(data.map((c: any) => c.user_id))]
+      const userIds = [...new Set(data.map((c: { user_id: string }) => c.user_id))]
       const { data: users } = await supabase.from('users').select('id, display_name').in('id', userIds)
-      const usersMap = Object.fromEntries((users || []).map((u: any) => [u.id, u.display_name || 'ユーザー']))
-      setComments(data.map((c: any) => ({ ...c, display_name: usersMap[c.user_id] || 'ユーザー' })))
+      const usersMap = Object.fromEntries((users || []).map((u: { id: string; display_name: string | null }) => [u.id, u.display_name || 'ユーザー']))
+      setComments(data.map((c: { id: string; body: string; created_at: string; user_id: string }) => ({ ...c, display_name: usersMap[c.user_id] || 'ユーザー' })))
     } else {
       setComments([])
     }
@@ -139,7 +139,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       .select('id, body, created_at, user_id')
       .single()
     if (data) {
-      setComments(prev => [...prev, { ...(data as any), display_name: 'あなた' }])
+      setComments(prev => [...prev, { id: (data as { id: string; body: string; created_at: string; user_id: string }).id, body: commentBody.trim(), created_at: new Date().toISOString(), user_id: user.id, display_name: 'あなた' }])
       setPosts(prev => prev.map(p =>
         p.id === selectedPost.id ? { ...p, comments_count: p.comments_count + 1 } : p
       ))
