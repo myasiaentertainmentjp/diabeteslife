@@ -89,7 +89,7 @@ export default function MealsNewPage() {
       })
       if (insertError) throw insertError
       router.push('/meals')
-    } catch (err) {
+    } catch {
       setError('投稿に失敗しました。もう一度お試しください。')
       setSubmitting(false)
     }
