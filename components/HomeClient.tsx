@@ -28,11 +28,19 @@ interface Article {
   created_at: string
 }
 
+interface MealPost {
+  id: string
+  image_url: string
+  caption: string | null
+  likes_count: number
+}
+
 interface HomeClientProps {
   initialPopularThreads: Thread[]
   initialNewThreads: Thread[]
   initialWeeklyPopularThreads: Thread[]
   initialFeaturedArticles: Article[]
+  initialFeaturedMeals: MealPost[]
 }
 
 const categories: ThreadCategory[] = [
@@ -50,6 +58,7 @@ export function HomeClient({
   initialNewThreads,
   initialWeeklyPopularThreads,
   initialFeaturedArticles,
+  initialFeaturedMeals,
 }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
   const [mounted, setMounted] = useState(false)
@@ -215,6 +224,45 @@ export function HomeClient({
                 </ul>
               )}
             </div>
+
+            {/* 食事の記録 */}
+            {initialFeaturedMeals.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="font-bold text-gray-800">みんなの食事記録</h2>
+                  <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600">
+                    もっと見る →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-3 gap-0.5 p-0.5">
+                  {initialFeaturedMeals.map((meal) => (
+                    <Link
+                      key={meal.id}
+                      href="/meals"
+                      className="relative aspect-square bg-gray-100 overflow-hidden group"
+                    >
+                      <Image
+                        src={meal.image_url}
+                        alt={meal.caption || '食事の記録'}
+                        fill
+                        sizes="(max-width: 768px) 33vw, 120px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                      />
+                    </Link>
+                  ))}
+                </div>
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <Link
+                    href="/meals"
+                    className="flex items-center gap-1 text-rose-500 hover:text-rose-600 text-sm font-medium"
+                  >
+                    <span>食事の記録を見る</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Recommended Articles */}
             <div className="bg-white rounded-lg shadow-sm">
