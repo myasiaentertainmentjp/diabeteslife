@@ -29,18 +29,7 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             npm install
-
-            # 他サイトを一時停止してメモリを確保
-            pm2 stop akabuy-main || true
-            pm2 stop graymall-nextjs || true
-
-            export NODE_OPTIONS="--max-old-space-size=1536"
             npm run build
-
-            # 他サイトを再起動
-            pm2 start akabuy-main || true
-            pm2 start graymall-nextjs || true
-
             pm2 restart dlife-nextjs || pm2 start ecosystem.config.js
             pm2 save
             echo "Deploy complete"
