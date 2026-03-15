@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
 import {
@@ -67,7 +66,6 @@ const STEPS = [
 
 export function OnboardingModal() {
   const { user } = useAuth()
-  const router = useRouter()
   const supabase = createClient()
 
   const [show, setShow] = useState(false)
