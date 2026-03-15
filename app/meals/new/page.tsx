@@ -76,7 +76,7 @@ export default function MealsNewPage() {
     setError('')
 
     try {
-      const imageUrl = await uploadImage(imageFile, 'meal-photos')
+      const imageUrl = await uploadImage(imageFile, 'content')
       const { error: insertError } = await supabase.from('meal_posts').insert({
         user_id: user.id,
         image_url: imageUrl,
