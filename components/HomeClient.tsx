@@ -129,7 +129,7 @@ export function HomeClient({
 
             {/* 食事の記録 - 横スクロール */}
             {initialFeaturedMeals.length > 0 && (
-              <div className="mt-4 mb-2">
+              <div className="mt-4 mb-3 px-1">
                 <div className="flex items-center justify-between mb-2 px-1">
                   <h2 className="font-bold text-gray-800 text-sm">📸 みんなの食事記録</h2>
                   <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600 font-medium">
@@ -141,7 +141,7 @@ export function HomeClient({
                     <Link
                       key={meal.id}
                       href="/meals"
-                      className="relative flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden group"
+                      className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
                     >
                       <Image
                         src={meal.image_url}
@@ -156,7 +156,7 @@ export function HomeClient({
                   {/* もっと見るボタン */}
                   <Link
                     href="/meals"
-                    className="flex-shrink-0 w-24 h-24 bg-rose-50 rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-rose-100 transition-colors border border-rose-200"
+                    className="flex-shrink-0 w-28 h-28 bg-rose-50 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-rose-100 transition-colors border border-rose-200"
                   >
                     <span className="text-rose-500 text-xs font-medium text-center leading-tight">もっと<br />見る</span>
                     <ChevronRight size={14} className="text-rose-500" />
