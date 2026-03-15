@@ -24,23 +24,28 @@ export default function MealsNewPage() {
   const [isPublic, setIsPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  // プロフィールから自動取得
-  const [diabetesType, setDiabetesType] = useState<string | null>(null)
-  const [ageGroup, setAgeGroup] = useState<string | null>(null)
+  const [userProfile, setUserProfile] = useState<{ diabetes_type: string | null; age_group: string | null } | null>(null)
 
   useEffect(() => {
     if (!user) return
-    // プロフィールから diabetes_type と age_group を自動取得
+    // プロフィールから糖尿病種別・年代を自動取得
     supabase
-      .from('user_profiles')
-      .select('diabetes_type, age_group')
-      .eq('user_id', user.id)
+      .from('users')
+      .select('diabetes_type')
+      .eq('id', user.id)
       .single()
-      .then(({ data }) => {
-        if (data) {
-          setDiabetesType(data.diabetes_type || null)
-          setAgeGroup(data.age_group || null)
-        }
+      .then(({ data: userData }) => {
+        supabase
+          .from('user_profiles')
+          .select('age_group')
+          .eq('user_id', user.id)
+          .single()
+          .then(({ data: profileData }) => {
+            setUserProfile({
+              diabetes_type: userData?.diabetes_type || null,
+              age_group: profileData?.age_group || null,
+            })
+          })
       })
   }, [user])
 
@@ -69,6 +74,7 @@ export default function MealsNewPage() {
     if (!imageFile) { setError('写真を選択してください'); return }
     setSubmitting(true)
     setError('')
+
     try {
       const imageUrl = await uploadImage(imageFile, 'meal-photos')
       const { error: insertError } = await supabase.from('meal_posts').insert({
@@ -76,14 +82,14 @@ export default function MealsNewPage() {
         image_url: imageUrl,
         caption: caption.trim() || null,
         tags: selectedTags,
+        diabetes_type: userProfile?.diabetes_type || null,  // プロフィールから自動セット
+        age_group: userProfile?.age_group || null,           // プロフィールから自動セット
         blood_sugar_after: bloodSugar ? parseInt(bloodSugar) : null,
         is_public: isPublic,
-        diabetes_type: diabetesType,   // プロフィールから自動セット
-        age_group: ageGroup,           // プロフィールから自動セット
       })
       if (insertError) throw insertError
       router.push('/meals')
-    } catch {
+    } catch (err) {
       setError('投稿に失敗しました。もう一度お試しください。')
       setSubmitting(false)
     }
@@ -96,21 +102,19 @@ export default function MealsNewPage() {
         <span>食事の記録に戻る</span>
       </Link>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">食事を投稿する</h1>
-
-      {/* プロフィール属性の自動設定を表示 */}
-      {(diabetesType || ageGroup) && (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-5 text-sm text-blue-700">
-          プロフィールから自動設定されます：
-          {diabetesType && <span className="ml-1 font-medium">{diabetesType === 'type1' ? '1型糖尿病' : diabetesType === 'type2' ? '2型糖尿病' : diabetesType}</span>}
-          {ageGroup && <span className="ml-1 font-medium">{ageGroup.replace('s', '代').replace('_plus', '代以上')}</span>}
-        </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">食事を投稿する</h1>
+      {userProfile?.diabetes_type && (
+        <p className="text-xs text-gray-400 mb-6">
+          プロフィールの情報（糖尿病種別・年代）が自動で付与されます
+        </p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* 画像選択 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">写真 <span className="text-rose-500">*</span></label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            写真 <span className="text-rose-500">*</span>
+          </label>
           {imagePreview ? (
             <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
               <Image src={imagePreview} alt="プレビュー" fill className="object-cover" />
@@ -139,7 +143,7 @@ export default function MealsNewPage() {
             onChange={e => setCaption(e.target.value)}
             rows={3}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none resize-none text-sm"
-            placeholder="今日のランチ。低糖質を意識して野菜多めにしました！"
+            placeholder="今日のランチ。野菜多めにしました！"
           />
         </div>
 
@@ -153,7 +157,9 @@ export default function MealsNewPage() {
                 type="button"
                 onClick={() => toggleTag(tag)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedTags.includes(tag) ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  selectedTags.includes(tag)
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 #{tag}
@@ -169,7 +175,7 @@ export default function MealsNewPage() {
             type="number"
             value={bloodSugar}
             onChange={e => setBloodSugar(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 outline-none text-sm"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none text-sm"
             placeholder="例: 145"
             min="50"
             max="600"
@@ -187,7 +193,7 @@ export default function MealsNewPage() {
             onClick={() => setIsPublic(!isPublic)}
             className={`w-12 h-6 rounded-full transition-colors relative ${isPublic ? 'bg-rose-500' : 'bg-gray-300'}`}
           >
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'left-7' : 'left-1'}`} />
+            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-7' : 'translate-x-1'}`} />
           </button>
         </div>
 
