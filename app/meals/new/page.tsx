@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -24,6 +24,25 @@ export default function MealsNewPage() {
   const [isPublic, setIsPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  // プロフィールから自動取得
+  const [diabetesType, setDiabetesType] = useState<string | null>(null)
+  const [ageGroup, setAgeGroup] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    // プロフィールから diabetes_type と age_group を自動取得
+    supabase
+      .from('user_profiles')
+      .select('diabetes_type, age_group')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setDiabetesType(data.diabetes_type || null)
+          setAgeGroup(data.age_group || null)
+        }
+      })
+  }, [user])
 
   if (!user) {
     router.push('/login?redirect=/meals/new')
@@ -50,7 +69,6 @@ export default function MealsNewPage() {
     if (!imageFile) { setError('写真を選択してください'); return }
     setSubmitting(true)
     setError('')
-
     try {
       const imageUrl = await uploadImage(imageFile, 'meal-photos')
       const { error: insertError } = await supabase.from('meal_posts').insert({
@@ -60,10 +78,12 @@ export default function MealsNewPage() {
         tags: selectedTags,
         blood_sugar_after: bloodSugar ? parseInt(bloodSugar) : null,
         is_public: isPublic,
+        diabetes_type: diabetesType,   // プロフィールから自動セット
+        age_group: ageGroup,           // プロフィールから自動セット
       })
       if (insertError) throw insertError
       router.push('/meals')
-    } catch (err) {
+    } catch {
       setError('投稿に失敗しました。もう一度お試しください。')
       setSubmitting(false)
     }
@@ -77,6 +97,15 @@ export default function MealsNewPage() {
       </Link>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-6">食事を投稿する</h1>
+
+      {/* プロフィール属性の自動設定を表示 */}
+      {(diabetesType || ageGroup) && (
+        <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-5 text-sm text-blue-700">
+          プロフィールから自動設定されます：
+          {diabetesType && <span className="ml-1 font-medium">{diabetesType === 'type1' ? '1型糖尿病' : diabetesType === 'type2' ? '2型糖尿病' : diabetesType}</span>}
+          {ageGroup && <span className="ml-1 font-medium">{ageGroup.replace('s', '代').replace('_plus', '代以上')}</span>}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* 画像選択 */}
@@ -124,9 +153,7 @@ export default function MealsNewPage() {
                 type="button"
                 onClick={() => toggleTag(tag)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedTags.includes(tag)
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  selectedTags.includes(tag) ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 #{tag}
@@ -142,7 +169,7 @@ export default function MealsNewPage() {
             type="number"
             value={bloodSugar}
             onChange={e => setBloodSugar(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none text-sm"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 outline-none text-sm"
             placeholder="例: 145"
             min="50"
             max="600"
