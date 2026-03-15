@@ -3,12 +3,32 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed } from 'lucide-react'
+import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, SlidersHorizontal } from 'lucide-react'
 
+// タグ
 const TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
+
+// 糖尿病種別
+const DIABETES_TYPES = [
+  { value: 'type1', label: '1型' },
+  { value: 'type2', label: '2型' },
+  { value: 'prediabetes', label: '予備群' },
+  { value: 'gestational', label: '妊娠性' },
+  { value: 'family', label: '家族' },
+]
+
+// 年代
+const AGE_GROUPS = [
+  { value: '20s', label: '20代' },
+  { value: '30s', label: '30代' },
+  { value: '40s', label: '40代' },
+  { value: '50s', label: '50代' },
+  { value: '60s', label: '60代' },
+  { value: '70s_plus', label: '70代以上' },
+]
 
 interface MealPost {
   id: string
@@ -21,14 +41,23 @@ interface MealPost {
   comments_count: number
   created_at: string
   display_name: string
+  diabetes_type: string | null
+  age_group: string | null
 }
 
 interface MealsClientProps {
   initialPosts: MealPost[]
   selectedTag?: string
+  selectedDiabetesType?: string
+  selectedAgeGroup?: string
 }
 
-export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
+export function MealsClient({
+  initialPosts,
+  selectedTag,
+  selectedDiabetesType,
+  selectedAgeGroup,
+}: MealsClientProps) {
   const { user } = useAuth()
   const router = useRouter()
   const supabase = createClient()
@@ -40,8 +69,11 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
   const [commentBody, setCommentBody] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [loadingComments, setLoadingComments] = useState(false)
+  const [showFilter, setShowFilter] = useState(false)
 
-  // 自分のいいね状態を取得
+  // フィルターが1つでも適用されているか
+  const hasFilter = !!(selectedTag || selectedDiabetesType || selectedAgeGroup)
+
   useEffect(() => {
     if (!user || posts.length === 0) return
     const postIds = posts.map(p => p.id)
@@ -51,29 +83,52 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
       .eq('user_id', user.id)
       .in('meal_post_id', postIds)
       .then(({ data }) => {
-        setLikedIds(new Set((data || []).map(l => l.meal_post_id)))
+        setLikedIds(new Set((data || []).map((l: any) => l.meal_post_id)))
       })
   }, [user, posts.length])
+
+  function buildUrl(params: { tag?: string; diabetesType?: string; ageGroup?: string }) {
+    const p = new URLSearchParams()
+    if (params.tag) p.set('tag', params.tag)
+    if (params.diabetesType) p.set('diabetes_type', params.diabetesType)
+    if (params.ageGroup) p.set('age_group', params.ageGroup)
+    const qs = p.toString()
+    return `/meals${qs ? `?${qs}` : ''}`
+  }
+
+  function handleTagFilter(tag: string) {
+    const newTag = selectedTag === tag ? undefined : tag
+    router.push(buildUrl({ tag: newTag, diabetesType: selectedDiabetesType, ageGroup: selectedAgeGroup }))
+  }
+
+  function handleDiabetesFilter(type: string) {
+    const newType = selectedDiabetesType === type ? undefined : type
+    router.push(buildUrl({ tag: selectedTag, diabetesType: newType, ageGroup: selectedAgeGroup }))
+  }
+
+  function handleAgeFilter(age: string) {
+    const newAge = selectedAgeGroup === age ? undefined : age
+    router.push(buildUrl({ tag: selectedTag, diabetesType: selectedDiabetesType, ageGroup: newAge }))
+  }
+
+  function clearFilters() {
+    router.push('/meals')
+    setShowFilter(false)
+  }
 
   async function handleLike(postId: string) {
     if (!user) { router.push('/login'); return }
     const isLiked = likedIds.has(postId)
-
-    // オプティミスティック更新
     setLikedIds(prev => {
       const next = new Set(prev)
       isLiked ? next.delete(postId) : next.add(postId)
       return next
     })
     setPosts(prev => prev.map(p =>
-      p.id === postId
-        ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
-        : p
+      p.id === postId ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) } : p
     ))
-
     if (isLiked) {
-      await supabase.from('meal_likes').delete()
-        .eq('meal_post_id', postId).eq('user_id', user.id)
+      await supabase.from('meal_likes').delete().eq('meal_post_id', postId).eq('user_id', user.id)
     } else {
       await supabase.from('meal_likes').insert({ meal_post_id: postId, user_id: user.id })
     }
@@ -89,11 +144,11 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
       .order('created_at', { ascending: true })
 
     if (data && data.length > 0) {
-      const userIds = [...new Set(data.map(c => c.user_id))]
+      const userIds = [...new Set(data.map((c: any) => c.user_id))]
       const { data: users } = await supabase
         .from('users').select('id, display_name').in('id', userIds)
-      const usersMap = Object.fromEntries((users || []).map(u => [u.id, u.display_name || 'ユーザー']))
-      setComments(data.map(c => ({ ...c, display_name: usersMap[c.user_id] || 'ユーザー' })))
+      const usersMap = Object.fromEntries((users || []).map((u: any) => [u.id, u.display_name || 'ユーザー']))
+      setComments(data.map((c: any) => ({ ...c, display_name: usersMap[c.user_id] || 'ユーザー' })))
     } else {
       setComments([])
     }
@@ -110,7 +165,7 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
       .select('id, body, created_at, user_id')
       .single()
     if (data) {
-      setComments(prev => [...prev, { ...data, display_name: user.email?.split('@')[0] || 'あなた' }])
+      setComments(prev => [...prev, { ...(data as any), display_name: 'あなた' }])
       setPosts(prev => prev.map(p =>
         p.id === selectedPost.id ? { ...p, comments_count: p.comments_count + 1 } : p
       ))
@@ -120,9 +175,7 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
   }
 
   function formatDate(dateString: string) {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+    const diff = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000)
     if (diff < 60) return 'たった今'
     if (diff < 3600) return `${Math.floor(diff / 60)}分前`
     if (diff < 86400) return `${Math.floor(diff / 3600)}時間前`
@@ -132,63 +185,148 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">食事の記録</h1>
-          <p className="text-sm text-gray-500 mt-1">みんなの糖尿病食をのぞいてみよう</p>
+          <p className="text-sm text-gray-500 mt-0.5">みんなの糖尿病食をのぞいてみよう</p>
         </div>
-        {user && (
-          <Link
-            href="/meals/new"
-            className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium"
-          >
-            <Plus size={18} />
-            <span>投稿する</span>
-          </Link>
-        )}
-      </div>
-
-      {/* タグフィルター */}
-      <div className="flex gap-2 flex-wrap mb-6">
-        <button
-          onClick={() => router.push('/meals')}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            !selectedTag ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          すべて
-        </button>
-        {TAGS.map(tag => (
+        <div className="flex items-center gap-2">
           <button
-            key={tag}
-            onClick={() => router.push(`/meals?tag=${encodeURIComponent(tag)}`)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              selectedTag === tag ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            onClick={() => setShowFilter(!showFilter)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+              hasFilter
+                ? 'bg-rose-50 text-rose-600 border-rose-200'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             }`}
           >
-            #{tag}
+            <SlidersHorizontal size={15} />
+            絞り込み
+            {hasFilter && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />}
           </button>
-        ))}
+          {user && (
+            <Link
+              href="/meals/new"
+              className="flex items-center gap-1.5 px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors text-sm font-medium"
+            >
+              <Plus size={15} />
+              投稿
+            </Link>
+          )}
+        </div>
       </div>
+
+      {/* フィルターパネル */}
+      {showFilter && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-5 space-y-4">
+          {/* 料理タグ */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">料理タグ</p>
+            <div className="flex flex-wrap gap-2">
+              {TAGS.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagFilter(tag)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    selectedTag === tag ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 糖尿病種別 */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">糖尿病の種別</p>
+            <div className="flex flex-wrap gap-2">
+              {DIABETES_TYPES.map(dt => (
+                <button
+                  key={dt.value}
+                  onClick={() => handleDiabetesFilter(dt.value)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    selectedDiabetesType === dt.value ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {dt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 年代 */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">年代</p>
+            <div className="flex flex-wrap gap-2">
+              {AGE_GROUPS.map(ag => (
+                <button
+                  key={ag.value}
+                  onClick={() => handleAgeFilter(ag.value)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    selectedAgeGroup === ag.value ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {ag.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {hasFilter && (
+            <button onClick={clearFilters} className="text-sm text-gray-400 hover:text-gray-600 underline">
+              フィルターをリセット
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 適用中フィルターバッジ */}
+      {hasFilter && !showFilter && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {selectedTag && (
+            <span className="flex items-center gap-1 px-3 py-1 bg-rose-100 text-rose-600 rounded-full text-sm">
+              #{selectedTag}
+              <button onClick={() => handleTagFilter(selectedTag)}><X size={12} /></button>
+            </span>
+          )}
+          {selectedDiabetesType && (
+            <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+              {DIABETES_TYPES.find(d => d.value === selectedDiabetesType)?.label}
+              <button onClick={() => handleDiabetesFilter(selectedDiabetesType)}><X size={12} /></button>
+            </span>
+          )}
+          {selectedAgeGroup && (
+            <span className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm">
+              {AGE_GROUPS.find(a => a.value === selectedAgeGroup)?.label}
+              <button onClick={() => handleAgeFilter(selectedAgeGroup)}><X size={12} /></button>
+            </span>
+          )}
+        </div>
+      )}
 
       {/* グリッド */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
-          <p className="font-medium">まだ投稿がありません</p>
-          {user && (
+          <p className="font-medium">投稿がありません</p>
+          {hasFilter && (
+            <button onClick={clearFilters} className="mt-3 text-sm text-rose-500 hover:underline">
+              フィルターをリセットする
+            </button>
+          )}
+          {!hasFilter && user && (
             <Link href="/meals/new" className="inline-block mt-4 text-rose-500 text-sm hover:underline">
               最初の投稿をしてみましょう →
             </Link>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-1 md:gap-2">
+        <div className="grid grid-cols-3 gap-0.5 md:gap-1">
           {posts.map(post => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square bg-gray-100 rounded overflow-hidden group"
+              className="relative aspect-square bg-gray-100 overflow-hidden group"
             >
               <Image
                 src={post.image_url}
@@ -198,12 +336,18 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
                 className="object-cover"
                 loading="lazy"
               />
+              {/* 属性バッジ */}
+              {post.diabetes_type && (
+                <span className="absolute top-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  {DIABETES_TYPES.find(d => d.value === post.diabetes_type)?.label}
+                </span>
+              )}
               {/* ホバーオーバーレイ */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
-                <span className="flex items-center gap-1 text-sm font-medium">
+                <span className="flex items-center gap-1 text-sm font-bold">
                   <Heart size={16} fill="white" /> {post.likes_count}
                 </span>
-                <span className="flex items-center gap-1 text-sm font-medium">
+                <span className="flex items-center gap-1 text-sm font-bold">
                   <MessageCircle size={16} fill="white" /> {post.comments_count}
                 </span>
               </div>
@@ -212,7 +356,7 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
         </div>
       )}
 
-      {/* 投稿詳細モーダル（インスタ風） */}
+      {/* 投稿詳細モーダル */}
       {selectedPost && (
         <div
           className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -239,7 +383,19 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
               <div className="flex items-center justify-between p-4 border-b border-gray-100">
                 <div>
                   <p className="font-medium text-gray-900 text-sm">{selectedPost.display_name}</p>
-                  <p className="text-xs text-gray-400">{formatDate(selectedPost.created_at)}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-gray-400">{formatDate(selectedPost.created_at)}</p>
+                    {selectedPost.diabetes_type && (
+                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                        {DIABETES_TYPES.find(d => d.value === selectedPost.diabetes_type)?.label}
+                      </span>
+                    )}
+                    {selectedPost.age_group && (
+                      <span className="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded">
+                        {AGE_GROUPS.find(a => a.value === selectedPost.age_group)?.label}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => setSelectedPost(null)} className="p-1 text-gray-400 hover:text-gray-600">
                   <X size={20} />
@@ -259,12 +415,14 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
                   </div>
                 )}
                 {selectedPost.blood_sugar_after && (
-                  <p className="text-xs text-gray-500">食後血糖値: <span className="font-medium text-gray-700">{selectedPost.blood_sugar_after} mg/dL</span></p>
+                  <p className="text-xs text-gray-500">
+                    食後血糖値: <span className="font-medium text-gray-700">{selectedPost.blood_sugar_after} mg/dL</span>
+                  </p>
                 )}
               </div>
 
               {/* コメント一覧 */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                 {loadingComments ? (
                   <div className="flex justify-center py-4">
                     <Loader2 size={20} className="animate-spin text-gray-400" />
@@ -287,7 +445,7 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
                 )}
               </div>
 
-              {/* いいね数 */}
+              {/* いいね */}
               <div className="px-4 py-2 border-t border-gray-100">
                 <button
                   onClick={() => handleLike(selectedPost.id)}
@@ -295,10 +453,7 @@ export function MealsClient({ initialPosts, selectedTag }: MealsClientProps) {
                     likedIds.has(selectedPost.id) ? 'text-rose-500' : 'text-gray-500 hover:text-rose-500'
                   }`}
                 >
-                  <Heart
-                    size={18}
-                    fill={likedIds.has(selectedPost.id) ? 'currentColor' : 'none'}
-                  />
+                  <Heart size={18} fill={likedIds.has(selectedPost.id) ? 'currentColor' : 'none'} />
                   <span>{posts.find(p => p.id === selectedPost.id)?.likes_count ?? selectedPost.likes_count} いいね</span>
                 </button>
               </div>
