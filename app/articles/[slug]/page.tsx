@@ -29,7 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  // excerpt未入力の場合は本文HTMLからプレーンテキストを抽出して120文字
   const description = article.excerpt ||
     (article.content
       ? article.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
@@ -58,23 +57,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export const revalidate = 60
+// 記事ページはログイン不要のため静的キャッシュを有効化
+// createPublicServerClient（cookies不使用）を使うことでDynamic扱いを回避
+export const revalidate = 3600
 
 export default async function ArticleDetailPage({ params, searchParams }: Props) {
   const { slug } = await params
   const { preview } = await searchParams
   const isPreview = preview === '1'
-  const supabase = await createServerSupabaseClient()
 
-  const query = supabase.from('articles').select('*').eq('slug', slug)
-  if (!isPreview) query.eq('is_published', true)
-  const { data: article, error } = await query.single()
+  // previewモードのみcookies付きクライアントを使用、通常は公開クライアント
+  let article = null
+  if (isPreview) {
+    const supabase = await createServerSupabaseClient()
+    const { data } = await supabase.from('articles').select('*').eq('slug', slug).single()
+    article = data
+  } else {
+    const supabase = createPublicServerClient()
+    const { data } = await supabase.from('articles').select('*').eq('slug', slug).eq('is_published', true).single()
+    article = data
+  }
 
-  if (error || !article) {
+  if (!article) {
     notFound()
   }
 
-  // Article構造化データ
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -103,8 +110,8 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
     },
   }
 
-  // Fetch related articles
-  const { data: relatedArticles } = await supabase
+  const publicSupabase = createPublicServerClient()
+  const { data: relatedArticles } = await publicSupabase
     .from('articles')
     .select('id, slug, title, thumbnail_url')
     .eq('is_published', true)
@@ -122,14 +129,13 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
   }
 
   function estimateReadingTime(content: string): number {
-    const wordsPerMinute = 400 // Japanese characters per minute
+    const wordsPerMinute = 400
     const charCount = content.replace(/<[^>]*>/g, '').length
     return Math.max(1, Math.ceil(charCount / wordsPerMinute))
   }
 
   const readingTime = article.reading_time || estimateReadingTime(article.content || '')
 
-  // JSON-LD構造化データ
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -180,7 +186,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {/* Thumbnail */}
         {article.thumbnail_url && (
           <div className="aspect-video bg-gray-100 relative">
             <Image
@@ -195,7 +200,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
           </div>
         )}
 
-        {/* Header */}
         <div className="p-6 md:p-8 border-b border-gray-100">
           {article.category && (
             <div className="flex items-center gap-1 text-sm text-rose-500 mb-3">
@@ -220,7 +224,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 md:p-8">
           {article.excerpt && (
             <p className="text-lg text-gray-600 mb-6 pb-6 border-b border-gray-100">
@@ -234,7 +237,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
           />
         </div>
 
-        {/* Share */}
         <div className="px-6 md:px-8 pb-6 md:pb-8">
           <ShareButtons
             title={article.title}
@@ -243,7 +245,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
         </div>
       </article>
 
-      {/* Related Articles */}
       {relatedArticles && relatedArticles.length > 0 && (
         <div className="mt-8">
           <h2 className="text-lg font-bold text-gray-900 mb-4">関連記事</h2>
@@ -281,3 +282,4 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
     </>
   )
 }
+
