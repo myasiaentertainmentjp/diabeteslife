@@ -1,6 +1,7 @@
 -- =============================================
 -- 017: meal_posts テーブル新規作成
 -- 食事記録機能（インスタ風グリッドUI対応）
+-- フィルター: 料理系タグ・糖尿病種別・年代
 -- =============================================
 
 -- =============================================
@@ -11,8 +12,10 @@ CREATE TABLE IF NOT EXISTS meal_posts (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   image_url TEXT NOT NULL,
   caption TEXT,
-  tags TEXT[] DEFAULT '{}',
-  blood_sugar_after INTEGER,         -- 食後血糖値（任意・mg/dL）
+  tags TEXT[] DEFAULT '{}',              -- 料理系タグ（低糖質・外食等）
+  diabetes_type TEXT,                    -- 投稿者の糖尿病種別（自動取得）
+  age_group TEXT,                        -- 投稿者の年代（自動取得）
+  blood_sugar_after INTEGER,             -- 食後血糖値（任意・mg/dL）
   is_public BOOLEAN DEFAULT true,
   likes_count INTEGER DEFAULT 0,
   comments_count INTEGER DEFAULT 0,
@@ -25,6 +28,8 @@ CREATE INDEX IF NOT EXISTS idx_meal_posts_user_id ON meal_posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_meal_posts_created_at ON meal_posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_meal_posts_is_public ON meal_posts(is_public) WHERE is_public = true;
 CREATE INDEX IF NOT EXISTS idx_meal_posts_tags ON meal_posts USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_meal_posts_diabetes_type ON meal_posts(diabetes_type);
+CREATE INDEX IF NOT EXISTS idx_meal_posts_age_group ON meal_posts(age_group);
 
 -- RLS
 ALTER TABLE meal_posts ENABLE ROW LEVEL SECURITY;
@@ -74,7 +79,7 @@ CREATE TABLE IF NOT EXISTS meal_likes (
   meal_post_id UUID NOT NULL REFERENCES meal_posts(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(meal_post_id, user_id)       -- 1ユーザー1いいね
+  UNIQUE(meal_post_id, user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_meal_likes_meal_post_id ON meal_likes(meal_post_id);
@@ -92,10 +97,8 @@ CREATE POLICY "Users can unlike meal posts" ON meal_likes
   FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================
--- 4. likes_count / comments_count を自動更新するトリガー
+-- 4. トリガー（likes_count / comments_count 自動更新）
 -- =============================================
-
--- likes_count更新
 CREATE OR REPLACE FUNCTION update_meal_likes_count()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -112,7 +115,6 @@ CREATE TRIGGER trigger_meal_likes_count
   AFTER INSERT OR DELETE ON meal_likes
   FOR EACH ROW EXECUTE FUNCTION update_meal_likes_count();
 
--- comments_count更新
 CREATE OR REPLACE FUNCTION update_meal_comments_count()
 RETURNS TRIGGER AS $$
 BEGIN
