@@ -13,6 +13,7 @@ const slides = [
     cta: { label: 'Dライフとは', href: '/about' },
     overlay: 'rgba(190,24,93,0.72)',
     image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&fit=crop',
+    priority: true,
   },
   {
     id: 2,
@@ -22,6 +23,7 @@ const slides = [
     cta: { label: 'トピックを見る', href: '/threads' },
     overlay: 'rgba(154,52,18,0.70)',
     image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80&fit=crop',
+    priority: false,
   },
   {
     id: 3,
@@ -31,6 +33,7 @@ const slides = [
     cta: { label: '記録してみる', href: '/mypage' },
     overlay: 'rgba(15,76,129,0.72)',
     image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80&fit=crop',
+    priority: false,
   },
   {
     id: 4,
@@ -40,6 +43,7 @@ const slides = [
     cta: { label: '無料で始める', href: '/register' },
     overlay: 'rgba(76,29,149,0.72)',
     image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1200&q=80&fit=crop',
+    priority: false,
   },
 ]
 
@@ -87,9 +91,9 @@ export function HeroSlider() {
         <div className="hero-img-wrap">
           <Image
             src={s.image}
-            alt=""
+            alt={s.eyebrow}
             fill
-            priority
+            priority={s.priority}
             sizes="100vw"
             className="object-cover object-center"
             style={{ transition: 'opacity 0.4s ease' }}
