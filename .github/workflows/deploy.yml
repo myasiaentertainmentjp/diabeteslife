@@ -29,6 +29,7 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             npm install
+            export NODE_OPTIONS="--max-old-space-size=1024"
             npm run build
             pm2 restart dlife-nextjs || pm2 start ecosystem.config.js
             pm2 save
