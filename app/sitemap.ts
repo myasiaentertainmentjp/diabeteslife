@@ -1,11 +1,11 @@
 import { MetadataRoute } from 'next'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createPublicServerClient } from '@/lib/supabase-server'
 
+// sitemapはpublicクライアントを使用（cache-control: privateを回避）
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://diabeteslife.jp'
-  const supabase = await createServerSupabaseClient()
+  const supabase = createPublicServerClient()
 
-  // 静的ページ
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -67,7 +67,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // 記事ページを取得
   const { data: articles } = await supabase
     .from('articles')
     .select('slug, updated_at, published_at')
@@ -81,7 +80,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  // スレッドページを取得（最新500件）
   const now = new Date().toISOString()
   const { data: threads } = await supabase
     .from('threads')

@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createPublicServerClient } from '@/lib/supabase-server'
 import { ThreadListClient } from '@/components/ThreadListClient'
 
 export const metadata: Metadata = {
@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 300 // 5分キャッシュ
+// スレッド一覧はログイン不要のためpublicクライアントを使用
+export const revalidate = 300
 
 interface PageProps {
   searchParams: Promise<{ category?: string; page?: string }>
@@ -27,13 +28,12 @@ interface PageProps {
 
 export default async function ThreadListPage({ searchParams }: PageProps) {
   const { category, page } = await searchParams
-  const supabase = await createServerSupabaseClient()
+  const supabase = createPublicServerClient()
   const currentPage = parseInt(page || '1', 10)
   const perPage = 20
   const offset = (currentPage - 1) * perPage
   const now = new Date().toISOString()
 
-  // Build query
   let query = supabase
     .from('threads')
     .select('id, thread_number, title, category, created_at, user_id, comments_count', { count: 'exact' })
