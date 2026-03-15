@@ -62,7 +62,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/threads?category=todays_meal" className="hover:text-white transition-colors">
+                <Link href="/meals" className="hover:text-white transition-colors">
                   食事の記録
                 </Link>
               </li>
