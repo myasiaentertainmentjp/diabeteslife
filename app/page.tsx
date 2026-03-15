@@ -22,6 +22,7 @@ export default async function Home() {
     { data: newThreads },
     { data: weeklyPopularThreads },
     { data: featuredArticles },
+    { data: featuredMeals },
   ] = await Promise.all([
     supabase
       .from('threads')
@@ -56,6 +57,13 @@ export default async function Home() {
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(5),
+
+    supabase
+      .from('meal_posts')
+      .select('id, image_url, caption, likes_count')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(6),
   ])
 
   return (
@@ -64,6 +72,7 @@ export default async function Home() {
       initialNewThreads={newThreads || []}
       initialWeeklyPopularThreads={weeklyPopularThreads || []}
       initialFeaturedArticles={featuredArticles || []}
+      initialFeaturedMeals={featuredMeals || []}
     />
   )
 }
