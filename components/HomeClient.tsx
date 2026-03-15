@@ -127,6 +127,44 @@ export function HomeClient({
               </button>
             </div>
 
+            {/* 食事の記録 - 横スクロール */}
+            {initialFeaturedMeals.length > 0 && (
+              <div className="mt-4 mb-2">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h2 className="font-bold text-gray-800 text-sm">📸 みんなの食事記録</h2>
+                  <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600 font-medium">
+                    もっと見る →
+                  </Link>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {initialFeaturedMeals.map((meal) => (
+                    <Link
+                      key={meal.id}
+                      href="/meals"
+                      className="relative flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden group"
+                    >
+                      <Image
+                        src={meal.image_url}
+                        alt={meal.caption || '食事の記録'}
+                        fill
+                        sizes="96px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                      />
+                    </Link>
+                  ))}
+                  {/* もっと見るボタン */}
+                  <Link
+                    href="/meals"
+                    className="flex-shrink-0 w-24 h-24 bg-rose-50 rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-rose-100 transition-colors border border-rose-200"
+                  >
+                    <span className="text-rose-500 text-xs font-medium text-center leading-tight">もっと<br />見る</span>
+                    <ChevronRight size={14} className="text-rose-500" />
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* Thread List */}
             <div className="bg-white rounded-b-lg shadow-sm pt-2">
               {currentThreads.length === 0 ? (
@@ -224,45 +262,6 @@ export function HomeClient({
                 </ul>
               )}
             </div>
-
-            {/* 食事の記録 */}
-            {initialFeaturedMeals.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <h2 className="font-bold text-gray-800">みんなの食事記録</h2>
-                  <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600">
-                    もっと見る →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-3 gap-0.5 p-0.5">
-                  {initialFeaturedMeals.map((meal) => (
-                    <Link
-                      key={meal.id}
-                      href="/meals"
-                      className="relative aspect-square bg-gray-100 overflow-hidden group"
-                    >
-                      <Image
-                        src={meal.image_url}
-                        alt={meal.caption || '食事の記録'}
-                        fill
-                        sizes="(max-width: 768px) 33vw, 120px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-200"
-                        loading="lazy"
-                      />
-                    </Link>
-                  ))}
-                </div>
-                <div className="px-4 py-3 border-t border-gray-100">
-                  <Link
-                    href="/meals"
-                    className="flex items-center gap-1 text-rose-500 hover:text-rose-600 text-sm font-medium"
-                  >
-                    <span>食事の記録を見る</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                </div>
-              </div>
-            )}
 
             {/* Recommended Articles */}
             <div className="bg-white rounded-lg shadow-sm">
