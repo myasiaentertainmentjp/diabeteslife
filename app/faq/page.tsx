@@ -1,4 +1,19 @@
-'use client'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'よくある質問（FAQ）',
+  description: 'ディーライフのよくある質問をまとめています。会員登録・投稿方法・医療情報の取り扱いなど、疑問点をご確認いただけます。',
+  alternates: {
+    canonical: 'https://diabeteslife.jp/faq',
+  },
+  openGraph: {
+    title: 'よくある質問（FAQ） | Dライフ',
+    description: 'ディーライフのよくある質問をまとめています。',
+    type: 'website',
+    siteName: 'Dライフ',
+    images: [{ url: '/images/ogp.png', width: 1200, height: 630 }],
+  },
+}
 
 import { useState } from 'react'
 import Link from 'next/link'
