@@ -144,7 +144,7 @@ export default function AboutPage() {
       <div className="max-w-3xl mx-auto px-4">
 
         {/* 数字カード */}
-        <div className="grid grid-cols-3 gap-4 -mt-8 mb-12">
+        <div className="grid grid-cols-3 gap-4 mt-6 mb-12">
           {[
             { num: '無料', label: '完全無料で利用可能' },
             { num: '匿名', label: 'OK・個人情報任意' },
@@ -265,13 +265,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* フッターリンク */}
-        <div className="mt-8 text-center text-sm text-gray-400 flex flex-wrap justify-center gap-x-4 gap-y-2">
-          <Link href="/company" className="hover:text-rose-500 transition-colors">運営会社</Link>
-          <Link href="/terms" className="hover:text-rose-500 transition-colors">利用規約</Link>
-          <Link href="/privacy" className="hover:text-rose-500 transition-colors">プライバシーポリシー</Link>
-          <Link href="/contact" className="hover:text-rose-500 transition-colors">お問い合わせ</Link>
-        </div>
 
       </div>
     </div>
