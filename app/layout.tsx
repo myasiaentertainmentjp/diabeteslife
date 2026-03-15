@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { Providers } from "@/components/Providers"
 import { ProfileReviewModal } from "@/components/ProfileReviewModal"
+import { OnboardingModal } from "@/components/OnboardingModal"
 import { ProfileSetupModal } from "@/components/ProfileSetupModal"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
@@ -131,6 +132,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <ProfileSetupModal />
             <ProfileReviewModal />
+            <OnboardingModal />
             <Footer />
           </div>
         </Providers>
