@@ -9,9 +9,9 @@ import { ArrowLeft, Plus, Loader2, BookOpen, Calendar, ChevronRight } from 'luci
 
 interface DiaryEntry {
   id: string
-  title: string
+  title?: string | null
   content: string
-  mood?: string
+  mood?: string | null
   created_at: string
 }
 
@@ -71,15 +71,21 @@ export default function DiaryListPage() {
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault()
-    if (!user || !newTitle.trim() || !newContent.trim()) return
+    if (!user || !newContent.trim()) return
 
     setSubmitting(true)
-    const { error } = await supabase.from('diary_entries').insert({
+    const insertData: Record<string, unknown> = {
       user_id: user.id,
-      title: newTitle.trim(),
       content: newContent.trim(),
-      mood: newMood,
-    })
+    }
+    // title と mood はカラムがある場合のみ送信
+    if (newTitle.trim()) {
+      insertData.title = newTitle.trim()
+    }
+    if (newMood) {
+      insertData.mood = newMood
+    }
+    const { error } = await supabase.from('diary_entries').insert(insertData)
 
     if (!error) {
       setNewTitle('')
@@ -103,6 +109,12 @@ export default function DiaryListPage() {
   function getExcerpt(content: string, maxLength: number = 100) {
     if (content.length <= maxLength) return content
     return content.slice(0, maxLength) + '...'
+  }
+
+  function getDisplayTitle(entry: DiaryEntry) {
+    if (entry.title) return entry.title
+    // titleがない場合はcontentの先頭20文字を使用
+    return entry.content.slice(0, 20) + (entry.content.length > 20 ? '...' : '')
   }
 
   if (authLoading) {
@@ -166,16 +178,16 @@ export default function DiaryListPage() {
                   href={`/diary/${entry.id}`}
                   className="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors"
                 >
-                  {entry.mood && (
-                    <div className="text-2xl flex-shrink-0 mt-1">
-                      {MOOD_EMOJI[entry.mood] || '📝'}
-                    </div>
-                  )}
+                  <div className="text-2xl flex-shrink-0 mt-1">
+                    {entry.mood ? (MOOD_EMOJI[entry.mood] || '📝') : '📝'}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">{entry.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                      {getExcerpt(entry.content)}
-                    </p>
+                    <h3 className="font-medium text-gray-900 truncate">{getDisplayTitle(entry)}</h3>
+                    {entry.title && (
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                        {getExcerpt(entry.content)}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
                       <Calendar size={12} />
                       <span>{formatDate(entry.created_at)}</span>
@@ -203,7 +215,7 @@ export default function DiaryListPage() {
             <form onSubmit={handleAddEntry} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  タイトル
+                  タイトル <span className="text-gray-400 font-normal">(任意)</span>
                 </label>
                 <input
                   type="text"
@@ -211,7 +223,6 @@ export default function DiaryListPage() {
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
                   placeholder="今日の体調"
-                  required
                 />
               </div>
 

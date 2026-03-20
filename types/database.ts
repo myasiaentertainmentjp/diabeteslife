@@ -746,9 +746,11 @@ export const PREFECTURES = [
 // Diary entry interface
 export interface DiaryEntry {
   id: string
-  thread_id: string
+  thread_id: string | null
   user_id: string
+  title: string | null
   content: string
+  mood: string | null
   image_url: string | null
   image_urls: string[]
   created_at: string

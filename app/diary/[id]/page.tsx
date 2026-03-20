@@ -10,9 +10,9 @@ import { ArrowLeft, Edit2, Trash2, Loader2, BookOpen, Calendar, Save, X } from '
 interface DiaryEntry {
   id: string
   user_id: string
-  title: string
+  title?: string | null
   content: string
-  mood?: string
+  mood?: string | null
   created_at: string
   updated_at?: string
 }
@@ -78,7 +78,7 @@ export default function DiaryDetailPage() {
     }
 
     setEntry(data)
-    setEditTitle(data.title)
+    setEditTitle(data.title || '')
     setEditContent(data.content)
     setEditMood(data.mood || 'okay')
     setLoading(false)
@@ -88,21 +88,27 @@ export default function DiaryDetailPage() {
     if (!user || !entry) return
 
     setSaving(true)
+    const updateData: Record<string, unknown> = {
+      content: editContent.trim(),
+      updated_at: new Date().toISOString(),
+    }
+    // title と mood はカラムがある場合のみ送信
+    if (editTitle.trim()) {
+      updateData.title = editTitle.trim()
+    }
+    if (editMood) {
+      updateData.mood = editMood
+    }
     const { error } = await supabase
       .from('diary_entries')
-      .update({
-        title: editTitle.trim(),
-        content: editContent.trim(),
-        mood: editMood,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', entry.id)
       .eq('user_id', user.id)
 
     if (!error) {
       setEntry({
         ...entry,
-        title: editTitle.trim(),
+        title: editTitle.trim() || null,
         content: editContent.trim(),
         mood: editMood,
       })
@@ -189,7 +195,9 @@ export default function DiaryDetailPage() {
                     className="text-xl font-bold text-gray-900 border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
                   />
                 ) : (
-                  <h1 className="text-xl font-bold text-gray-900">{entry.title}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {entry.title || entry.content.slice(0, 20) + (entry.content.length > 20 ? '...' : '')}
+                  </h1>
                 )}
                 <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                   <Calendar size={14} />
@@ -283,7 +291,7 @@ export default function DiaryDetailPage() {
             <button
               onClick={() => {
                 setIsEditing(false)
-                setEditTitle(entry.title)
+                setEditTitle(entry.title || '')
                 setEditContent(entry.content)
                 setEditMood(entry.mood || 'okay')
               }}
