@@ -30,7 +30,7 @@ export default async function MealsPage({ searchParams }: PageProps) {
     .select('id, user_id, image_url, caption, tags, diabetes_type, age_group, blood_sugar_after, likes_count, comments_count, created_at')
     .eq('is_public', true)
     .order('created_at', { ascending: false })
-    .limit(45)
+    .limit(100)
 
   if (tag) query = query.contains('tags', [tag])
   if (dtype) query = query.eq('diabetes_type', dtype)
