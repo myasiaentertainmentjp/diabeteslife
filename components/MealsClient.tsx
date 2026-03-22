@@ -1,14 +1,87 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
+import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown, ImageOff } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
+
+/**
+ * Supabase Storage の画像URLをサムネイルURLに変換
+ * Transform API を使用してリサイズ・品質調整
+ */
+function getThumbnailUrl(originalUrl: string, width = 400, quality = 75): string {
+  // Supabase Storage URL かどうか確認
+  if (!originalUrl.includes('supabase.co/storage/v1/object/public/')) {
+    return originalUrl
+  }
+  // /object/public/ → /render/image/public/ に変換
+  const transformUrl = originalUrl.replace(
+    '/storage/v1/object/public/',
+    '/storage/v1/render/image/public/'
+  )
+  return `${transformUrl}?width=${width}&quality=${quality}`
+}
+
+/**
+ * 画像読み込み状態を管理する MealImage コンポーネント
+ */
+function MealImage({
+  src,
+  alt,
+  fill,
+  sizes,
+  className,
+  priority = false,
+  thumbnailWidth = 400,
+  quality = 75,
+}: {
+  src: string
+  alt: string
+  fill?: boolean
+  sizes?: string
+  className?: string
+  priority?: boolean
+  thumbnailWidth?: number
+  quality?: number
+}) {
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+  const thumbnailUrl = getThumbnailUrl(src, thumbnailWidth, quality)
+
+  const handleLoad = useCallback(() => setStatus('loaded'), [])
+  const handleError = useCallback(() => setStatus('error'), [])
+
+  if (status === 'error') {
+    return (
+      <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+        <ImageOff size={24} className="text-gray-300" />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {status === 'loading' && (
+        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+      )}
+      <Image
+        src={thumbnailUrl}
+        alt={alt}
+        fill={fill}
+        sizes={sizes}
+        className={`${className} ${status === 'loading' ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
+        loading={priority ? undefined : 'lazy'}
+        priority={priority}
+        onLoadingComplete={handleLoad}
+        onError={handleError}
+      />
+    </>
+  )
+}
 
 const DIABETES_TYPE_OPTIONS = [
   { value: 'type1', label: '1型' },
@@ -287,13 +360,12 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
               onClick={() => openPost(post)}
               className="relative aspect-square bg-gray-100 overflow-hidden group"
             >
-              <Image
+              <MealImage
                 src={post.image_url}
                 alt={post.caption || '食事の記録'}
                 fill
                 sizes="(max-width: 768px) 33vw, 280px"
                 className="object-cover"
-                loading="lazy"
               />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
@@ -336,12 +408,15 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
           >
             {/* 画像 */}
             <div className="relative aspect-square md:w-1/2 flex-shrink-0 bg-black">
-              <Image
+              <MealImage
                 src={selectedPost.image_url}
                 alt={selectedPost.caption || '食事の記録'}
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                thumbnailWidth={800}
+                quality={85}
+                priority
               />
             </div>
 
