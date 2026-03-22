@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
+import { getPresetThumbnailUrl } from '@/lib/image-utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { PenSquare, ChevronRight, FileText, TrendingUp, Loader2 } from 'lucide-react'
@@ -271,12 +272,12 @@ export function Sidebar({
                 >
                   {article.thumbnail_url ? (
                     <Image
-                      src={article.thumbnail_url}
+                      src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
                       alt={article.title}
                       width={80}
-                      height={80}
-                      className="w-20 object-cover rounded shrink-0"
-                    unoptimized
+                      height={42}
+                      className="object-cover rounded shrink-0"
+                      style={{ aspectRatio: '1.91 / 1' }}
                     />
                   ) : (
                     <div className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center" style={{ aspectRatio: '1.91 / 1' }}>
