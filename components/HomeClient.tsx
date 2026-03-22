@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { MessageSquare, PenSquare, ChevronRight, FileText } from 'lucide-react'
-import { HeroSlider } from '@/components/HeroSlider'
 
 type TabType = 'popular' | 'new'
 
@@ -28,19 +27,11 @@ interface Article {
   created_at: string
 }
 
-interface MealPost {
-  id: string
-  image_url: string
-  caption: string | null
-  likes_count: number
-}
-
 interface HomeClientProps {
   initialPopularThreads: Thread[]
   initialNewThreads: Thread[]
   initialWeeklyPopularThreads: Thread[]
   initialFeaturedArticles: Article[]
-  initialFeaturedMeals: MealPost[]
 }
 
 const categories: ThreadCategory[] = [
@@ -58,16 +49,9 @@ export function HomeClient({
   initialNewThreads,
   initialWeeklyPopularThreads,
   initialFeaturedArticles,
-  initialFeaturedMeals,
 }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('popular')
-  const [mounted, setMounted] = useState(false)
   const { user } = useAuth()
-
-  // ハイドレーション後にのみクライアント状態を使う
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const currentThreads = activeTab === 'popular' ? initialPopularThreads : initialNewThreads
 
@@ -89,9 +73,7 @@ export function HomeClient({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Hero Slider */}
-      <HeroSlider />
+    <div className="min-h-screen">
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -127,44 +109,6 @@ export function HomeClient({
               </button>
             </div>
 
-            {/* 食事の記録 - 横スクロール */}
-            {initialFeaturedMeals.length > 0 && (
-              <div className="mt-4 mb-3 px-1">
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <h2 className="font-bold text-gray-800 text-sm">📸 みんなの食事記録</h2>
-                  <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600 font-medium">
-                    もっと見る →
-                  </Link>
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {initialFeaturedMeals.map((meal) => (
-                    <Link
-                      key={meal.id}
-                      href="/meals"
-                      className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
-                    >
-                      <Image
-                        src={meal.image_url}
-                        alt={meal.caption || '食事の記録'}
-                        fill
-                        sizes="96px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-200"
-                        loading="lazy"
-                      />
-                    </Link>
-                  ))}
-                  {/* もっと見るボタン */}
-                  <Link
-                    href="/meals"
-                    className="flex-shrink-0 w-28 h-28 bg-rose-50 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-rose-100 transition-colors border border-rose-200"
-                  >
-                    <span className="text-rose-500 text-xs font-medium text-center leading-tight">もっと<br />見る</span>
-                    <ChevronRight size={14} className="text-rose-500" />
-                  </Link>
-                </div>
-              </div>
-            )}
-
             {/* Thread List */}
             <div className="bg-white rounded-b-lg shadow-sm pt-2">
               {currentThreads.length === 0 ? (
@@ -187,9 +131,12 @@ export function HomeClient({
                             </h3>
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-sm text-gray-500">
-                            {/* suppressHydrationWarning: new Date() はSSRとクライアントで値が異なるため */}
-                            <span className="hidden sm:inline" suppressHydrationWarning>
-                              {mounted ? formatDate(thread.created_at) : ''}
+                            <span className="flex items-center gap-1">
+                              <MessageSquare size={14} />
+                              {thread.comments_count || 0}
+                            </span>
+                            <span className="hidden sm:inline">
+                              {formatDate(thread.created_at)}
                             </span>
                           </div>
                         </div>
@@ -214,8 +161,8 @@ export function HomeClient({
 
           {/* Right Column - Sidebar */}
           <div className="lg:w-80 space-y-6">
-            {/* Post Button - mountedになってから user を参照してハイドレーションエラーを防ぐ */}
-            {mounted && user ? (
+            {/* Post Button */}
+            {user ? (
               <Link
                 href="/threads/new"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium shadow-sm"
@@ -286,11 +233,10 @@ export function HomeClient({
                           src={article.thumbnail_url}
                           alt={article.title}
                           width={80}
-                          height={80}
-                          className="w-20 object-cover rounded shrink-0"
-                        
-                  unoptimized
-                />
+                          height={42}
+                          className="object-cover rounded shrink-0"
+                          style={{ aspectRatio: '1.91 / 1' }}
+                        />
                       ) : (
                         <div
                           className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center"
