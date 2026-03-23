@@ -6,59 +6,89 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getPresetThumbnailUrl } from '@/lib/image-utils'
-import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown, ImageOff } from 'lucide-react'
+import { getPresetThumbnailUrl, getRawPublicUrl } from '@/lib/image-utils'
+import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
- * 画像読み込み状態を管理する MealImage コンポーネント
+ * 一覧カード用の2レイヤー画像コンポーネント
+ * - 背景: object-cover + 薄くblur
+ * - 前景: object-contain で画像全体表示
+ * - Transform URL失敗時はraw URLにフォールバック
  */
-function MealImage({
-  src,
-  alt,
-  fill,
-  sizes,
-  className,
-  priority = false,
-  preset = 'grid',
-}: {
-  src: string
-  alt: string
-  fill?: boolean
-  sizes?: string
-  className?: string
-  priority?: boolean
-  preset?: 'grid' | 'list' | 'detail' | 'modal'
-}) {
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
-  const thumbnailUrl = getPresetThumbnailUrl(src, preset)
+function MealCardImage({ src, alt }: { src: string; alt: string }) {
+  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
+  const [fallbackAttempted, setFallbackAttempted] = useState(false)
 
-  const handleLoad = useCallback(() => setStatus('loaded'), [])
-  const handleError = useCallback(() => setStatus('error'), [])
-
-  if (status === 'error') {
-    return (
-      <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-        <ImageOff size={24} className="text-gray-300" />
-      </div>
-    )
-  }
+  const handleError = useCallback(() => {
+    if (!fallbackAttempted) {
+      // Transform URLが失敗したらraw public URLにフォールバック
+      setImageSrc(getRawPublicUrl(src))
+      setFallbackAttempted(true)
+    }
+  }, [src, fallbackAttempted])
 
   return (
     <>
-      {status === 'loading' && (
-        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+      {/* 背景レイヤー: 薄くぼかした画像 */}
+      <div className="absolute inset-0">
+        <Image
+          src={imageSrc}
+          alt=""
+          fill
+          sizes="33vw"
+          className="object-cover blur-sm scale-110 opacity-40"
+          loading="lazy"
+          onError={handleError}
+        />
+      </div>
+      {/* 前景レイヤー: 画像全体を中央表示 */}
+      <div className="absolute inset-0 flex items-center justify-center p-1">
+        <Image
+          src={imageSrc}
+          alt={alt}
+          fill
+          sizes="33vw"
+          className="object-contain"
+          loading="lazy"
+          onError={handleError}
+        />
+      </div>
+    </>
+  )
+}
+
+/**
+ * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
+ */
+function MealModalImage({ src, alt }: { src: string; alt: string }) {
+  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'modal'))
+  const [fallbackAttempted, setFallbackAttempted] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+
+  const handleError = useCallback(() => {
+    if (!fallbackAttempted) {
+      setImageSrc(getRawPublicUrl(src))
+      setFallbackAttempted(true)
+    }
+  }, [src, fallbackAttempted])
+
+  return (
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 bg-black flex items-center justify-center">
+          <Loader2 size={24} className="animate-spin text-gray-400" />
+        </div>
       )}
       <Image
-        src={thumbnailUrl}
+        src={imageSrc}
         alt={alt}
-        fill={fill}
-        sizes={sizes}
-        className={`${className} ${status === 'loading' ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
-        loading={priority ? undefined : 'lazy'}
-        priority={priority}
-        onLoadingComplete={handleLoad}
+        fill
+        sizes="(max-width: 768px) 100vw, 600px"
+        className={`object-contain ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
+        priority
+        onLoadingComplete={() => setLoaded(true)}
         onError={handleError}
       />
     </>
@@ -365,7 +395,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* 正方形グリッド - 画像全体表示 */}
+      {/* 正方形グリッド - 2レイヤーで画像全体表示 */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -382,16 +412,10 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square overflow-hidden rounded-md group bg-stone-100"
+              className="relative aspect-square overflow-hidden rounded-md group bg-stone-200"
             >
-              <Image
-                src={getPresetThumbnailUrl(post.image_url, 'list')}
-                alt={post.caption || '食事の記録'}
-                fill
-                sizes="33vw"
-                className="object-contain"
-                loading="lazy"
-              />
+              {/* 2レイヤー画像: 背景blur + 前景contain */}
+              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
                 <div className="absolute top-1 left-1 flex gap-0.5 z-10">
@@ -451,16 +475,11 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             className="bg-white rounded-xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col md:flex-row"
             onClick={e => e.stopPropagation()}
           >
-            {/* 画像 */}
+            {/* 画像 - modal用Transform URL + フォールバック */}
             <div className="relative aspect-square md:w-1/2 flex-shrink-0 bg-black">
-              <MealImage
+              <MealModalImage
                 src={selectedPost.image_url}
                 alt={selectedPost.caption || '食事の記録'}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 800px"
-                preset="detail"
-                priority
               />
             </div>
 

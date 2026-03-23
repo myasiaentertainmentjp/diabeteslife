@@ -8,6 +8,7 @@ import { OnboardingModal } from "@/components/OnboardingModal"
 import { ProfileSetupModal } from "@/components/ProfileSetupModal"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
+import { GoogleAnalytics } from "@/components/GoogleAnalytics"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -118,6 +119,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        <GoogleAnalytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

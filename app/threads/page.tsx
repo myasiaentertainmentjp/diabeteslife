@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { ThreadListClient } from '@/components/ThreadListClient'
+import { ThreadList } from '@/components/ThreadCard'
+import { ThreadListFilter, Pagination } from '@/components/ThreadListFilter'
+import { Breadcrumb, BreadcrumbItem } from '@/components/Breadcrumb'
+import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 
 export const metadata: Metadata = {
   title: '掲示板・トピック一覧',
@@ -48,12 +51,38 @@ export default async function ThreadListPage({ searchParams }: PageProps) {
 
   const totalPages = count ? Math.ceil(count / perPage) : 1
 
+  // Build breadcrumb items
+  const breadcrumbItems: BreadcrumbItem[] = category
+    ? [
+        { label: 'トピック一覧', href: '/threads' },
+        { label: THREAD_CATEGORY_LABELS[category as ThreadCategory] },
+      ]
+    : [{ label: 'トピック一覧' }]
+
   return (
-    <ThreadListClient
-      initialThreads={threads || []}
-      totalPages={totalPages}
-      currentPage={currentPage}
-      category={category}
-    />
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={breadcrumbItems} />
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Filter (Client Component) */}
+          <ThreadListFilter category={category} />
+
+          {/* Thread List (Server Component) */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <ThreadList threads={threads || []} />
+
+            {/* Pagination (Client Component) */}
+            <Pagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              category={category}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

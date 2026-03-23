@@ -1,0 +1,1290 @@
+{
+  "metadata": {
+    "total_images": 113,
+    "created_at": "2026-03-21",
+    "purpose": "Dライフ meal_posts 投入用画像マッピング",
+    "categories": [
+      "set_meal",
+      "donburi",
+      "noodles",
+      "salad_vegetable",
+      "meat_main",
+      "seafood_sashimi",
+      "japanese_side",
+      "cafe_light",
+      "asian_cuisine",
+      "onigiri_simple"
+    ]
+  },
+  "category_labels": {
+    "set_meal": "定食・セット",
+    "donburi": "丼もの",
+    "noodles": "麺類",
+    "salad_vegetable": "サラダ・野菜",
+    "meat_main": "肉料理メイン",
+    "seafood_sashimi": "魚介・刺身",
+    "japanese_side": "和食・煮物・副菜",
+    "cafe_light": "軽食・カフェ系",
+    "asian_cuisine": "アジア料理",
+    "onigiri_simple": "おにぎり・シンプル飯"
+  },
+  "mood_styles": {
+    "homemade": "手作り風",
+    "eating_out": "外食風",
+    "light": "軽め",
+    "hearty": "ボリュームあり",
+    "healthy": "ヘルシー寄り",
+    "casual": "カジュアル",
+    "special": "特別感"
+  },
+  "images": [
+    {
+      "file_name": "86380841-1A80-4FE1-B2B7-4C20EA041845.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "焼き魚定食、副菜充実"
+    },
+    {
+      "file_name": "9D3393FF-EEA0-454E-8E16-834CB69BEF01.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "インドカレー＆ナン"
+    },
+    {
+      "file_name": "C91037FB-36AA-48DB-8379-E36D352BFCED_1_102_a.jpg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "生ハムとワイン、おしゃれ"
+    },
+    {
+      "file_name": "IMG_0084.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "healthy",
+        "light"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "フルーツ盛り合わせ"
+    },
+    {
+      "file_name": "IMG_0117.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "肉野菜麺、ラグマン風"
+    },
+    {
+      "file_name": "IMG_0849.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "韓国料理定食、小皿多数"
+    },
+    {
+      "file_name": "IMG_0908.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "homemade",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "弁当、とんかつ＆ハンバーグ"
+    },
+    {
+      "file_name": "IMG_1010.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "大根と魚の煮物"
+    },
+    {
+      "file_name": "IMG_1140.jpeg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "light"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "サンドイッチとコーヒー"
+    },
+    {
+      "file_name": "IMG_1514.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "そぼろ丼風、薬味たっぷり"
+    },
+    {
+      "file_name": "IMG_1667.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "チキン南蛮定食"
+    },
+    {
+      "file_name": "IMG_1727.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "辛いスープ鍋"
+    },
+    {
+      "file_name": "IMG_1855.jpeg",
+      "category": "onigiri_simple",
+      "mood_style": [
+        "casual",
+        "light"
+      ],
+      "comment_pool": "onigiri_comments",
+      "note": "明太子おにぎり"
+    },
+    {
+      "file_name": "IMG_1915.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "オムライス"
+    },
+    {
+      "file_name": "IMG_2007.JPG",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "鍋料理、野菜たっぷり"
+    },
+    {
+      "file_name": "IMG_2052.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "中華セット、ルーロー飯"
+    },
+    {
+      "file_name": "IMG_2116.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "とんかつ定食"
+    },
+    {
+      "file_name": "IMG_2231.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物、野菜中心"
+    },
+    {
+      "file_name": "IMG_2420.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "まぐろ丼"
+    },
+    {
+      "file_name": "IMG_2477.jpeg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理、おしゃれ"
+    },
+    {
+      "file_name": "IMG_2595.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "しらすサラダ"
+    },
+    {
+      "file_name": "IMG_2676.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "ラーメンセット、唐揚げ付き"
+    },
+    {
+      "file_name": "IMG_2677.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "冷やし中華風"
+    },
+    {
+      "file_name": "IMG_2688.jpeg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "ステーキ"
+    },
+    {
+      "file_name": "IMG_2816.jpeg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "フレンチトースト朝食"
+    },
+    {
+      "file_name": "IMG_2822.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "カツ定食"
+    },
+    {
+      "file_name": "IMG_2825.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "牛丼セット"
+    },
+    {
+      "file_name": "IMG_2853.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "沖縄料理、ゆし豆腐"
+    },
+    {
+      "file_name": "IMG_2901.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "水菜サラダ"
+    },
+    {
+      "file_name": "IMG_2902.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身盛り合わせ"
+    },
+    {
+      "file_name": "IMG_2934.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮丼"
+    },
+    {
+      "file_name": "IMG_2970.JPG",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "とんかつ定食、雑穀米"
+    },
+    {
+      "file_name": "IMG_2981.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "かつ丼"
+    },
+    {
+      "file_name": "IMG_3040.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "麻婆豆腐風"
+    },
+    {
+      "file_name": "IMG_3175.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "天ぷらうどんセット"
+    },
+    {
+      "file_name": "IMG_5939.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食、肉巻き"
+    },
+    {
+      "file_name": "IMG_6148.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮料理"
+    },
+    {
+      "file_name": "IMG_7573.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身盛り"
+    },
+    {
+      "file_name": "IMG_7663.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "IMG_7688.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "きくらげ野菜炒め"
+    },
+    {
+      "file_name": "IMG_9150.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "肉うどんセット"
+    },
+    {
+      "file_name": "IMG_9416.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食セット"
+    },
+    {
+      "file_name": "S__18063369_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食"
+    },
+    {
+      "file_name": "S__18063370_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "かつ丼セット"
+    },
+    {
+      "file_name": "S__18063371_0.jpg",
+      "category": "cafe_light",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "スムージー作り"
+    },
+    {
+      "file_name": "S__18063372_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "ネギトロ丼セット"
+    },
+    {
+      "file_name": "S__18063373_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "天ぷらうどん定食"
+    },
+    {
+      "file_name": "S__18063374_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063375_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛丼定食"
+    },
+    {
+      "file_name": "S__18063376_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "野菜炒め、きゅうりサラダ"
+    },
+    {
+      "file_name": "S__18063377_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "ステーキランチ"
+    },
+    {
+      "file_name": "S__18063378_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "天ざるそば"
+    },
+    {
+      "file_name": "S__18063380_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛丼定食"
+    },
+    {
+      "file_name": "S__18063381_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "焼肉"
+    },
+    {
+      "file_name": "S__18063382_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "野菜カレー"
+    },
+    {
+      "file_name": "S__18063383_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "麻婆茄子"
+    },
+    {
+      "file_name": "S__18063384_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063385_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食"
+    },
+    {
+      "file_name": "S__18063386_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "刀削麺風、青菜たっぷり"
+    },
+    {
+      "file_name": "S__18063387_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "キムチ鍋"
+    },
+    {
+      "file_name": "S__18063388_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食"
+    },
+    {
+      "file_name": "S__18063389_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "焼き魚定食風"
+    },
+    {
+      "file_name": "S__18063391_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "白菜煮込み"
+    },
+    {
+      "file_name": "S__18063392_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "豆腐鍋、きゅうり"
+    },
+    {
+      "file_name": "S__18063393_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "惣菜、グラタン"
+    },
+    {
+      "file_name": "S__18063394_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "チキンサラダ"
+    },
+    {
+      "file_name": "S__18063395_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063396_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物、副菜"
+    },
+    {
+      "file_name": "S__18063397_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理"
+    },
+    {
+      "file_name": "S__18063398_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "サラダ"
+    },
+    {
+      "file_name": "S__18063399_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063400_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "ラーメン"
+    },
+    {
+      "file_name": "S__18063402_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063403_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "中華料理"
+    },
+    {
+      "file_name": "S__18063404_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "野菜サラダ"
+    },
+    {
+      "file_name": "S__18063405_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063406_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身"
+    },
+    {
+      "file_name": "S__18063407_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食副菜"
+    },
+    {
+      "file_name": "S__18063408_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼もの"
+    },
+    {
+      "file_name": "S__18063409_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063410_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理"
+    },
+    {
+      "file_name": "S__18063411_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺類"
+    },
+    {
+      "file_name": "S__18063413_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063414_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物"
+    },
+    {
+      "file_name": "S__18063415_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理"
+    },
+    {
+      "file_name": "S__18063416_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063417_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮"
+    },
+    {
+      "file_name": "S__18063418_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼"
+    },
+    {
+      "file_name": "S__18063419_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理"
+    },
+    {
+      "file_name": "S__18063420_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063421_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺"
+    },
+    {
+      "file_name": "S__18063422_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食"
+    },
+    {
+      "file_name": "S__18063424_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063425_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア"
+    },
+    {
+      "file_name": "S__18063426_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼"
+    },
+    {
+      "file_name": "S__18063427_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063428_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮"
+    },
+    {
+      "file_name": "S__18063429_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉"
+    },
+    {
+      "file_name": "S__18063430_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食"
+    },
+    {
+      "file_name": "S__18063431_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺"
+    },
+    {
+      "file_name": "S__18063432_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063433_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "サラダ"
+    },
+    {
+      "file_name": "S__18063435_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理"
+    },
+    {
+      "file_name": "S__18063436_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "青菜ときのこ炒め"
+    },
+    {
+      "file_name": "S__18063437_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063438_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "野菜"
+    },
+    {
+      "file_name": "S__18063439_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼"
+    },
+    {
+      "file_name": "S__18063440_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "パスタ"
+    },
+    {
+      "file_name": "S__18063441_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食"
+    },
+    {
+      "file_name": "S__18063442_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理"
+    },
+    {
+      "file_name": "S__18063443_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理"
+    },
+    {
+      "file_name": "S__18063444_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食"
+    },
+    {
+      "file_name": "S__18063445.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "インスタント麺アレンジ"
+    }
+  ],
+  "comment_pools": {
+    "set_meal_comments": [
+      "今日はしっかりめに",
+      "バランス意識してみた",
+      "副菜が多いと安心する",
+      "味噌汁あるとほっとする",
+      "ご飯少なめで調整",
+      "野菜も取れてよかった",
+      "久しぶりにちゃんとした食事",
+      "外で食べるとつい食べすぎる",
+      "定食屋さんのランチ",
+      "小鉢が充実してた"
+    ],
+    "donburi_comments": [
+      "今日はがっつり",
+      "たまにはいいかな",
+      "お昼だからまあ許容範囲",
+      "ご飯は半分にした",
+      "ボリュームあった",
+      "食べすぎたかも",
+      "丼ものは血糖上がりやすいけど",
+      "久しぶりに食べた",
+      "お腹すいてたから"
+    ],
+    "noodle_comments": [
+      "麺は久しぶり",
+      "スープは残した",
+      "野菜多めにしてもらった",
+      "つい食べちゃった",
+      "寒かったからあったかいもの",
+      "セットで頼んでしまった",
+      "麺類は気をつけないと",
+      "たまの楽しみ",
+      "温まった"
+    ],
+    "salad_comments": [
+      "今日は軽めに",
+      "野菜多めのお昼",
+      "ヘルシーを意識",
+      "サラダ中心にしてみた",
+      "食物繊維とらないと",
+      "緑が多いと気持ちいい",
+      "夜が外食だから昼は軽く",
+      "最近野菜足りてなかった",
+      "シンプルに済ませた",
+      "これくらいがちょうどいい"
+    ],
+    "meat_comments": [
+      "たんぱく質しっかり",
+      "今日は肉の日",
+      "揚げ物だけど野菜も一緒に",
+      "がっつり食べた",
+      "たまには揚げ物も",
+      "おいしかった",
+      "肉は血糖上がりにくいらしい",
+      "ボリューム満点",
+      "付け合わせの野菜も食べた"
+    ],
+    "fish_comments": [
+      "魚の日",
+      "刺身はヘルシーでいい",
+      "海鮮だと罪悪感少ない",
+      "新鮮でおいしかった",
+      "魚もっと食べないと",
+      "お刺身ランチ",
+      "たんぱく質は魚から",
+      "さっぱり食べられた",
+      "今日は贅沢に",
+      "久しぶりの魚料理"
+    ],
+    "japanese_comments": [
+      "和食が落ち着く",
+      "煮物で温まる",
+      "作り置きのおかず",
+      "シンプルな味付け",
+      "素朴だけどおいしい",
+      "家庭の味",
+      "出汁がきいてる",
+      "野菜の煮物は安心",
+      "薄味を心がけた",
+      "こういうのが一番"
+    ],
+    "cafe_comments": [
+      "カフェでランチ",
+      "軽く済ませた",
+      "サンドイッチとコーヒー",
+      "パンは控えめに",
+      "休日のブランチ",
+      "ゆっくりできた",
+      "たまにはこういうのも",
+      "朝ごはん代わり",
+      "野菜も挟んであった",
+      "量は少なめにした"
+    ],
+    "asian_comments": [
+      "韓国料理食べた",
+      "中華だけどスープ多め",
+      "野菜たくさん取れた",
+      "辛いもの好き",
+      "外食で冒険",
+      "小皿いっぱいでうれしい",
+      "ピリ辛で代謝上がるかな",
+      "アジア飯は野菜多い",
+      "豆腐料理中心に",
+      "スープで満足感"
+    ],
+    "onigiri_comments": [
+      "簡単に済ませた",
+      "時間なくておにぎりだけ",
+      "コンビニで買った",
+      "具は鮭にした",
+      "忙しい日のランチ",
+      "海苔の香りがいい",
+      "シンプルが一番",
+      "朝ごはんはこれで",
+      "小腹がすいて",
+      "軽めに"
+    ]
+  }
+}

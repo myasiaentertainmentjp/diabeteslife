@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -173,10 +173,16 @@ export default function BlockedUsersPage() {
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/users/${block.blocked_id}`}
-                    className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden"
+                    className="relative w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden"
                   >
                     {block.blocked_user?.avatar_url ? (
-                      <Image src={block.blocked_user.avatar_url} alt="" fill sizes="40px" className="object-cover" />
+                      <Image
+                        src={block.blocked_user.avatar_url}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
                     ) : (
                       <User size={20} className="text-rose-400" />
                     )}

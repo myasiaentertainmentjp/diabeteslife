@@ -1,0 +1,215 @@
+[
+  {
+    "id": "de2d0171-3898-49fa-98ca-feffb1c8911b",
+    "user_id": "b0000001-0000-0000-0000-000000000009",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_1_salad.jpg",
+    "caption": "今日のランチはサラダ中心に🥗 血糖値を意識してドレッシングは少なめで",
+    "tags": [
+      "低糖質",
+      "手作り"
+    ],
+    "blood_sugar_after": 126,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-03-06T17:50:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type1",
+    "age_group": "40s"
+  },
+  {
+    "id": "ce8816a3-8c8d-4179-8cb7-4bc0c36fe7e6",
+    "user_id": "b0000001-0000-0000-0000-000000000008",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_2_healthy.jpg",
+    "caption": "ヘルシーな朝ごはん😊 野菜たっぷりで栄養バランスよく",
+    "tags": [
+      "ヘルシー",
+      "手作り"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-02-03T08:50:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  },
+  {
+    "id": "b0b6dddc-fbda-4fb2-ab3b-a8b9e3073ac8",
+    "user_id": "b0000001-0000-0000-0000-000000000003",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_3_soup.jpg",
+    "caption": "温かいスープで体を温めました🍲 具材たっぷりで満足感あり",
+    "tags": [
+      "手作り"
+    ],
+    "blood_sugar_after": 164,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-02-18T07:42:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "60s"
+  },
+  {
+    "id": "9e3a4604-5358-4d28-afc7-8f22fd809d2b",
+    "user_id": "f0000001-0000-0000-0000-000000000017",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_4_veggies.jpg",
+    "caption": "野菜中心の夕食です🥦 カラフルで見た目も楽しい",
+    "tags": [
+      "低糖質",
+      "手作り"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-03-10T09:00:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  },
+  {
+    "id": "0efe899e-b4cc-4f41-861c-f1a10c5c1c66",
+    "user_id": "f0000001-0000-0000-0000-000000000015",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_5_grilled.jpg",
+    "caption": "グリルチキンと野菜🍗 たんぱく質しっかり摂れた",
+    "tags": [
+      "低糖質",
+      "手作り"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2025-12-30T10:30:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type1",
+    "age_group": "20s"
+  },
+  {
+    "id": "d91ee925-6e47-40e7-80d3-4c4d97f98de7",
+    "user_id": "b0000001-0000-0000-0000-000000000010",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_6_fish.jpg",
+    "caption": "お魚メインの夕食🐟 DHA・EPAもしっかり摂取",
+    "tags": [
+      "手作り",
+      "ヘルシー"
+    ],
+    "blood_sugar_after": 112,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-02-10T17:02:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  },
+  {
+    "id": "e2bce87e-37ad-44d5-bde6-7966a3afb107",
+    "user_id": "b0000001-0000-0000-0000-000000000006",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_7_plate.jpg",
+    "caption": "バランスの良いプレートランチ🍽️ 糖質控えめに工夫しました",
+    "tags": [
+      "低糖質"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-03-12T12:23:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "40s"
+  },
+  {
+    "id": "5742086b-32a7-45fd-b55d-1f6e7e35f995",
+    "user_id": "f0000001-0000-0000-0000-000000000018",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_8_colorful.jpg",
+    "caption": "カラフルなお野菜たっぷり🌈 食後血糖値も安定してた",
+    "tags": [
+      "低糖質",
+      "ヘルシー"
+    ],
+    "blood_sugar_after": 138,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-01-17T19:09:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "30s"
+  },
+  {
+    "id": "47f186af-dee5-4716-8ebc-2a0b92df6adf",
+    "user_id": "f0000001-0000-0000-0000-000000000017",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_9_pizza_lowgi.jpg",
+    "caption": "低糖質ピザに挑戦🍕 カリフラワー生地で意外と美味しい！",
+    "tags": [
+      "低糖質",
+      "手作り"
+    ],
+    "blood_sugar_after": 153,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2025-12-25T09:14:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  },
+  {
+    "id": "1cf1f340-ab00-4151-b55c-97381429e47e",
+    "user_id": "b0000001-0000-0000-0000-000000000003",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_10_toast.jpg",
+    "caption": "朝はシンプルなトーストで☕ 全粒粉パンで血糖値スパイクを抑制",
+    "tags": [
+      "手作り"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2026-02-22T16:13:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "60s"
+  },
+  {
+    "id": "47ddd67d-3214-4011-8122-296eaead6455",
+    "user_id": "b0000001-0000-0000-0000-000000000010",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_11_eggs.jpg",
+    "caption": "卵料理でたんぱく質チャージ🥚 低糖質・高たんぱくで最高",
+    "tags": [
+      "低糖質",
+      "手作り"
+    ],
+    "blood_sugar_after": null,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2025-12-25T19:08:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  },
+  {
+    "id": "8dc5f8c4-29c4-41e7-9bfb-aec78592d74d",
+    "user_id": "b0000001-0000-0000-0000-000000000001",
+    "image_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-dummy/meal_12_pasta.jpg",
+    "caption": "糖質オフパスタに挑戦🍝 コンニャクパスタで満足感バッチリ",
+    "tags": [
+      "糖質オフ",
+      "手作り"
+    ],
+    "blood_sugar_after": 136,
+    "is_public": true,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "2025-12-19T16:42:00+00:00",
+    "updated_at": "2026-03-15T11:13:48.317542+00:00",
+    "diabetes_type": "type2",
+    "age_group": "50s"
+  }
+]

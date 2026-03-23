@@ -1,0 +1,3031 @@
+{
+  "metadata": {
+    "total_images": 113,
+    "created_at": "2026-03-21",
+    "purpose": "Dライフ meal_posts 投入準備データ",
+    "categories": [
+      "set_meal",
+      "donburi",
+      "noodles",
+      "salad_vegetable",
+      "meat_main",
+      "seafood_sashimi",
+      "japanese_side",
+      "cafe_light",
+      "asian_cuisine",
+      "onigiri_simple"
+    ],
+    "extended_at": "2026-03-21T05:08:05.257Z",
+    "supabase_url": "https://josanlblwfjdaaezqbnw.supabase.co",
+    "storage_bucket": "images",
+    "storage_path_prefix": "meal-posts",
+    "workflow": [
+      "1. 画像を Supabase Storage にアップロード",
+      "2. public_url を埋める",
+      "3. ユーザー割り当て（assigned_user_id, assigned_user_name）",
+      "4. caption, tags, posted_at を生成",
+      "5. meal_posts に INSERT"
+    ]
+  },
+  "category_labels": {
+    "set_meal": "定食・セット",
+    "donburi": "丼もの",
+    "noodles": "麺類",
+    "salad_vegetable": "サラダ・野菜",
+    "meat_main": "肉料理メイン",
+    "seafood_sashimi": "魚介・刺身",
+    "japanese_side": "和食・煮物・副菜",
+    "cafe_light": "軽食・カフェ系",
+    "asian_cuisine": "アジア料理",
+    "onigiri_simple": "おにぎり・シンプル飯"
+  },
+  "mood_styles": {
+    "homemade": "手作り風",
+    "eating_out": "外食風",
+    "light": "軽め",
+    "hearty": "ボリュームあり",
+    "healthy": "ヘルシー寄り",
+    "casual": "カジュアル",
+    "special": "特別感"
+  },
+  "comment_pools": {
+    "set_meal_comments": [
+      "今日はしっかりめに",
+      "バランス意識してみた",
+      "副菜が多いと安心する",
+      "味噌汁あるとほっとする",
+      "ご飯少なめで調整",
+      "野菜も取れてよかった",
+      "久しぶりにちゃんとした食事",
+      "外で食べるとつい食べすぎる",
+      "定食屋さんのランチ",
+      "小鉢が充実してた"
+    ],
+    "donburi_comments": [
+      "今日はがっつり",
+      "たまにはいいかな",
+      "お昼だからまあ許容範囲",
+      "ご飯は半分にした",
+      "ボリュームあった",
+      "食べすぎたかも",
+      "丼ものは血糖上がりやすいけど",
+      "久しぶりに食べた",
+      "お腹すいてたから"
+    ],
+    "noodle_comments": [
+      "麺は久しぶり",
+      "スープは残した",
+      "野菜多めにしてもらった",
+      "つい食べちゃった",
+      "寒かったからあったかいもの",
+      "セットで頼んでしまった",
+      "麺類は気をつけないと",
+      "たまの楽しみ",
+      "温まった"
+    ],
+    "salad_comments": [
+      "今日は軽めに",
+      "野菜多めのお昼",
+      "ヘルシーを意識",
+      "サラダ中心にしてみた",
+      "食物繊維とらないと",
+      "緑が多いと気持ちいい",
+      "夜が外食だから昼は軽く",
+      "最近野菜足りてなかった",
+      "シンプルに済ませた",
+      "これくらいがちょうどいい"
+    ],
+    "meat_comments": [
+      "たんぱく質しっかり",
+      "今日は肉の日",
+      "揚げ物だけど野菜も一緒に",
+      "がっつり食べた",
+      "たまには揚げ物も",
+      "おいしかった",
+      "肉は血糖上がりにくいらしい",
+      "ボリューム満点",
+      "付け合わせの野菜も食べた"
+    ],
+    "fish_comments": [
+      "魚の日",
+      "刺身はヘルシーでいい",
+      "海鮮だと罪悪感少ない",
+      "新鮮でおいしかった",
+      "魚もっと食べないと",
+      "お刺身ランチ",
+      "たんぱく質は魚から",
+      "さっぱり食べられた",
+      "今日は贅沢に",
+      "久しぶりの魚料理"
+    ],
+    "japanese_comments": [
+      "和食が落ち着く",
+      "煮物で温まる",
+      "作り置きのおかず",
+      "シンプルな味付け",
+      "素朴だけどおいしい",
+      "家庭の味",
+      "出汁がきいてる",
+      "野菜の煮物は安心",
+      "薄味を心がけた",
+      "こういうのが一番"
+    ],
+    "cafe_comments": [
+      "カフェでランチ",
+      "軽く済ませた",
+      "サンドイッチとコーヒー",
+      "パンは控えめに",
+      "休日のブランチ",
+      "ゆっくりできた",
+      "たまにはこういうのも",
+      "朝ごはん代わり",
+      "野菜も挟んであった",
+      "量は少なめにした"
+    ],
+    "asian_comments": [
+      "韓国料理食べた",
+      "中華だけどスープ多め",
+      "野菜たくさん取れた",
+      "辛いもの好き",
+      "外食で冒険",
+      "小皿いっぱいでうれしい",
+      "ピリ辛で代謝上がるかな",
+      "アジア飯は野菜多い",
+      "豆腐料理中心に",
+      "スープで満足感"
+    ],
+    "onigiri_comments": [
+      "簡単に済ませた",
+      "時間なくておにぎりだけ",
+      "コンビニで買った",
+      "具は鮭にした",
+      "忙しい日のランチ",
+      "海苔の香りがいい",
+      "シンプルが一番",
+      "朝ごはんはこれで",
+      "小腹がすいて",
+      "軽めに"
+    ]
+  },
+  "summary": {
+    "total_images": 113,
+    "uploaded": 113,
+    "assigned": 79,
+    "inserted": 79,
+    "by_category": {
+      "set_meal": 30,
+      "asian_cuisine": 14,
+      "cafe_light": 4,
+      "salad_vegetable": 8,
+      "noodles": 13,
+      "japanese_side": 14,
+      "donburi": 11,
+      "onigiri_simple": 1,
+      "seafood_sashimi": 9,
+      "meat_main": 9
+    }
+  },
+  "images": [
+    {
+      "id": 1,
+      "file_name": "86380841-1A80-4FE1-B2B7-4C20EA041845.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/86380841-1A80-4FE1-B2B7-4C20EA041845.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "焼き魚定食、副菜充実",
+      "storage_path": "meal-posts/86380841-1A80-4FE1-B2B7-4C20EA041845.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/86380841-1A80-4FE1-B2B7-4C20EA041845.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 2,
+      "file_name": "9D3393FF-EEA0-454E-8E16-834CB69BEF01.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/9D3393FF-EEA0-454E-8E16-834CB69BEF01.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "インドカレー＆ナン",
+      "storage_path": "meal-posts/9D3393FF-EEA0-454E-8E16-834CB69BEF01.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/9D3393FF-EEA0-454E-8E16-834CB69BEF01.jpg",
+      "uploaded": true,
+      "assigned_user_id": "70ad24b3-70ad-54df-94ed-8ad696b6f4d2",
+      "assigned_user_name": "捜索ボラ",
+      "caption": "野菜たくさん取れた",
+      "tags": [
+        "韓国料理",
+        "アジア飯",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-14T09:56:00.000Z",
+      "inserted": true,
+      "meal_post_id": "33e22147-c5e1-443a-92c9-c7a380f1d126"
+    },
+    {
+      "id": 3,
+      "file_name": "C91037FB-36AA-48DB-8379-E36D352BFCED_1_102_a.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/C91037FB-36AA-48DB-8379-E36D352BFCED_1_102_a.jpg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "生ハムとワイン、おしゃれ",
+      "storage_path": "meal-posts/C91037FB-36AA-48DB-8379-E36D352BFCED_1_102_a.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/C91037FB-36AA-48DB-8379-E36D352BFCED_1_102_a.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 4,
+      "file_name": "IMG_0084.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_0084.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "healthy",
+        "light"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "フルーツ盛り合わせ",
+      "storage_path": "meal-posts/IMG_0084.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_0084.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "これくらいがちょうどいい",
+      "tags": [
+        "糖質制限",
+        "サラダ",
+        "軽め"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-02T10:07:00.000Z",
+      "inserted": true,
+      "meal_post_id": "747c1271-98f4-4b0b-8185-d1cdcb6689bb"
+    },
+    {
+      "id": 5,
+      "file_name": "IMG_0117.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_0117.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "肉野菜麺、ラグマン風",
+      "storage_path": "meal-posts/IMG_0117.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_0117.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "麺は久しぶり",
+      "tags": [
+        "ラーメン"
+      ],
+      "blood_sugar_after": 133,
+      "posted_at": "2025-12-06T04:39:00.000Z",
+      "inserted": true,
+      "meal_post_id": "261385cf-6a98-4b86-b59d-1367a34059b9"
+    },
+    {
+      "id": 6,
+      "file_name": "IMG_0849.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_0849.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "韓国料理定食、小皿多数",
+      "storage_path": "meal-posts/IMG_0849.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_0849.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "小皿いっぱいでうれしい",
+      "tags": [
+        "韓国料理",
+        "中華"
+      ],
+      "blood_sugar_after": 139,
+      "posted_at": "2025-12-13T03:23:00.000Z",
+      "inserted": true,
+      "meal_post_id": "3bc3f649-baef-4ef3-b8f2-fb3e4648c5cf"
+    },
+    {
+      "id": 7,
+      "file_name": "IMG_0908.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_0908.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "homemade",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "弁当、とんかつ＆ハンバーグ",
+      "storage_path": "meal-posts/IMG_0908.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_0908.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 8,
+      "file_name": "IMG_1010.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1010.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "大根と魚の煮物",
+      "storage_path": "meal-posts/IMG_1010.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1010.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 9,
+      "file_name": "IMG_1140.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1140.jpeg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "light"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "サンドイッチとコーヒー",
+      "storage_path": "meal-posts/IMG_1140.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1140.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "52eddc2c-aa88-5e62-a227-139b8887696c",
+      "assigned_user_name": "花音🌻hanon",
+      "caption": "軽く済ませた",
+      "tags": [
+        "軽食",
+        "カフェ",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-07T09:37:00.000Z",
+      "inserted": true,
+      "meal_post_id": "0b34a3d3-7355-4a20-92b0-4d3c45cd82bd"
+    },
+    {
+      "id": 10,
+      "file_name": "IMG_1514.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1514.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "そぼろ丼風、薬味たっぷり",
+      "storage_path": "meal-posts/IMG_1514.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1514.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "たまにはいいかな",
+      "tags": [
+        "丼もの",
+        "がっつり",
+        "ヘルシー"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-13T22:30:00.000Z",
+      "inserted": true,
+      "meal_post_id": "3e97d7a7-7e06-4dd6-90da-962ba53cd3ac"
+    },
+    {
+      "id": 11,
+      "file_name": "IMG_1667.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1667.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "チキン南蛮定食",
+      "storage_path": "meal-posts/IMG_1667.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1667.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "バランス意識してみた",
+      "tags": [
+        "定食",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-09T10:58:00.000Z",
+      "inserted": true,
+      "meal_post_id": "2c8f9c76-cb3f-4a16-bfef-4f51f7f9c0e2"
+    },
+    {
+      "id": 12,
+      "file_name": "IMG_1727.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1727.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "辛いスープ鍋",
+      "storage_path": "meal-posts/IMG_1727.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1727.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "28c65a26-798b-526e-ad0f-8fb1ebef8e78",
+      "assigned_user_name": "おかわり",
+      "caption": "外食で冒険",
+      "tags": [
+        "アジア飯",
+        "韓国料理",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-28T22:36:00.000Z",
+      "inserted": true,
+      "meal_post_id": "c414d4c8-bc02-435d-b4a9-ce11de427f13"
+    },
+    {
+      "id": 13,
+      "file_name": "IMG_1855.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1855.jpeg",
+      "category": "onigiri_simple",
+      "mood_style": [
+        "casual",
+        "light"
+      ],
+      "comment_pool": "onigiri_comments",
+      "note": "明太子おにぎり",
+      "storage_path": "meal-posts/IMG_1855.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1855.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "52eddc2c-aa88-5e62-a227-139b8887696c",
+      "assigned_user_name": "花音🌻hanon",
+      "caption": "海苔の香りがいい",
+      "tags": [
+        "簡単",
+        "軽め"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-07T03:14:00.000Z",
+      "inserted": true,
+      "meal_post_id": "ab04a032-2bb8-4898-9a3b-a848d927664b"
+    },
+    {
+      "id": 14,
+      "file_name": "IMG_1915.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_1915.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "オムライス",
+      "storage_path": "meal-posts/IMG_1915.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_1915.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "6b77d0a7-e272-5075-be52-262fdf386cf1",
+      "assigned_user_name": "かわちゃん",
+      "caption": "今日はがっつり",
+      "tags": [
+        "丼もの",
+        "がっつり",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-01T10:00:00.000Z",
+      "inserted": true,
+      "meal_post_id": "e8dc3d21-bd03-4503-a2ce-0ec123e9cae5"
+    },
+    {
+      "id": 15,
+      "file_name": "IMG_2007.JPG",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2007.JPG",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "鍋料理、野菜たっぷり",
+      "storage_path": "meal-posts/IMG_2007.JPG",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2007.JPG",
+      "uploaded": true,
+      "assigned_user_id": "6ca9558c-e08f-5318-ae91-4ff74ae400e1",
+      "assigned_user_name": "からゆうたろう",
+      "caption": "小皿いっぱいでうれしい",
+      "tags": [
+        "野菜たっぷり",
+        "アジア飯"
+      ],
+      "blood_sugar_after": 130,
+      "posted_at": "2026-02-12T22:44:00.000Z",
+      "inserted": true,
+      "meal_post_id": "02f17495-0f0b-459e-8b54-80e288194db8"
+    },
+    {
+      "id": 16,
+      "file_name": "IMG_2052.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2052.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "中華セット、ルーロー飯",
+      "storage_path": "meal-posts/IMG_2052.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2052.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 17,
+      "file_name": "IMG_2116.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2116.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "とんかつ定食",
+      "storage_path": "meal-posts/IMG_2116.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2116.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "5c742ce8-46e9-5195-84b2-2988893e7a29",
+      "assigned_user_name": "ぱふ",
+      "caption": "小鉢が充実してた",
+      "tags": [
+        "定食",
+        "バランス",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-22T10:38:00.000Z",
+      "inserted": true,
+      "meal_post_id": "7d859d9a-59ea-4d31-9f0d-e9f950ea24d7"
+    },
+    {
+      "id": 18,
+      "file_name": "IMG_2231.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2231.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物、野菜中心",
+      "storage_path": "meal-posts/IMG_2231.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2231.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "素朴だけどおいしい",
+      "tags": [
+        "煮物",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-08T23:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "bbce49d1-fc65-493f-a215-e27c1906cfaf"
+    },
+    {
+      "id": 19,
+      "file_name": "IMG_2420.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2420.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "まぐろ丼",
+      "storage_path": "meal-posts/IMG_2420.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2420.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "43cddd28-0440-54a7-b3b5-87a8a4623507",
+      "assigned_user_name": "まりな",
+      "caption": "たんぱく質は魚から",
+      "tags": [
+        "海鮮",
+        "刺身",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-30T09:37:00.000Z",
+      "inserted": true,
+      "meal_post_id": "c5808f36-dc22-443a-84ae-4e2ef2f2e126"
+    },
+    {
+      "id": 20,
+      "file_name": "IMG_2477.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2477.jpeg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理、おしゃれ",
+      "storage_path": "meal-posts/IMG_2477.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2477.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 21,
+      "file_name": "IMG_2595.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2595.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "しらすサラダ",
+      "storage_path": "meal-posts/IMG_2595.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2595.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "夜が外食だから昼は軽く",
+      "tags": [
+        "サラダ",
+        "野菜",
+        "ヘルシー"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-21T10:11:00.000Z",
+      "inserted": true,
+      "meal_post_id": "41a3d95c-da11-4564-a8d5-67b10402fad2"
+    },
+    {
+      "id": 22,
+      "file_name": "IMG_2676.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2676.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "ラーメンセット、唐揚げ付き",
+      "storage_path": "meal-posts/IMG_2676.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2676.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 23,
+      "file_name": "IMG_2677.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2677.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "冷やし中華風",
+      "storage_path": "meal-posts/IMG_2677.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2677.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "6ca9558c-e08f-5318-ae91-4ff74ae400e1",
+      "assigned_user_name": "からゆうたろう",
+      "caption": "たまの楽しみ",
+      "tags": [
+        "うどん",
+        "ラーメン"
+      ],
+      "blood_sugar_after": 170,
+      "posted_at": "2026-02-11T04:17:00.000Z",
+      "inserted": true,
+      "meal_post_id": "f137bf83-71ef-4937-ac54-1230e6e72ee0"
+    },
+    {
+      "id": 24,
+      "file_name": "IMG_2688.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2688.jpeg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "ステーキ",
+      "storage_path": "meal-posts/IMG_2688.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2688.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "付け合わせの野菜も食べた",
+      "tags": [
+        "がっつり"
+      ],
+      "blood_sugar_after": 139,
+      "posted_at": "2025-12-20T09:32:00.000Z",
+      "inserted": true,
+      "meal_post_id": "009820fc-b7f7-46be-ab47-0d1a25a88d67"
+    },
+    {
+      "id": 25,
+      "file_name": "IMG_2816.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2816.jpeg",
+      "category": "cafe_light",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "フレンチトースト朝食",
+      "storage_path": "meal-posts/IMG_2816.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2816.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "朝ごはん代わり",
+      "tags": [
+        "カフェ",
+        "外食"
+      ],
+      "blood_sugar_after": 133,
+      "posted_at": "2025-12-28T22:52:00.000Z",
+      "inserted": true,
+      "meal_post_id": "8dd0ed4a-2553-4666-89da-448349684f8c"
+    },
+    {
+      "id": 26,
+      "file_name": "IMG_2822.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2822.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "カツ定食",
+      "storage_path": "meal-posts/IMG_2822.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2822.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "6ca9558c-e08f-5318-ae91-4ff74ae400e1",
+      "assigned_user_name": "からゆうたろう",
+      "caption": "バランス意識してみた",
+      "tags": [
+        "バランス"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-12T23:19:00.000Z",
+      "inserted": true,
+      "meal_post_id": "6fb21ad3-9b2c-4d08-9bdd-f27d52ec90d4"
+    },
+    {
+      "id": 27,
+      "file_name": "IMG_2825.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2825.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "牛丼セット",
+      "storage_path": "meal-posts/IMG_2825.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2825.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "ボリュームあった",
+      "tags": [
+        "丼もの",
+        "がっつり"
+      ],
+      "blood_sugar_after": 200,
+      "posted_at": "2025-12-28T10:54:00.000Z",
+      "inserted": true,
+      "meal_post_id": "94f0d5a6-e73a-46c2-b3b4-5760bde6177c"
+    },
+    {
+      "id": 28,
+      "file_name": "IMG_2853.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2853.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "沖縄料理、ゆし豆腐",
+      "storage_path": "meal-posts/IMG_2853.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2853.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "中華だけどスープ多め",
+      "tags": [
+        "韓国料理"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-18T04:52:00.000Z",
+      "inserted": true,
+      "meal_post_id": "4034b606-c3e8-4706-9d81-69136bc527af"
+    },
+    {
+      "id": 29,
+      "file_name": "IMG_2901.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2901.jpeg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "水菜サラダ",
+      "storage_path": "meal-posts/IMG_2901.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2901.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 30,
+      "file_name": "IMG_2902.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2902.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身盛り合わせ",
+      "storage_path": "meal-posts/IMG_2902.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2902.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "70ad24b3-70ad-54df-94ed-8ad696b6f4d2",
+      "assigned_user_name": "捜索ボラ",
+      "caption": "魚もっと食べないと",
+      "tags": [
+        "魚",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-19T22:02:00.000Z",
+      "inserted": true,
+      "meal_post_id": "9e665583-d2d2-4042-b8cc-ad295117b8f7"
+    },
+    {
+      "id": 31,
+      "file_name": "IMG_2934.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2934.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮丼",
+      "storage_path": "meal-posts/IMG_2934.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2934.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "魚もっと食べないと",
+      "tags": [
+        "魚",
+        "刺身"
+      ],
+      "blood_sugar_after": 119,
+      "posted_at": "2025-12-14T22:11:00.000Z",
+      "inserted": true,
+      "meal_post_id": "3d354347-41de-4b40-ad4e-f0283171e4c6"
+    },
+    {
+      "id": 32,
+      "file_name": "IMG_2970.JPG",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2970.JPG",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "とんかつ定食、雑穀米",
+      "storage_path": "meal-posts/IMG_2970.JPG",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2970.JPG",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 33,
+      "file_name": "IMG_2981.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_2981.jpeg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "かつ丼",
+      "storage_path": "meal-posts/IMG_2981.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_2981.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "久しぶりに食べた",
+      "tags": [
+        "お昼ごはん",
+        "丼もの",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-10T23:40:00.000Z",
+      "inserted": true,
+      "meal_post_id": "b1db8bee-7d7a-48f7-825c-023ebd610251"
+    },
+    {
+      "id": 34,
+      "file_name": "IMG_3040.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_3040.jpeg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "麻婆豆腐風",
+      "storage_path": "meal-posts/IMG_3040.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_3040.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "6b77d0a7-e272-5075-be52-262fdf386cf1",
+      "assigned_user_name": "かわちゃん",
+      "caption": "中華だけどスープ多め",
+      "tags": [
+        "韓国料理",
+        "アジア飯",
+        "手作り"
+      ],
+      "blood_sugar_after": 133,
+      "posted_at": "2026-02-26T04:16:00.000Z",
+      "inserted": true,
+      "meal_post_id": "602b20a3-3e20-4c1b-9ed2-2cb873116134"
+    },
+    {
+      "id": 35,
+      "file_name": "IMG_3175.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_3175.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "天ぷらうどんセット",
+      "storage_path": "meal-posts/IMG_3175.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_3175.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "359601e4-5485-5193-bbd0-67134e36ab56",
+      "assigned_user_name": "ナミキ",
+      "caption": "久しぶりにちゃんとした食事",
+      "tags": [
+        "外食",
+        "ランチ"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-06T10:19:00.000Z",
+      "inserted": true,
+      "meal_post_id": "6338a79c-bc28-41fb-a845-33c0eed20319"
+    },
+    {
+      "id": 36,
+      "file_name": "IMG_5939.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_5939.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食、肉巻き",
+      "storage_path": "meal-posts/IMG_5939.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_5939.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "359601e4-5485-5193-bbd0-67134e36ab56",
+      "assigned_user_name": "ナミキ",
+      "caption": "ご飯少なめで調整",
+      "tags": [
+        "定食",
+        "バランス"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-08T09:44:00.000Z",
+      "inserted": true,
+      "meal_post_id": "cc6cff64-09ce-4679-931c-e0b8a98f62f6"
+    },
+    {
+      "id": 37,
+      "file_name": "IMG_6148.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_6148.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮料理",
+      "storage_path": "meal-posts/IMG_6148.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_6148.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "さっぱり食べられた",
+      "tags": [
+        "海鮮",
+        "特別な日"
+      ],
+      "blood_sugar_after": 121,
+      "posted_at": "2026-01-11T03:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "aa8c2399-8e3f-42fb-bcb9-4e1a8368bc0b"
+    },
+    {
+      "id": 38,
+      "file_name": "IMG_7573.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_7573.jpeg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身盛り",
+      "storage_path": "meal-posts/IMG_7573.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_7573.jpeg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 39,
+      "file_name": "IMG_7663.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_7663.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/IMG_7663.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_7663.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "43cddd28-0440-54a7-b3b5-87a8a4623507",
+      "assigned_user_name": "まりな",
+      "caption": "野菜も取れてよかった",
+      "tags": [
+        "ランチ",
+        "バランス",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-30T23:27:00.000Z",
+      "inserted": true,
+      "meal_post_id": "4853ddcd-fc81-409f-8a11-a9a35f15eb30"
+    },
+    {
+      "id": 40,
+      "file_name": "IMG_7688.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_7688.jpeg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "きくらげ野菜炒め",
+      "storage_path": "meal-posts/IMG_7688.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_7688.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "薄味を心がけた",
+      "tags": [
+        "家庭料理"
+      ],
+      "blood_sugar_after": 132,
+      "posted_at": "2025-12-28T09:07:00.000Z",
+      "inserted": true,
+      "meal_post_id": "a37735de-bc68-454e-a9d2-a2a31fcc8b0b"
+    },
+    {
+      "id": 41,
+      "file_name": "IMG_9150.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_9150.jpeg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "肉うどんセット",
+      "storage_path": "meal-posts/IMG_9150.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_9150.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "52eddc2c-aa88-5e62-a227-139b8887696c",
+      "assigned_user_name": "花音🌻hanon",
+      "caption": "スープは残した",
+      "tags": [
+        "うどん",
+        "温かい",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-01T04:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "2b54b995-0b99-48ba-877d-cf701e1a4016"
+    },
+    {
+      "id": 42,
+      "file_name": "IMG_9416.jpeg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/IMG_9416.jpeg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食セット",
+      "storage_path": "meal-posts/IMG_9416.jpeg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/IMG_9416.jpeg",
+      "uploaded": true,
+      "assigned_user_id": "6ca9558c-e08f-5318-ae91-4ff74ae400e1",
+      "assigned_user_name": "からゆうたろう",
+      "caption": "ご飯少なめで調整",
+      "tags": [
+        "バランス",
+        "ランチ"
+      ],
+      "blood_sugar_after": 155,
+      "posted_at": "2026-02-11T10:07:00.000Z",
+      "inserted": true,
+      "meal_post_id": "9b290ff6-79bf-44c3-919a-8527d76f7007"
+    },
+    {
+      "id": 43,
+      "file_name": "S__18063369_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063369_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食",
+      "storage_path": "meal-posts/S__18063369_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063369_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 44,
+      "file_name": "S__18063370_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063370_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "かつ丼セット",
+      "storage_path": "meal-posts/S__18063370_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063370_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "41a81305-9897-5aa9-b325-0c7f681b7c97",
+      "assigned_user_name": "桃の香り",
+      "caption": "ご飯は半分にした",
+      "tags": [
+        "丼もの"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-11T10:54:00.000Z",
+      "inserted": true,
+      "meal_post_id": "bd5aaaee-31ee-4c04-a43b-77a2949bdd86"
+    },
+    {
+      "id": 45,
+      "file_name": "S__18063371_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063371_0.jpg",
+      "category": "cafe_light",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "cafe_comments",
+      "note": "スムージー作り",
+      "storage_path": "meal-posts/S__18063371_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063371_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "41a81305-9897-5aa9-b325-0c7f681b7c97",
+      "assigned_user_name": "桃の香り",
+      "caption": "サンドイッチとコーヒー",
+      "tags": [
+        "ブランチ",
+        "軽食",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-16T10:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "611d3d40-784c-4363-a35a-72b3e38cfdb5"
+    },
+    {
+      "id": 46,
+      "file_name": "S__18063372_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063372_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "ネギトロ丼セット",
+      "storage_path": "meal-posts/S__18063372_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063372_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 47,
+      "file_name": "S__18063373_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063373_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "天ぷらうどん定食",
+      "storage_path": "meal-posts/S__18063373_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063373_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 48,
+      "file_name": "S__18063374_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063374_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063374_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063374_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 49,
+      "file_name": "S__18063375_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063375_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛丼定食",
+      "storage_path": "meal-posts/S__18063375_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063375_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "28c65a26-798b-526e-ad0f-8fb1ebef8e78",
+      "assigned_user_name": "おかわり",
+      "caption": "久しぶりにちゃんとした食事",
+      "tags": [
+        "定食",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-05T03:08:00.000Z",
+      "inserted": true,
+      "meal_post_id": "5da46885-f21a-4b8c-b9a5-e006872439ec"
+    },
+    {
+      "id": 50,
+      "file_name": "S__18063376_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063376_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "野菜炒め、きゅうりサラダ",
+      "storage_path": "meal-posts/S__18063376_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063376_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "シンプルな味付け",
+      "tags": [
+        "家庭料理"
+      ],
+      "blood_sugar_after": 126,
+      "posted_at": "2025-12-10T09:03:00.000Z",
+      "inserted": true,
+      "meal_post_id": "3db544bc-336d-4aab-94b9-e10c01008277"
+    },
+    {
+      "id": 51,
+      "file_name": "S__18063377_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063377_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "ステーキランチ",
+      "storage_path": "meal-posts/S__18063377_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063377_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 52,
+      "file_name": "S__18063378_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063378_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "天ざるそば",
+      "storage_path": "meal-posts/S__18063378_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063378_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "5c742ce8-46e9-5195-84b2-2988893e7a29",
+      "assigned_user_name": "ぱふ",
+      "caption": "温まった",
+      "tags": [
+        "うどん",
+        "温かい",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-20T09:58:00.000Z",
+      "inserted": true,
+      "meal_post_id": "781b4f15-0965-4882-a4b2-8ad945080dbc"
+    },
+    {
+      "id": 53,
+      "file_name": "S__18063380_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063380_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛丼定食",
+      "storage_path": "meal-posts/S__18063380_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063380_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 54,
+      "file_name": "S__18063381_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063381_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "焼肉",
+      "storage_path": "meal-posts/S__18063381_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063381_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 55,
+      "file_name": "S__18063382_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063382_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "野菜カレー",
+      "storage_path": "meal-posts/S__18063382_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063382_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6e142c0e-7b84-54f0-bb2b-96091c2d8b9a",
+      "assigned_user_name": "マローダ19xx",
+      "caption": "ボリュームあった",
+      "tags": [
+        "丼もの",
+        "がっつり"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-13T10:40:00.000Z",
+      "inserted": true,
+      "meal_post_id": "cd6065c2-ac8e-43b0-85aa-334600040508"
+    },
+    {
+      "id": 56,
+      "file_name": "S__18063383_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063383_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "麻婆茄子",
+      "storage_path": "meal-posts/S__18063383_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063383_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 57,
+      "file_name": "S__18063384_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063384_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063384_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063384_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 58,
+      "file_name": "S__18063385_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063385_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食",
+      "storage_path": "meal-posts/S__18063385_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063385_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6b77d0a7-e272-5075-be52-262fdf386cf1",
+      "assigned_user_name": "かわちゃん",
+      "caption": "久しぶりにちゃんとした食事",
+      "tags": [
+        "定食"
+      ],
+      "blood_sugar_after": 155,
+      "posted_at": "2026-02-24T23:32:00.000Z",
+      "inserted": true,
+      "meal_post_id": "cbed9806-a74d-42fc-8f72-bce426dcd37a"
+    },
+    {
+      "id": 59,
+      "file_name": "S__18063386_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063386_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "刀削麺風、青菜たっぷり",
+      "storage_path": "meal-posts/S__18063386_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063386_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 60,
+      "file_name": "S__18063387_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063387_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "キムチ鍋",
+      "storage_path": "meal-posts/S__18063387_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063387_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 61,
+      "file_name": "S__18063388_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063388_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "牛タン定食",
+      "storage_path": "meal-posts/S__18063388_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063388_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 62,
+      "file_name": "S__18063389_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063389_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "焼き魚定食風",
+      "storage_path": "meal-posts/S__18063389_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063389_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 63,
+      "file_name": "S__18063391_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063391_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "白菜煮込み",
+      "storage_path": "meal-posts/S__18063391_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063391_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "和食が落ち着く",
+      "tags": [
+        "和食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-31T22:18:00.000Z",
+      "inserted": true,
+      "meal_post_id": "96fe7812-a53e-496d-ae24-ac596594e8f6"
+    },
+    {
+      "id": 64,
+      "file_name": "S__18063392_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063392_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "豆腐鍋、きゅうり",
+      "storage_path": "meal-posts/S__18063392_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063392_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "中華だけどスープ多め",
+      "tags": [
+        "アジア飯",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-06T04:23:00.000Z",
+      "inserted": true,
+      "meal_post_id": "54e3b5a7-1def-4da5-88f0-5a76d6ce14d4"
+    },
+    {
+      "id": 65,
+      "file_name": "S__18063393_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063393_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "惣菜、グラタン",
+      "storage_path": "meal-posts/S__18063393_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063393_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6b77d0a7-e272-5075-be52-262fdf386cf1",
+      "assigned_user_name": "かわちゃん",
+      "caption": "野菜の煮物は安心",
+      "tags": [
+        "家庭料理",
+        "カジュアル"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-26T10:09:00.000Z",
+      "inserted": true,
+      "meal_post_id": "403e8981-738d-4f29-a52e-c2abe2d4315e"
+    },
+    {
+      "id": 66,
+      "file_name": "S__18063394_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063394_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "チキンサラダ",
+      "storage_path": "meal-posts/S__18063394_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063394_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6b77d0a7-e272-5075-be52-262fdf386cf1",
+      "assigned_user_name": "かわちゃん",
+      "caption": "シンプルに済ませた",
+      "tags": [
+        "野菜",
+        "ヘルシー"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-01T23:07:00.000Z",
+      "inserted": true,
+      "meal_post_id": "d8515437-4830-4459-8140-de8ba1a2c72b"
+    },
+    {
+      "id": 67,
+      "file_name": "S__18063395_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063395_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063395_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063395_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "小鉢が充実してた",
+      "tags": [
+        "外食"
+      ],
+      "blood_sugar_after": 156,
+      "posted_at": "2025-12-19T23:50:00.000Z",
+      "inserted": true,
+      "meal_post_id": "02a7c422-047f-440a-9419-d56606457c28"
+    },
+    {
+      "id": 68,
+      "file_name": "S__18063396_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063396_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物、副菜",
+      "storage_path": "meal-posts/S__18063396_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063396_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "70ad24b3-70ad-54df-94ed-8ad696b6f4d2",
+      "assigned_user_name": "捜索ボラ",
+      "caption": "和食が落ち着く",
+      "tags": [
+        "家庭料理",
+        "煮物"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-15T23:43:00.000Z",
+      "inserted": true,
+      "meal_post_id": "e6c257b7-27ce-450e-88ea-d14270a8cd71"
+    },
+    {
+      "id": 69,
+      "file_name": "S__18063397_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063397_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理",
+      "storage_path": "meal-posts/S__18063397_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063397_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 70,
+      "file_name": "S__18063398_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063398_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "サラダ",
+      "storage_path": "meal-posts/S__18063398_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063398_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 71,
+      "file_name": "S__18063399_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063399_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063399_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063399_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 72,
+      "file_name": "S__18063400_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063400_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "ラーメン",
+      "storage_path": "meal-posts/S__18063400_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063400_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "27de7033-665e-5060-bafa-e4aed971e69c",
+      "assigned_user_name": "麻衣子@1型",
+      "caption": "温まった",
+      "tags": [
+        "温かい"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-23T23:42:00.000Z",
+      "inserted": true,
+      "meal_post_id": "e499f9b1-fde7-4224-9045-81ccdf24e908"
+    },
+    {
+      "id": 73,
+      "file_name": "S__18063402_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063402_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063402_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063402_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 74,
+      "file_name": "S__18063403_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063403_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "中華料理",
+      "storage_path": "meal-posts/S__18063403_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063403_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "359601e4-5485-5193-bbd0-67134e36ab56",
+      "assigned_user_name": "ナミキ",
+      "caption": "中華だけどスープ多め",
+      "tags": [
+        "中華"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-05T22:15:00.000Z",
+      "inserted": true,
+      "meal_post_id": "d114db0c-9e22-47f5-a334-1d482ff455e3"
+    },
+    {
+      "id": 75,
+      "file_name": "S__18063404_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063404_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "野菜サラダ",
+      "storage_path": "meal-posts/S__18063404_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063404_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "緑が多いと気持ちいい",
+      "tags": [
+        "サラダ",
+        "野菜"
+      ],
+      "blood_sugar_after": 105,
+      "posted_at": "2025-11-30T04:17:00.000Z",
+      "inserted": true,
+      "meal_post_id": "470028a6-a7c7-4fd0-8b13-5c2bbd0df5d9"
+    },
+    {
+      "id": 76,
+      "file_name": "S__18063405_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063405_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063405_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063405_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "27de7033-665e-5060-bafa-e4aed971e69c",
+      "assigned_user_name": "麻衣子@1型",
+      "caption": "味噌汁あるとほっとする",
+      "tags": [
+        "定食",
+        "外食"
+      ],
+      "blood_sugar_after": 129,
+      "posted_at": "2026-01-18T22:20:00.000Z",
+      "inserted": true,
+      "meal_post_id": "ef95214e-50ad-4b1f-a042-183579f26b59"
+    },
+    {
+      "id": 77,
+      "file_name": "S__18063406_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063406_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "刺身",
+      "storage_path": "meal-posts/S__18063406_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063406_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "70ad24b3-70ad-54df-94ed-8ad696b6f4d2",
+      "assigned_user_name": "捜索ボラ",
+      "caption": "新鮮でおいしかった",
+      "tags": [
+        "魚",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-11T23:36:00.000Z",
+      "inserted": true,
+      "meal_post_id": "d3a461f2-447e-450e-b098-02ff094853e1"
+    },
+    {
+      "id": 78,
+      "file_name": "S__18063407_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063407_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食副菜",
+      "storage_path": "meal-posts/S__18063407_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063407_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "作り置きのおかず",
+      "tags": [
+        "家庭料理",
+        "煮物",
+        "ヘルシー"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-24T23:54:00.000Z",
+      "inserted": true,
+      "meal_post_id": "72991fd5-1282-4a1f-ae9d-65af35fb43a5"
+    },
+    {
+      "id": 79,
+      "file_name": "S__18063408_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063408_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼もの",
+      "storage_path": "meal-posts/S__18063408_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063408_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "43cddd28-0440-54a7-b3b5-87a8a4623507",
+      "assigned_user_name": "まりな",
+      "caption": "たまにはいいかな",
+      "tags": [
+        "がっつり",
+        "丼もの"
+      ],
+      "blood_sugar_after": 181,
+      "posted_at": "2026-01-27T03:37:00.000Z",
+      "inserted": true,
+      "meal_post_id": "674e7215-0b0b-494a-801d-0fc4f4dfad4f"
+    },
+    {
+      "id": 80,
+      "file_name": "S__18063409_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063409_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063409_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063409_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 81,
+      "file_name": "S__18063410_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063410_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理",
+      "storage_path": "meal-posts/S__18063410_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063410_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "がっつり食べた",
+      "tags": [
+        "肉",
+        "外食"
+      ],
+      "blood_sugar_after": 102,
+      "posted_at": "2025-12-03T10:09:00.000Z",
+      "inserted": true,
+      "meal_post_id": "203530d5-27eb-40ad-8ad8-b4a86d49e8ee"
+    },
+    {
+      "id": 82,
+      "file_name": "S__18063411_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063411_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺類",
+      "storage_path": "meal-posts/S__18063411_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063411_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6ca9558c-e08f-5318-ae91-4ff74ae400e1",
+      "assigned_user_name": "からゆうたろう",
+      "caption": "つい食べちゃった",
+      "tags": [
+        "麺類",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-17T04:44:00.000Z",
+      "inserted": true,
+      "meal_post_id": "087d1a2b-36d7-488c-91b0-9f046a6637c3"
+    },
+    {
+      "id": 83,
+      "file_name": "S__18063413_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063413_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063413_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063413_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "66124db1-411c-5183-861d-c8e0fd379c6f",
+      "assigned_user_name": "アリサ🎇",
+      "caption": "野菜も取れてよかった",
+      "tags": [
+        "ランチ"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-17T04:19:00.000Z",
+      "inserted": true,
+      "meal_post_id": "719edd3e-17f2-486a-b7fd-0e2928219a24"
+    },
+    {
+      "id": 84,
+      "file_name": "S__18063414_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063414_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "煮物",
+      "storage_path": "meal-posts/S__18063414_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063414_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "5c742ce8-46e9-5195-84b2-2988893e7a29",
+      "assigned_user_name": "ぱふ",
+      "caption": "煮物で温まる",
+      "tags": [
+        "家庭料理",
+        "煮物"
+      ],
+      "blood_sugar_after": 124,
+      "posted_at": "2026-02-16T03:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "456caa14-86ee-4171-8f4b-4d86d16d4d78"
+    },
+    {
+      "id": 85,
+      "file_name": "S__18063415_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063415_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理",
+      "storage_path": "meal-posts/S__18063415_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063415_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 86,
+      "file_name": "S__18063416_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063416_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063416_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063416_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 87,
+      "file_name": "S__18063417_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063417_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮",
+      "storage_path": "meal-posts/S__18063417_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063417_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 88,
+      "file_name": "S__18063418_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063418_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼",
+      "storage_path": "meal-posts/S__18063418_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063418_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "久しぶりに食べた",
+      "tags": [
+        "お昼ごはん",
+        "がっつり",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-04T03:43:00.000Z",
+      "inserted": true,
+      "meal_post_id": "adac45c6-6ba9-4dbf-96b2-c5f42d1e534e"
+    },
+    {
+      "id": 89,
+      "file_name": "S__18063419_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063419_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理",
+      "storage_path": "meal-posts/S__18063419_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063419_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "27de7033-665e-5060-bafa-e4aed971e69c",
+      "assigned_user_name": "麻衣子@1型",
+      "caption": "肉は血糖上がりにくいらしい",
+      "tags": [
+        "がっつり",
+        "たんぱく質"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-27T23:54:00.000Z",
+      "inserted": true,
+      "meal_post_id": "2b5c5a04-41d6-49cb-b4f6-2c73c383d118"
+    },
+    {
+      "id": 90,
+      "file_name": "S__18063420_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063420_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063420_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063420_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "43cddd28-0440-54a7-b3b5-87a8a4623507",
+      "assigned_user_name": "まりな",
+      "caption": "副菜が多いと安心する",
+      "tags": [
+        "外食",
+        "バランス"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-31T10:14:00.000Z",
+      "inserted": true,
+      "meal_post_id": "cf7782f6-01ef-4022-9284-70187f2e8340"
+    },
+    {
+      "id": 91,
+      "file_name": "S__18063421_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063421_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺",
+      "storage_path": "meal-posts/S__18063421_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063421_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "セットで頼んでしまった",
+      "tags": [
+        "温かい"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-24T09:33:00.000Z",
+      "inserted": true,
+      "meal_post_id": "7f26381d-5d03-44a0-ab28-f3209fda2026"
+    },
+    {
+      "id": 92,
+      "file_name": "S__18063422_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063422_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食",
+      "storage_path": "meal-posts/S__18063422_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063422_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "66124db1-411c-5183-861d-c8e0fd379c6f",
+      "assigned_user_name": "アリサ🎇",
+      "caption": "作り置きのおかず",
+      "tags": [
+        "和食",
+        "煮物",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-18T23:30:00.000Z",
+      "inserted": true,
+      "meal_post_id": "a1a43a04-c043-406e-ac8e-e5fd6776bb15"
+    },
+    {
+      "id": 93,
+      "file_name": "S__18063424_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063424_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063424_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063424_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "41cf3d7f-9ac1-5151-9417-c3bfa7afeda0",
+      "assigned_user_name": "仲夏トト",
+      "caption": "味噌汁あるとほっとする",
+      "tags": [
+        "バランス"
+      ],
+      "blood_sugar_after": 149,
+      "posted_at": "2025-12-23T23:29:00.000Z",
+      "inserted": true,
+      "meal_post_id": "f6f99d86-8f07-4e5c-941c-167bcd1c3db6"
+    },
+    {
+      "id": 94,
+      "file_name": "S__18063425_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063425_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア",
+      "storage_path": "meal-posts/S__18063425_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063425_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "辛いもの好き",
+      "tags": [
+        "韓国料理",
+        "中華",
+        "外食"
+      ],
+      "blood_sugar_after": 123,
+      "posted_at": "2026-01-01T10:40:00.000Z",
+      "inserted": true,
+      "meal_post_id": "7faef764-5d8a-448d-a00c-724bb1cd52a2"
+    },
+    {
+      "id": 95,
+      "file_name": "S__18063426_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063426_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼",
+      "storage_path": "meal-posts/S__18063426_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063426_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "5c742ce8-46e9-5195-84b2-2988893e7a29",
+      "assigned_user_name": "ぱふ",
+      "caption": "ボリュームあった",
+      "tags": [
+        "お昼ごはん",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-15T22:23:00.000Z",
+      "inserted": true,
+      "meal_post_id": "5a23211d-7e91-4c4d-bcdc-6a6c5d94559a"
+    },
+    {
+      "id": 96,
+      "file_name": "S__18063427_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063427_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063427_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063427_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "52eddc2c-aa88-5e62-a227-139b8887696c",
+      "assigned_user_name": "花音🌻hanon",
+      "caption": "久しぶりにちゃんとした食事",
+      "tags": [
+        "バランス",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-03T22:22:00.000Z",
+      "inserted": true,
+      "meal_post_id": "ecaf24d9-3ede-4871-b422-6143c605bffb"
+    },
+    {
+      "id": 97,
+      "file_name": "S__18063428_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063428_0.jpg",
+      "category": "seafood_sashimi",
+      "mood_style": [
+        "eating_out",
+        "special"
+      ],
+      "comment_pool": "fish_comments",
+      "note": "海鮮",
+      "storage_path": "meal-posts/S__18063428_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063428_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "52eddc2c-aa88-5e62-a227-139b8887696c",
+      "assigned_user_name": "花音🌻hanon",
+      "caption": "魚もっと食べないと",
+      "tags": [
+        "たんぱく質"
+      ],
+      "blood_sugar_after": 130,
+      "posted_at": "2026-02-06T23:09:00.000Z",
+      "inserted": true,
+      "meal_post_id": "6a2ca391-0137-4df4-b36b-eac00d7aa114"
+    },
+    {
+      "id": 98,
+      "file_name": "S__18063429_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063429_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉",
+      "storage_path": "meal-posts/S__18063429_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063429_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "たんぱく質しっかり",
+      "tags": [
+        "肉",
+        "たんぱく質"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-02T10:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "f53ef55b-d5fa-4e0d-a116-ef47a50fc06c"
+    },
+    {
+      "id": 99,
+      "file_name": "S__18063430_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063430_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食",
+      "storage_path": "meal-posts/S__18063430_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063430_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "27de7033-665e-5060-bafa-e4aed971e69c",
+      "assigned_user_name": "麻衣子@1型",
+      "caption": "家庭の味",
+      "tags": [
+        "家庭料理",
+        "煮物"
+      ],
+      "blood_sugar_after": 138,
+      "posted_at": "2026-01-26T09:07:00.000Z",
+      "inserted": true,
+      "meal_post_id": "99d15772-b78d-4cb1-8921-5981e9c90c5d"
+    },
+    {
+      "id": 100,
+      "file_name": "S__18063431_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063431_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "麺",
+      "storage_path": "meal-posts/S__18063431_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063431_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "28c65a26-798b-526e-ad0f-8fb1ebef8e78",
+      "assigned_user_name": "おかわり",
+      "caption": "寒かったからあったかいもの",
+      "tags": [
+        "温かい",
+        "麺類",
+        "ボリューム"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-05T09:37:00.000Z",
+      "inserted": true,
+      "meal_post_id": "c51af9cc-6ea4-4b34-859e-91c37dfcc178"
+    },
+    {
+      "id": 101,
+      "file_name": "S__18063432_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063432_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063432_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063432_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 102,
+      "file_name": "S__18063433_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063433_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "サラダ",
+      "storage_path": "meal-posts/S__18063433_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063433_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "2033ee1c-28b2-5187-8ba1-c94f7964e33e",
+      "assigned_user_name": "Ash🌈🦢",
+      "caption": "最近野菜足りてなかった",
+      "tags": [
+        "ヘルシー"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-07T22:38:00.000Z",
+      "inserted": true,
+      "meal_post_id": "f621b041-3741-4135-a0bf-ff5f926e5ec5"
+    },
+    {
+      "id": 103,
+      "file_name": "S__18063435_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063435_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理",
+      "storage_path": "meal-posts/S__18063435_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063435_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 104,
+      "file_name": "S__18063436_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063436_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "青菜ときのこ炒め",
+      "storage_path": "meal-posts/S__18063436_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063436_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "70ad24b3-70ad-54df-94ed-8ad696b6f4d2",
+      "assigned_user_name": "捜索ボラ",
+      "caption": "家庭の味",
+      "tags": [
+        "和食",
+        "煮物"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-19T23:39:00.000Z",
+      "inserted": true,
+      "meal_post_id": "d3102024-9c46-41ff-bcff-bea0464b349d"
+    },
+    {
+      "id": 105,
+      "file_name": "S__18063437_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063437_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063437_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063437_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "27de7033-665e-5060-bafa-e4aed971e69c",
+      "assigned_user_name": "麻衣子@1型",
+      "caption": "野菜も取れてよかった",
+      "tags": [
+        "定食",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-20T04:01:00.000Z",
+      "inserted": true,
+      "meal_post_id": "98280d57-df3f-475a-b91c-ff8e903ed5e1"
+    },
+    {
+      "id": 106,
+      "file_name": "S__18063438_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063438_0.jpg",
+      "category": "salad_vegetable",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "salad_comments",
+      "note": "野菜",
+      "storage_path": "meal-posts/S__18063438_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063438_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "5c742ce8-46e9-5195-84b2-2988893e7a29",
+      "assigned_user_name": "ぱふ",
+      "caption": "ヘルシーを意識",
+      "tags": [
+        "ヘルシー",
+        "野菜",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-02-23T23:47:00.000Z",
+      "inserted": true,
+      "meal_post_id": "c880b9df-a137-4307-9f9a-2d8eb78d8204"
+    },
+    {
+      "id": 107,
+      "file_name": "S__18063439_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063439_0.jpg",
+      "category": "donburi",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "donburi_comments",
+      "note": "丼",
+      "storage_path": "meal-posts/S__18063439_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063439_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "43cddd28-0440-54a7-b3b5-87a8a4623507",
+      "assigned_user_name": "まりな",
+      "caption": "丼ものは血糖上がりやすいけど",
+      "tags": [
+        "がっつり",
+        "丼もの"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-26T23:36:00.000Z",
+      "inserted": true,
+      "meal_post_id": "7eae04d3-dd03-4a24-9f4a-1a63faba6ab0"
+    },
+    {
+      "id": 108,
+      "file_name": "S__18063440_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063440_0.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "パスタ",
+      "storage_path": "meal-posts/S__18063440_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063440_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "野菜多めにしてもらった",
+      "tags": [
+        "麺類",
+        "カジュアル"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-13T23:50:00.000Z",
+      "inserted": true,
+      "meal_post_id": "019ec0b0-1b84-4071-8bdf-c4dc70fa4f90"
+    },
+    {
+      "id": 109,
+      "file_name": "S__18063441_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063441_0.jpg",
+      "category": "japanese_side",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "japanese_comments",
+      "note": "和食",
+      "storage_path": "meal-posts/S__18063441_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063441_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "9516c386-2cc6-53ba-8691-396ed2abff89",
+      "assigned_user_name": "たこ🐙",
+      "caption": "薄味を心がけた",
+      "tags": [
+        "和食",
+        "煮物",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-16T09:03:00.000Z",
+      "inserted": true,
+      "meal_post_id": "ee892f9e-f4ce-4a53-9edb-357363705abd"
+    },
+    {
+      "id": 110,
+      "file_name": "S__18063442_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063442_0.jpg",
+      "category": "meat_main",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "meat_comments",
+      "note": "肉料理",
+      "storage_path": "meal-posts/S__18063442_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063442_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "649c2749-825f-5848-a5c7-96dead7950ea",
+      "assigned_user_name": "あんず",
+      "caption": "付け合わせの野菜も食べた",
+      "tags": [
+        "肉",
+        "たんぱく質",
+        "外食"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-01-05T09:13:00.000Z",
+      "inserted": true,
+      "meal_post_id": "52a51a63-0e0b-47f1-8296-9b42e4d35f75"
+    },
+    {
+      "id": 111,
+      "file_name": "S__18063443_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063443_0.jpg",
+      "category": "asian_cuisine",
+      "mood_style": [
+        "homemade",
+        "healthy"
+      ],
+      "comment_pool": "asian_comments",
+      "note": "アジア料理",
+      "storage_path": "meal-posts/S__18063443_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063443_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": "8108dd63-ac37-57eb-a000-957166677c83",
+      "assigned_user_name": "りた。",
+      "caption": "韓国料理食べた",
+      "tags": [
+        "アジア飯",
+        "中華"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2025-12-29T22:13:00.000Z",
+      "inserted": true,
+      "meal_post_id": "55d207db-ed77-4acd-966b-d0c6bb2f8f6f"
+    },
+    {
+      "id": 112,
+      "file_name": "S__18063444_0.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063444_0.jpg",
+      "category": "set_meal",
+      "mood_style": [
+        "eating_out",
+        "hearty"
+      ],
+      "comment_pool": "set_meal_comments",
+      "note": "定食",
+      "storage_path": "meal-posts/S__18063444_0.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063444_0.jpg",
+      "uploaded": true,
+      "assigned_user_id": null,
+      "assigned_user_name": null,
+      "caption": null,
+      "tags": [],
+      "blood_sugar_after": null,
+      "posted_at": null,
+      "inserted": false,
+      "meal_post_id": null
+    },
+    {
+      "id": 113,
+      "file_name": "S__18063445.jpg",
+      "local_path": "/Users/koji/Desktop/Dライフ画像/S__18063445.jpg",
+      "category": "noodles",
+      "mood_style": [
+        "homemade",
+        "casual"
+      ],
+      "comment_pool": "noodle_comments",
+      "note": "インスタント麺アレンジ",
+      "storage_path": "meal-posts/S__18063445.jpg",
+      "public_url": "https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/meal-posts/S__18063445.jpg",
+      "uploaded": true,
+      "assigned_user_id": "6e142c0e-7b84-54f0-bb2b-96091c2d8b9a",
+      "assigned_user_name": "マローダ19xx",
+      "caption": "セットで頼んでしまった",
+      "tags": [
+        "麺類",
+        "手作り"
+      ],
+      "blood_sugar_after": null,
+      "posted_at": "2026-03-12T09:16:00.000Z",
+      "inserted": true,
+      "meal_post_id": "2f46abc1-c829-43d8-ad76-f703eff06ffa"
+    }
+  ]
+}

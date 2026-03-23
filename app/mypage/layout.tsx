@@ -1,11 +1,19 @@
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'マイページ',
-  description: 'あなたのDライフ マイページ。プロフィール編集・日記・食事記録・HbA1c管理などをご利用いただけます。',
-  robots: { index: false, follow: false },
+  robots: {
+    index: false,
+    follow: true,
+  },
 }
 
-export default function MypageLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+export default function MyPageLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return children
 }

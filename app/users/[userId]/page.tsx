@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -533,9 +533,15 @@ export default function UserProfilePage() {
       {/* Compact Profile Card */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-3">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="relative w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
             {userData.avatar_url ? (
-              <Image src={userData.avatar_url} alt={userData.display_name || 'ユーザー'} fill sizes="96px" className="object-cover" />
+              <Image
+                src={userData.avatar_url}
+                alt={userData.display_name || 'ユーザー'}
+                fill
+                className="object-cover"
+                unoptimized
+              />
             ) : (
               <User size={32} className="text-rose-500" />
             )}

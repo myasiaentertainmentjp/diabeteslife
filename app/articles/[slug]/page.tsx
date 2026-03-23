@@ -1,24 +1,24 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createServerSupabaseClient, createPublicServerClient } from '@/lib/supabase-server'
-import { ArrowLeft, Calendar, Tag, Clock } from 'lucide-react'
-import { ShareButtons } from '@/components/ShareButtons'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { Calendar, Tag, Clock, Share2 } from 'lucide-react'
+import { RelatedThreadsLinks } from '@/components/RelatedThreadsLinks'
 import type { Metadata } from 'next'
 
 
 interface Props {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ preview?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const supabase = createPublicServerClient()
+  const supabase = await createServerSupabaseClient()
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, excerpt, content, thumbnail_url')
+    .select('title, excerpt, thumbnail_url')
     .eq('slug', slug)
     .eq('is_published', true)
     .single()
@@ -29,30 +29,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  // excerpt未入力の場合は本文HTMLからプレーンテキストを抽出して120文字
-  const description = article.excerpt ||
-    (article.content
-      ? article.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 120)
-      : article.title)
-
-  const fullTitle = `${article.title} | Dライフ`
-
   return {
     title: article.title,
-    description,
+    description: article.excerpt || `${article.title}についての記事`,
     openGraph: {
-      title: fullTitle,
-      description,
-      type: 'article',
-      siteName: 'Dライフ',
-      images: article.thumbnail_url
-        ? [{ url: article.thumbnail_url, width: 1280, height: 670, alt: article.title }]
-        : undefined,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: fullTitle,
-      description,
+      title: article.title,
+      description: article.excerpt || undefined,
       images: article.thumbnail_url ? [article.thumbnail_url] : undefined,
     },
   }
@@ -60,47 +42,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const revalidate = 60
 
-export default async function ArticleDetailPage({ params, searchParams }: Props) {
+export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params
-  const { preview } = await searchParams
-  const isPreview = preview === '1'
   const supabase = await createServerSupabaseClient()
 
-  const query = supabase.from('articles').select('*').eq('slug', slug)
-  if (!isPreview) query.eq('is_published', true)
-  const { data: article, error } = await query.single()
+  const { data: article, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_published', true)
+    .single()
 
   if (error || !article) {
     notFound()
-  }
-
-  // Article構造化データ
-  const articleSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: article.title,
-    description: article.excerpt || article.title,
-    image: article.thumbnail_url || undefined,
-    datePublished: article.published_at || article.created_at,
-    dateModified: article.updated_at || article.created_at,
-    author: {
-      '@type': 'Organization',
-      name: 'Dライフ編集部',
-      url: 'https://diabeteslife.jp',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Dライフ',
-      url: 'https://diabeteslife.jp',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://diabeteslife.jp/logo.png',
-      },
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `https://diabeteslife.jp/articles/${slug}`,
-    },
   }
 
   // Fetch related articles
@@ -111,6 +65,18 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
     .eq('category', article.category)
     .neq('id', article.id)
     .limit(3)
+
+  // Fetch related threads from the same category
+  let relatedThreads: { id: string; thread_number: number; title: string; created_at: string; comment_count: number }[] = []
+  if (article.category) {
+    const { data: threadsData } = await supabase
+      .from('threads')
+      .select('id, thread_number, title, created_at, comment_count')
+      .eq('category', article.category)
+      .order('created_at', { ascending: false })
+      .limit(4)
+    relatedThreads = threadsData || []
+  }
 
   function formatDate(dateString: string) {
     const date = new Date(dateString)
@@ -167,18 +133,14 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="max-w-4xl mx-auto px-4 py-6">
-      <Link
-        href="/articles"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-rose-500 mb-6"
-      >
-        <ArrowLeft size={20} />
-        <span>記事一覧に戻る</span>
-      </Link>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: '記事一覧', href: '/articles' },
+          { label: article.title },
+        ]}
       />
+
       <article className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Thumbnail */}
         {article.thumbnail_url && (
@@ -190,7 +152,6 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
               sizes="(max-width: 768px) 100vw, 896px"
               className="object-cover"
               priority
-              unoptimized
             />
           </div>
         )}
@@ -236,10 +197,17 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
 
         {/* Share */}
         <div className="px-6 md:px-8 pb-6 md:pb-8">
-          <ShareButtons
-            title={article.title}
-            url={`https://diabeteslife.jp/articles/${slug}`}
-          />
+          <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
+            <span className="text-sm text-gray-500">この記事をシェア:</span>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://diabeteslife.jp'}/articles/${slug}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Share2 size={18} className="text-gray-600" />
+            </a>
+          </div>
         </div>
       </article>
 
@@ -260,10 +228,8 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
                       src={related.thumbnail_url}
                       alt={related.title}
                       fill
-                      sizes="(max-width: 768px) 33vw, 280px"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover"
-                      quality={70}
-                      loading="lazy"
                     />
                   </div>
                 )}
@@ -277,6 +243,9 @@ export default async function ArticleDetailPage({ params, searchParams }: Props)
           </div>
         </div>
       )}
+
+      {/* Related Threads - GA4計測付き */}
+      <RelatedThreadsLinks threads={relatedThreads} />
       </div>
     </>
   )
