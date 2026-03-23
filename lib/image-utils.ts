@@ -39,6 +39,8 @@ export const IMAGE_PRESETS = {
   sidebar: { width: 200, quality: 70 },
   /** 一覧用サムネイル */
   list: { width: 400, quality: 75 },
+  /** グリッド一覧用（/meals等） */
+  grid: { width: 280, quality: 70 },
   /** 詳細ページ用 */
   detail: { width: 800, quality: 80 },
   /** モーダル（拡大表示）用 */

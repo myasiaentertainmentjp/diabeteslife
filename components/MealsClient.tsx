@@ -6,26 +6,10 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
+import { getPresetThumbnailUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown, ImageOff } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
-
-/**
- * Supabase Storage の画像URLをサムネイルURLに変換
- * Transform API を使用してリサイズ・品質調整
- */
-function getThumbnailUrl(originalUrl: string, width = 400, quality = 75): string {
-  // Supabase Storage URL かどうか確認
-  if (!originalUrl.includes('supabase.co/storage/v1/object/public/')) {
-    return originalUrl
-  }
-  // /object/public/ → /render/image/public/ に変換
-  const transformUrl = originalUrl.replace(
-    '/storage/v1/object/public/',
-    '/storage/v1/render/image/public/'
-  )
-  return `${transformUrl}?width=${width}&quality=${quality}`
-}
 
 /**
  * 画像読み込み状態を管理する MealImage コンポーネント
@@ -37,8 +21,7 @@ function MealImage({
   sizes,
   className,
   priority = false,
-  thumbnailWidth = 400,
-  quality = 75,
+  preset = 'grid',
 }: {
   src: string
   alt: string
@@ -46,11 +29,10 @@ function MealImage({
   sizes?: string
   className?: string
   priority?: boolean
-  thumbnailWidth?: number
-  quality?: number
+  preset?: 'grid' | 'detail' | 'modal'
 }) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
-  const thumbnailUrl = getThumbnailUrl(src, thumbnailWidth, quality)
+  const thumbnailUrl = getPresetThumbnailUrl(src, preset)
 
   const handleLoad = useCallback(() => setStatus('loaded'), [])
   const handleError = useCallback(() => setStatus('error'), [])
@@ -414,8 +396,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                thumbnailWidth={800}
-                quality={85}
+                preset="detail"
                 priority
               />
             </div>

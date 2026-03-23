@@ -80,15 +80,9 @@ export default async function Home() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Column - Main Content */}
           <div className="flex-1">
-            {/* Tabs with Server-rendered content */}
-            <HomePageTabs
-              popularContent={<HomeThreadList threads={popularThreads || []} />}
-              newContent={<HomeThreadList threads={newThreads || []} />}
-            />
-
-            {/* 食事の記録 - 横スクロール */}
+            {/* 食事の記録 - 横スクロール（トピック一覧の上に配置） */}
             {featuredMeals && featuredMeals.length > 0 && (
-              <div className="mt-4 mb-3 px-1">
+              <div className="mb-4 px-1">
                 <div className="flex items-center justify-between mb-2 px-1">
                   <h2 className="font-bold text-gray-800 text-sm flex items-center gap-1">
                     <Camera size={14} className="text-rose-500" />
@@ -125,6 +119,12 @@ export default async function Home() {
                 </div>
               </div>
             )}
+
+            {/* Tabs with Server-rendered content */}
+            <HomePageTabs
+              popularContent={<HomeThreadList threads={popularThreads || []} />}
+              newContent={<HomeThreadList threads={newThreads || []} />}
+            />
           </div>
 
           {/* Right Column - Sidebar (Server-rendered) */}
