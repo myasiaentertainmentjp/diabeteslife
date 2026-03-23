@@ -29,7 +29,7 @@ function MealImage({
   sizes?: string
   className?: string
   priority?: boolean
-  preset?: 'grid' | 'detail' | 'modal'
+  preset?: 'grid' | 'list' | 'detail' | 'modal'
 }) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
   const thumbnailUrl = getPresetThumbnailUrl(src, preset)
@@ -105,6 +105,8 @@ interface MealsClientProps {
   selectedAgeGroup?: string
 }
 
+const ITEMS_PER_PAGE = 24
+
 export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, selectedAgeGroup }: MealsClientProps) {
   const { user } = useAuth()
   const router = useRouter()
@@ -118,6 +120,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
   const [submittingComment, setSubmittingComment] = useState(false)
   const [loadingComments, setLoadingComments] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(initialPosts.length >= ITEMS_PER_PAGE)
 
   useEffect(() => {
     if (!user || posts.length === 0) return
@@ -134,7 +138,45 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
 
   useEffect(() => {
     setPosts(initialPosts)
+    setHasMore(initialPosts.length >= ITEMS_PER_PAGE)
   }, [initialPosts])
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+
+    let query = supabase
+      .from('meal_posts')
+      .select('id, user_id, image_url, caption, tags, diabetes_type, age_group, blood_sugar_after, likes_count, comments_count, created_at')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .range(posts.length, posts.length + ITEMS_PER_PAGE - 1)
+
+    if (selectedTag) query = query.contains('tags', [selectedTag])
+    if (selectedDiabetesType) query = query.eq('diabetes_type', selectedDiabetesType)
+    if (selectedAgeGroup) query = query.eq('age_group', selectedAgeGroup)
+
+    const { data: newPosts } = await query
+
+    if (newPosts && newPosts.length > 0) {
+      // ユーザー名を取得
+      const userIds = [...new Set(newPosts.map(p => p.user_id))]
+      const { data: users } = await supabase.from('users').select('id, display_name').in('id', userIds)
+      const usersMap = Object.fromEntries((users || []).map(u => [u.id, u.display_name || 'ユーザー']))
+
+      const postsWithUsers = newPosts.map(p => ({
+        ...p,
+        display_name: usersMap[p.user_id] || 'ユーザー',
+      }))
+
+      setPosts(prev => [...prev, ...postsWithUsers])
+      setHasMore(newPosts.length >= ITEMS_PER_PAGE)
+    } else {
+      setHasMore(false)
+    }
+
+    setLoadingMore(false)
+  }
 
   // URLパラメーターを組み立てて遷移
   function buildUrl(params: { tag?: string; dtype?: string; age?: string }) {
@@ -340,14 +382,14 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-[4/3] bg-gray-100 overflow-hidden group"
+              className="relative aspect-[4/3] bg-gray-200 overflow-hidden group"
             >
               <MealImage
                 src={post.image_url}
                 alt={post.caption || '食事の記録'}
                 fill
                 sizes="(max-width: 768px) 33vw, 280px"
-                className="object-cover"
+                className="object-contain"
               />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
@@ -378,6 +420,26 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         </div>
       )}
 
+      {/* もっと見るボタン */}
+      {posts.length > 0 && hasMore && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {loadingMore ? (
+              <span className="flex items-center gap-2">
+                <Loader2 size={16} className="animate-spin" />
+                読み込み中...
+              </span>
+            ) : (
+              <span>もっと見る（{posts.length}件表示中）</span>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* 投稿詳細モーダル */}
       {selectedPost && (
         <div
@@ -395,8 +457,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 alt={selectedPost.caption || '食事の記録'}
                 fill
                 className="object-contain"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                preset="detail"
+                sizes="(max-width: 768px) 100vw, 400px"
+                preset="list"
                 priority
               />
             </div>
