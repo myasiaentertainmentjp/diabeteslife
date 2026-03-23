@@ -340,7 +340,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square bg-gray-100 overflow-hidden group"
+              className="relative aspect-[4/3] bg-gray-100 overflow-hidden group"
             >
               <MealImage
                 src={post.image_url}
