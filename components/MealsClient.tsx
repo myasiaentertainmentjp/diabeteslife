@@ -365,7 +365,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* 画像グリッド */}
+      {/* 画像グリッド - 画像全体が見える自然な縦横比 */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -377,19 +377,20 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-start">
           {posts.map(post => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square overflow-hidden rounded-lg group bg-gray-100"
+              className="relative overflow-hidden rounded-lg group bg-gray-100"
             >
               <Image
-                src={getPresetThumbnailUrl(post.image_url, 'grid')}
+                src={getPresetThumbnailUrl(post.image_url, 'list')}
                 alt={post.caption || '食事の記録'}
-                fill
+                width={400}
+                height={400}
                 sizes="(max-width: 768px) 50vw, 33vw"
-                className="object-cover"
+                className="w-full h-auto"
                 loading="lazy"
               />
               {/* 種別・年代バッジ */}
@@ -458,8 +459,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 alt={selectedPost.caption || '食事の記録'}
                 fill
                 className="object-contain"
-                sizes="(max-width: 768px) 100vw, 400px"
-                preset="list"
+                sizes="(max-width: 768px) 100vw, 800px"
+                preset="detail"
                 priority
               />
             </div>
