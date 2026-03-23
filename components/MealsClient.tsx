@@ -12,54 +12,6 @@ import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
- * 一覧カード用の2レイヤー画像コンポーネント
- * - 背景: object-cover + 薄くblur
- * - 前景: object-contain で画像全体表示
- * - Transform URL失敗時はraw URLにフォールバック
- */
-function MealCardImage({ src, alt }: { src: string; alt: string }) {
-  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
-  const [fallbackAttempted, setFallbackAttempted] = useState(false)
-
-  const handleError = useCallback(() => {
-    if (!fallbackAttempted) {
-      // Transform URLが失敗したらraw public URLにフォールバック
-      setImageSrc(getRawPublicUrl(src))
-      setFallbackAttempted(true)
-    }
-  }, [src, fallbackAttempted])
-
-  return (
-    <>
-      {/* 背景レイヤー: 薄くぼかした画像 */}
-      <div className="absolute inset-0">
-        <Image
-          src={imageSrc}
-          alt=""
-          fill
-          sizes="33vw"
-          className="object-cover blur-sm scale-110 opacity-40"
-          loading="lazy"
-          onError={handleError}
-        />
-      </div>
-      {/* 前景レイヤー: 画像全体を中央表示 */}
-      <div className="absolute inset-0 flex items-center justify-center p-1">
-        <Image
-          src={imageSrc}
-          alt={alt}
-          fill
-          sizes="33vw"
-          className="object-contain"
-          loading="lazy"
-          onError={handleError}
-        />
-      </div>
-    </>
-  )
-}
-
-/**
  * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
  */
 function MealModalImage({ src, alt }: { src: string; alt: string }) {
@@ -412,10 +364,17 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square overflow-hidden rounded-md group bg-stone-200"
+              className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 2レイヤー画像: 背景blur + 前景contain */}
-              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
+              {/* 画像: 正方形内に全体表示（余白は背景色） */}
+              <Image
+                src={getPresetThumbnailUrl(post.image_url, 'listSquare')}
+                alt={post.caption || '食事の記録'}
+                fill
+                sizes="(max-width: 640px) 33vw, 200px"
+                className="object-contain"
+                loading="lazy"
+              />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
                 <div className="absolute top-1 left-1 flex gap-0.5 z-10">
