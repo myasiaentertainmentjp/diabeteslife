@@ -365,7 +365,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* グリッド */}
+      {/* 画像グリッド */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -377,37 +377,38 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-0.5 md:gap-1">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {posts.map(post => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-[4/3] bg-gray-200 overflow-hidden group"
+              className="relative aspect-square overflow-hidden rounded-lg group bg-gray-100"
             >
-              <MealImage
-                src={post.image_url}
+              <Image
+                src={getPresetThumbnailUrl(post.image_url, 'grid')}
                 alt={post.caption || '食事の記録'}
                 fill
-                sizes="(max-width: 768px) 33vw, 280px"
-                className="object-contain"
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover"
+                loading="lazy"
               />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
-                <div className="absolute top-1 left-1 flex gap-1">
+                <div className="absolute top-1.5 left-1.5 flex gap-1 z-10">
                   {post.diabetes_type && post.diabetes_type !== 'family' && (
-                    <span className="bg-blue-500/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+                    <span className="bg-blue-500/90 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-sm">
                       {DIABETES_TYPE_OPTIONS.find(o => o.value === post.diabetes_type)?.label}
                     </span>
                   )}
                   {post.age_group && post.age_group !== 'private' && (
-                    <span className="bg-purple-500/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+                    <span className="bg-purple-500/90 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-sm">
                       {AGE_GROUP_OPTIONS.find(o => o.value === post.age_group)?.label}
                     </span>
                   )}
                 </div>
               )}
               {/* ホバーオーバーレイ */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white z-10">
                 <span className="flex items-center gap-1 text-sm font-bold">
                   <Heart size={16} fill="white" /> {post.likes_count}
                 </span>
@@ -422,11 +423,11 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
 
       {/* もっと見るボタン */}
       {posts.length > 0 && hasMore && (
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-8 py-3 bg-white border border-gray-300 rounded-full text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 shadow-sm"
           >
             {loadingMore ? (
               <span className="flex items-center gap-2">
@@ -434,7 +435,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 読み込み中...
               </span>
             ) : (
-              <span>もっと見る（{posts.length}件表示中）</span>
+              <span>もっと見る</span>
             )}
           </button>
         </div>
