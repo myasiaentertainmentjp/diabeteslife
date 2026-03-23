@@ -365,7 +365,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* 画像グリッド - 画像全体が見える自然な縦横比 */}
+      {/* 正方形グリッド - 画像全体表示 */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -377,44 +377,43 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-start">
+        <div className="grid grid-cols-3 gap-1">
           {posts.map(post => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative overflow-hidden rounded-lg group bg-gray-100"
+              className="relative aspect-square overflow-hidden rounded-md group bg-stone-100"
             >
               <Image
                 src={getPresetThumbnailUrl(post.image_url, 'list')}
                 alt={post.caption || '食事の記録'}
-                width={400}
-                height={400}
-                sizes="(max-width: 768px) 50vw, 33vw"
-                className="w-full h-auto"
+                fill
+                sizes="33vw"
+                className="object-contain"
                 loading="lazy"
               />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
-                <div className="absolute top-1.5 left-1.5 flex gap-1 z-10">
+                <div className="absolute top-1 left-1 flex gap-0.5 z-10">
                   {post.diabetes_type && post.diabetes_type !== 'family' && (
-                    <span className="bg-blue-500/90 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-sm">
+                    <span className="bg-blue-500/90 text-white text-[9px] font-medium px-1 py-0.5 rounded">
                       {DIABETES_TYPE_OPTIONS.find(o => o.value === post.diabetes_type)?.label}
                     </span>
                   )}
                   {post.age_group && post.age_group !== 'private' && (
-                    <span className="bg-purple-500/90 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-sm">
+                    <span className="bg-purple-500/90 text-white text-[9px] font-medium px-1 py-0.5 rounded">
                       {AGE_GROUP_OPTIONS.find(o => o.value === post.age_group)?.label}
                     </span>
                   )}
                 </div>
               )}
               {/* ホバーオーバーレイ */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white z-10">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 text-white z-10">
                 <span className="flex items-center gap-1 text-sm font-bold">
-                  <Heart size={16} fill="white" /> {post.likes_count}
+                  <Heart size={14} fill="white" /> {post.likes_count}
                 </span>
                 <span className="flex items-center gap-1 text-sm font-bold">
-                  <MessageCircle size={16} fill="white" /> {post.comments_count}
+                  <MessageCircle size={14} fill="white" /> {post.comments_count}
                 </span>
               </div>
             </button>
