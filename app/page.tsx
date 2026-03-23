@@ -5,7 +5,8 @@ import { HomePageTabs } from '@/components/HomePageTabs'
 import { HomeThreadList } from '@/components/HomeThreadList'
 import { PostButton } from '@/components/PostButton'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
-import { ChevronRight, FileText } from 'lucide-react'
+import { ChevronRight, FileText, Camera } from 'lucide-react'
+import { getPresetThumbnailUrl } from '@/lib/image-utils'
 
 // 1時間キャッシュ
 export const revalidate = 3600
@@ -65,6 +66,14 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // Fetch featured meal posts
+  const { data: featuredMeals } = await supabase
+    .from('meal_posts')
+    .select('id, image_url, caption, likes_count')
+    .eq('is_public', true)
+    .order('created_at', { ascending: false })
+    .limit(6)
+
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -76,6 +85,46 @@ export default async function Home() {
               popularContent={<HomeThreadList threads={popularThreads || []} />}
               newContent={<HomeThreadList threads={newThreads || []} />}
             />
+
+            {/* 食事の記録 - 横スクロール */}
+            {featuredMeals && featuredMeals.length > 0 && (
+              <div className="mt-4 mb-3 px-1">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h2 className="font-bold text-gray-800 text-sm flex items-center gap-1">
+                    <Camera size={14} className="text-rose-500" />
+                    みんなの食事記録
+                  </h2>
+                  <Link href="/meals" className="text-xs text-rose-500 hover:text-rose-600 font-medium">
+                    もっと見る →
+                  </Link>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {featuredMeals.map((meal) => (
+                    <Link
+                      key={meal.id}
+                      href="/meals"
+                      className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
+                    >
+                      <Image
+                        src={getPresetThumbnailUrl(meal.image_url, 'list')}
+                        alt={meal.caption || '食事の記録'}
+                        fill
+                        sizes="112px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    </Link>
+                  ))}
+                  {/* もっと見るボタン */}
+                  <Link
+                    href="/meals"
+                    className="flex-shrink-0 w-28 h-28 bg-rose-50 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-rose-100 transition-colors border border-rose-200"
+                  >
+                    <span className="text-rose-500 text-xs font-medium text-center leading-tight">もっと<br />見る</span>
+                    <ChevronRight size={14} className="text-rose-500" />
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Sidebar (Server-rendered) */}
@@ -133,7 +182,7 @@ export default async function Home() {
                     >
                       {article.thumbnail_url ? (
                         <Image
-                          src={article.thumbnail_url}
+                          src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
                           alt={article.title}
                           width={80}
                           height={42}
