@@ -12,6 +12,37 @@ import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
+ * 一覧カード用画像コンポーネント
+ * - 正方形カード内に画像全体を表示
+ * - 背景ぼかし禁止、二重レイヤー禁止
+ * - object-contain で全体表示（余白は背景色）
+ * - Transform URL失敗時はraw URLにフォールバック
+ */
+function MealCardImage({ src, alt }: { src: string; alt: string }) {
+  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
+  const [fallbackAttempted, setFallbackAttempted] = useState(false)
+
+  const handleError = useCallback(() => {
+    if (!fallbackAttempted) {
+      setImageSrc(getRawPublicUrl(src))
+      setFallbackAttempted(true)
+    }
+  }, [src, fallbackAttempted])
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={alt}
+      fill
+      sizes="(max-width: 640px) 33vw, 200px"
+      className="object-contain"
+      loading="lazy"
+      onError={handleError}
+    />
+  )
+}
+
+/**
  * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
  */
 function MealModalImage({ src, alt }: { src: string; alt: string }) {
@@ -347,7 +378,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* 正方形グリッド - 2レイヤーで画像全体表示 */}
+      {/* 正方形グリッド - 画像全体表示（フォールバック付き） */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -366,15 +397,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
               onClick={() => openPost(post)}
               className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 画像: 正方形内に全体表示（余白は背景色） */}
-              <Image
-                src={getPresetThumbnailUrl(post.image_url, 'listSquare')}
-                alt={post.caption || '食事の記録'}
-                fill
-                sizes="(max-width: 640px) 33vw, 200px"
-                className="object-contain"
-                loading="lazy"
-              />
+              {/* 画像: 正方形内に全体表示（フォールバック付き） */}
+              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
                 <div className="absolute top-1 left-1 flex gap-0.5 z-10">
