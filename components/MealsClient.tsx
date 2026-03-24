@@ -35,7 +35,7 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
       alt={alt}
       fill
       sizes="(max-width: 640px) 33vw, 200px"
-      className="object-contain"
+      className="object-cover"
       loading="lazy"
       onError={handleError}
     />

@@ -13,7 +13,9 @@
 export function getThumbnailUrl(
   url: string | null | undefined,
   width = 400,
-  quality = 75
+  quality = 75,
+  height?: number,
+  resize?: 'cover' | 'contain' | 'fill'
 ): string {
   if (!url) return ''
 
@@ -28,7 +30,11 @@ export function getThumbnailUrl(
     '/storage/v1/render/image/public/'
   )
 
-  return `${transformUrl}?width=${width}&quality=${quality}`
+  let params = `width=${width}&quality=${quality}`
+  if (height) params += `&height=${height}`
+  if (resize) params += `&resize=${resize}`
+
+  return `${transformUrl}?${params}`
 }
 
 /**
@@ -63,7 +69,7 @@ export const IMAGE_PRESETS = {
   /** グリッド一覧用（/meals等） */
   grid: { width: 280, quality: 70 },
   /** 一覧正方形カード用（/meals） */
-  listSquare: { width: 360, quality: 70 },
+  listSquare: { width: 300, height: 300, resize: 'cover' as const, quality: 70 },
   /** 詳細ページ用 */
   detail: { width: 800, quality: 80 },
   /** モーダル（拡大表示）用 */
@@ -79,6 +85,8 @@ export function getPresetThumbnailUrl(
   url: string | null | undefined,
   preset: keyof typeof IMAGE_PRESETS
 ): string {
-  const { width, quality } = IMAGE_PRESETS[preset]
-  return getThumbnailUrl(url, width, quality)
+  const config = IMAGE_PRESETS[preset]
+  const height = 'height' in config ? config.height : undefined
+  const resize = 'resize' in config ? config.resize : undefined
+  return getThumbnailUrl(url, config.width, config.quality, height, resize)
 }
