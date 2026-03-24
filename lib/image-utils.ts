@@ -15,7 +15,8 @@ export function getThumbnailUrl(
   width = 400,
   quality = 75,
   height?: number,
-  resize?: 'cover' | 'contain' | 'fill'
+  resize?: 'cover' | 'contain' | 'fill',
+  format?: 'webp' | 'jpeg' | 'png'
 ): string {
   if (!url) return ''
 
@@ -33,6 +34,7 @@ export function getThumbnailUrl(
   let params = `width=${width}&quality=${quality}`
   if (height) params += `&height=${height}`
   if (resize) params += `&resize=${resize}`
+  if (format) params += `&format=${format}`
 
   return `${transformUrl}?${params}`
 }
@@ -63,19 +65,19 @@ export function getRawPublicUrl(url: string | null | undefined): string {
  */
 export const IMAGE_PRESETS = {
   /** サイドバー用サムネイル */
-  sidebar: { width: 200, quality: 70 },
+  sidebar: { width: 160, height: 84, resize: 'cover' as const, quality: 70, format: 'webp' as const },
   /** 一覧用サムネイル */
-  list: { width: 400, quality: 75 },
+  list: { width: 400, quality: 75, format: 'webp' as const },
   /** グリッド一覧用（/meals等） */
-  grid: { width: 280, quality: 70 },
+  grid: { width: 280, quality: 70, format: 'webp' as const },
   /** 一覧正方形カード用（/meals） */
-  listSquare: { width: 300, height: 300, resize: 'cover' as const, quality: 70 },
+  listSquare: { width: 300, height: 300, resize: 'cover' as const, quality: 70, format: 'webp' as const },
   /** 詳細ページ用 */
-  detail: { width: 800, quality: 80 },
+  detail: { width: 800, quality: 80, format: 'webp' as const },
   /** モーダル（拡大表示）用 */
-  modal: { width: 1200, quality: 82 },
+  modal: { width: 1200, quality: 82, format: 'webp' as const },
   /** アバター用 */
-  avatar: { width: 100, quality: 70 },
+  avatar: { width: 100, quality: 70, format: 'webp' as const },
 } as const
 
 /**
@@ -85,8 +87,6 @@ export function getPresetThumbnailUrl(
   url: string | null | undefined,
   preset: keyof typeof IMAGE_PRESETS
 ): string {
-  const config = IMAGE_PRESETS[preset]
-  const height = 'height' in config ? config.height : undefined
-  const resize = 'resize' in config ? config.resize : undefined
-  return getThumbnailUrl(url, config.width, config.quality, height, resize)
+  const p = IMAGE_PRESETS[preset] as { width: number; quality: number; height?: number; resize?: 'cover' | 'contain' | 'fill'; format?: 'webp' | 'jpeg' | 'png' }
+  return getThumbnailUrl(url, p.width, p.quality, p.height, p.resize, p.format)
 }

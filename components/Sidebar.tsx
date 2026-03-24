@@ -274,10 +274,9 @@ export function Sidebar({
                     <Image
                       src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
                       alt={article.title}
-                      width={80}
-                      height={42}
-                      className="object-cover rounded shrink-0"
-                      style={{ aspectRatio: '1.91 / 1' }}
+                      width={160}
+                      height={84}
+                      className="object-cover rounded shrink-0 w-20"
                     />
                   ) : (
                     <div className="w-20 bg-gray-200 rounded shrink-0 flex items-center justify-center" style={{ aspectRatio: '1.91 / 1' }}>
