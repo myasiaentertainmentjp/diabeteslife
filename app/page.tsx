@@ -100,7 +100,7 @@ export default async function Home() {
                       className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
                     >
                       <Image
-                        src={getPresetThumbnailUrl(meal.image_url, 'list')}
+                        src={getPresetThumbnailUrl(meal.image_url)}
                         alt={meal.caption || '食事の記録'}
                         fill
                         sizes="112px"
@@ -182,7 +182,7 @@ export default async function Home() {
                     >
                       {article.thumbnail_url ? (
                         <Image
-                          src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
+                          src={getPresetThumbnailUrl(article.thumbnail_url)}
                           alt={article.title}
                           width={80}
                           height={42}
