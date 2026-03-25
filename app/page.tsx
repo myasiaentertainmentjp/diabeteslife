@@ -6,7 +6,7 @@ import { HomeThreadList } from '@/components/HomeThreadList'
 import { PostButton } from '@/components/PostButton'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { ChevronRight, FileText, Camera } from 'lucide-react'
-import { getPresetThumbnailUrl } from '@/lib/image-utils'
+import { getPresetThumbnailUrl, getResizedUrl } from '@/lib/image-utils'
 
 // 1時間キャッシュ
 export const revalidate = 3600
@@ -100,7 +100,7 @@ export default async function Home() {
                       className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
                     >
                       <Image
-                        src={getPresetThumbnailUrl(meal.image_url)}
+                        src={getResizedUrl(meal.image_url, 200, 200, 'cover')}
                         alt={meal.caption || '食事の記録'}
                         fill
                         sizes="112px"

@@ -6,24 +6,31 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getRawPublicUrl } from '@/lib/image-utils'
+import { getRawPublicUrl, getResizedUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
  * 一覧カード用画像コンポーネント
- * Next.js Image で WebP変換・リサイズを行う
+ * Supabase Transform で事前リサイズ → next/image で WebP変換
  */
-function MealCardImage({ src, alt }: { src: string; alt: string }) {
+function MealCardImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
   return (
     <Image
-      src={getRawPublicUrl(src)}
+      src={getResizedUrl(src, 400, 400, 'cover')}
       alt={alt}
       fill
       sizes="(max-width: 640px) 33vw, 300px"
       className="object-cover"
-      loading="lazy"
+      loading={priority ? 'eager' : 'lazy'}
+      onError={(e) => {
+        // Transform失敗時は生URLにフォールバック
+        const raw = getRawPublicUrl(src)
+        if (e.currentTarget.src !== raw) {
+          e.currentTarget.src = raw
+        }
+      }}
     />
   )
 }
@@ -368,14 +375,14 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-1">
-          {posts.map(post => (
+          {posts.map((post, index) => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
               className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 画像: 正方形内に全体表示（フォールバック付き） */}
-              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
+              {/* 画像: Supabase Transform で事前リサイズ */}
+              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} priority={index < 6} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
                 <div className="absolute top-1 left-1 flex gap-0.5 z-10">
