@@ -1,61 +1,39 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getPresetThumbnailUrl, getRawPublicUrl } from '@/lib/image-utils'
+import { getRawPublicUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
  * 一覧カード用画像コンポーネント
- * - 正方形カード内に画像全体を表示
- * - 背景ぼかし禁止、二重レイヤー禁止
- * - object-contain で全体表示（余白は背景色）
- * - Transform URL失敗時はraw URLにフォールバック
+ * Next.js Image で WebP変換・リサイズを行う
  */
 function MealCardImage({ src, alt }: { src: string; alt: string }) {
-  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
-  const [fallbackAttempted, setFallbackAttempted] = useState(false)
-
-  const handleError = useCallback(() => {
-    if (!fallbackAttempted) {
-      setImageSrc(getRawPublicUrl(src))
-      setFallbackAttempted(true)
-    }
-  }, [src, fallbackAttempted])
-
   return (
     <Image
-      src={imageSrc}
+      src={getRawPublicUrl(src)}
       alt={alt}
       fill
-      sizes="(max-width: 640px) 33vw, 200px"
+      sizes="(max-width: 640px) 33vw, 300px"
       className="object-cover"
       loading="lazy"
-      onError={handleError}
     />
   )
 }
 
 /**
- * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
+ * モーダル用画像コンポーネント
+ * Next.js Image で WebP変換・リサイズを行う
  */
 function MealModalImage({ src, alt }: { src: string; alt: string }) {
-  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'modal'))
-  const [fallbackAttempted, setFallbackAttempted] = useState(false)
   const [loaded, setLoaded] = useState(false)
-
-  const handleError = useCallback(() => {
-    if (!fallbackAttempted) {
-      setImageSrc(getRawPublicUrl(src))
-      setFallbackAttempted(true)
-    }
-  }, [src, fallbackAttempted])
 
   return (
     <>
@@ -65,14 +43,13 @@ function MealModalImage({ src, alt }: { src: string; alt: string }) {
         </div>
       )}
       <Image
-        src={imageSrc}
+        src={getRawPublicUrl(src)}
         alt={alt}
         fill
         sizes="(max-width: 768px) 100vw, 600px"
         className={`object-contain ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
         priority
         onLoadingComplete={() => setLoaded(true)}
-        onError={handleError}
       />
     </>
   )

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
-import { getPresetThumbnailUrl } from '@/lib/image-utils'
+import { getRawPublicUrl } from '@/lib/image-utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { PenSquare, ChevronRight, FileText, TrendingUp, Loader2 } from 'lucide-react'
@@ -272,7 +272,7 @@ export function Sidebar({
                 >
                   {article.thumbnail_url ? (
                     <Image
-                      src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
+                      src={getRawPublicUrl(article.thumbnail_url)}
                       alt={article.title}
                       width={160}
                       height={84}
