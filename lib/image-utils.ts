@@ -1,12 +1,11 @@
 /**
- * 画像URL ユーティリティ
- * Next.js Image による最適化・WebP変換を使用
- * Supabase Transform API は使用しない
+ * Supabase Storage 画像の最適化ユーティリティ
+ * next/image が WebP変換・リサイズ・キャッシュを担うため、
+ * ここでは生の public URL を返すだけ。
  */
 
 export function getRawPublicUrl(url: string | null | undefined): string {
   if (!url) return ''
-  // render/image URLが混入していた場合はobject/publicに戻す
   if (url.includes('/storage/v1/render/image/public/')) {
     return url
       .replace('/storage/v1/render/image/public/', '/storage/v1/object/public/')
@@ -15,16 +14,11 @@ export function getRawPublicUrl(url: string | null | undefined): string {
   return url.split('?')[0]
 }
 
-// 後方互換のため残す（中身はRawURLを返すだけ）
-export function getThumbnailUrl(
-  url: string | null | undefined,
-): string {
+// 後方互換のため残す（内部で getRawPublicUrl を呼ぶだけ）
+export function getThumbnailUrl(url: string | null | undefined): string {
   return getRawPublicUrl(url)
 }
 
-export function getPresetThumbnailUrl(
-  url: string | null | undefined,
-  _preset?: string
-): string {
+export function getPresetThumbnailUrl(url: string | null | undefined): string {
   return getRawPublicUrl(url)
 }
