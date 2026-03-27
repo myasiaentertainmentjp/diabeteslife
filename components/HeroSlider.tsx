@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -11,8 +11,7 @@ const slides = [
     title: '糖尿病と向き合う\nすべての人へ',
     body: '患者さん・ご家族・支える人たちが\n安心して話せる場所がここにあります。',
     cta: { label: 'Dライフとは', href: '/about' },
-    overlay: 'rgba(190,24,93,0.72)',
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&fit=crop',
+    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1600&q=80&fit=crop',
   },
   {
     id: 2,
@@ -20,8 +19,7 @@ const slides = [
     title: 'ひとりじゃないと\n気づける場所',
     body: '食事・薬・日常の悩みを\n同じ経験を持つ仲間と共有できます。',
     cta: { label: 'トピックを見る', href: '/threads' },
-    overlay: 'rgba(154,52,18,0.70)',
-    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80&fit=crop',
+    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80&fit=crop',
   },
   {
     id: 3,
@@ -29,8 +27,7 @@ const slides = [
     title: '毎月の記録が\n未来の自分を守る',
     body: 'HbA1cや体重を継続して記録するだけ。\nデータの積み重ねが改善への近道です。',
     cta: { label: '記録してみる', href: '/mypage' },
-    overlay: 'rgba(15,76,129,0.72)',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80&fit=crop',
+    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80&fit=crop',
   },
   {
     id: 4,
@@ -38,137 +35,192 @@ const slides = [
     title: 'あなたの経験が\n誰かの力になる',
     body: '登録無料・匿名OK。\nあなたの一言が同じ悩みを持つ誰かを救います。',
     cta: { label: '無料で始める', href: '/register' },
-    overlay: 'rgba(76,29,149,0.72)',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1200&q=80&fit=crop',
+    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80&fit=crop',
   },
 ]
 
 export function HeroSlider() {
   const [current, setCurrent] = useState(0)
-  const [fading, setFading] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const goTo = useCallback((idx: number) => {
-    setFading(true)
-    setTimeout(() => {
-      setCurrent(idx)
-      setFading(false)
-    }, 250)
+    if (isAnimating) return
+    setIsAnimating(true)
+    setCurrent(idx)
+    setTimeout(() => setIsAnimating(false), 600)
+  }, [isAnimating])
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length)
+    }, 6000)
   }, [])
 
   useEffect(() => {
-    const t = setInterval(() => {
-      goTo((current + 1) % slides.length)
-    }, 5500)
-    return () => clearInterval(t)
-  }, [current, goTo])
+    resetTimer()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [resetTimer])
 
-  const s = slides[current]
+  const handleDotClick = (idx: number) => {
+    goTo(idx)
+    resetTimer()
+  }
 
   return (
-    <>
-      <style>{`
-        .hero-wrap{position:relative;width:100%;overflow:hidden;min-height:300px}
-        .hero-img-wrap{position:absolute;inset:0}
-        .hero-overlay{position:absolute;inset:0;z-index:1}
-        .hero-content{position:relative;z-index:10;padding:2rem 1.5rem 3.5rem;max-width:32rem;margin:0 auto;text-align:center}
-        .hero-fade{transition:opacity .25s ease,transform .25s ease}
-        .hero-fade.out{opacity:0;transform:translateY(8px)}
-        .hero-fade.in{opacity:1;transform:translateY(0)}
-        .hero-dots{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:20}
-        .hero-dot{border-radius:9999px;background:white;cursor:pointer;transition:all .3s}
-        .hero-dot.active{width:20px;height:7px;opacity:1}
-        .hero-dot.inactive{width:7px;height:7px;opacity:.4}
-        .hero-deco1{position:absolute;top:0;right:0;width:220px;height:220px;border-radius:50%;background:white;opacity:.08;filter:blur(50px);transform:translate(40%,-40%);pointer-events:none;z-index:2}
-        .hero-deco2{position:absolute;bottom:0;left:0;width:160px;height:160px;border-radius:50%;background:white;opacity:.08;filter:blur(40px);transform:translate(-40%,40%);pointer-events:none;z-index:2}
-      `}</style>
-
-      <div className="hero-wrap">
-        {/* 背景画像 - priority でLCP最適化 */}
-        <div className="hero-img-wrap">
-          <Image
-            src={s.image}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-            style={{ transition: 'opacity 0.4s ease' }}
-          />
-        </div>
-
-        {/* オーバーレイ */}
-        <div className="hero-overlay" style={{ background: s.overlay }} />
-
-        {/* デコ */}
-        <div className="hero-deco1" />
-        <div className="hero-deco2" />
-
-        {/* コンテンツ */}
-        <div className={`hero-content hero-fade ${fading ? 'out' : 'in'}`}>
-          <p style={{
-            fontSize: '0.7rem',
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.85)',
-            marginBottom: '0.5rem',
-            fontWeight: 600,
-          }}>
-            {s.eyebrow}
-          </p>
-          <h2 style={{
-            fontSize: 'clamp(1.5rem, 5vw, 2.2rem)',
-            fontWeight: 800,
-            lineHeight: 1.25,
-            color: '#fff',
-            marginBottom: '0.75rem',
-            whiteSpace: 'pre-line',
-            textShadow: '0 2px 12px rgba(0,0,0,0.25)',
-          }}>
-            {s.title}
-          </h2>
-          <p style={{
-            fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)',
-            color: 'rgba(255,255,255,0.9)',
-            lineHeight: 1.7,
-            marginBottom: '1.5rem',
-            whiteSpace: 'pre-line',
-            textShadow: '0 1px 6px rgba(0,0,0,0.2)',
-          }}>
-            {s.body}
-          </p>
-          <Link
-            href={s.cta.href}
+    <div className="relative w-full overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600">
+      {/* メインスライダー */}
+      <div
+        className="relative w-full"
+        style={{
+          height: 'clamp(420px, 55vh, 650px)',
+        }}
+      >
+        {/* 背景画像群 */}
+        {slides.map((slide, idx) => (
+          <div
+            key={slide.id}
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              background: 'white',
-              color: '#be185d',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              padding: '0.6rem 1.4rem',
-              borderRadius: '9999px',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-              textDecoration: 'none',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              opacity: idx === current ? 1 : 0,
+              zIndex: idx === current ? 1 : 0,
             }}
           >
-            {s.cta.label} →
-          </Link>
+            <Image
+              src={slide.image}
+              alt=""
+              fill
+              priority={idx === 0}
+              sizes="100vw"
+              className="object-cover"
+            />
+            {/* グラデーションオーバーレイ */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(90deg, rgba(190,24,93,0.85) 0%, rgba(190,24,93,0.6) 50%, rgba(0,0,0,0.3) 100%)',
+              }}
+            />
+          </div>
+        ))}
+
+        {/* デコレーション要素 */}
+        <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 rounded-full bg-white/5 blur-3xl transform translate-x-1/3 -translate-y-1/3 pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 md:w-72 md:h-72 rounded-full bg-white/5 blur-3xl transform -translate-x-1/3 translate-y-1/3 pointer-events-none z-10" />
+
+        {/* コンテンツ */}
+        <div className="relative z-20 h-full flex items-center">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-xl md:max-w-2xl">
+              {slides.map((slide, idx) => (
+                <div
+                  key={slide.id}
+                  className="transition-all duration-700 ease-out"
+                  style={{
+                    opacity: idx === current ? 1 : 0,
+                    transform: idx === current ? 'translateY(0)' : 'translateY(24px)',
+                    position: idx === current ? 'relative' : 'absolute',
+                    visibility: idx === current ? 'visible' : 'hidden',
+                  }}
+                >
+                  {/* アイブロウ */}
+                  <p className="inline-block px-3 py-1 mb-4 text-xs md:text-sm font-semibold tracking-wider uppercase bg-white/15 backdrop-blur-sm rounded-full text-white/90">
+                    {slide.eyebrow}
+                  </p>
+
+                  {/* タイトル */}
+                  <h1
+                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 md:mb-6"
+                    style={{
+                      whiteSpace: 'pre-line',
+                      textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {slide.title}
+                  </h1>
+
+                  {/* 説明文 */}
+                  <p
+                    className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed mb-6 md:mb-8"
+                    style={{
+                      whiteSpace: 'pre-line',
+                      textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    {slide.body}
+                  </p>
+
+                  {/* CTAボタン */}
+                  <Link
+                    href={slide.cta.href}
+                    className="inline-flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-white text-rose-600 font-bold text-sm md:text-base rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                  >
+                    {slide.cta.label}
+                    <svg
+                      className="w-4 h-4 md:w-5 md:h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* ドットナビ */}
-        <div className="hero-dots">
-          {slides.map((_, i) => (
+        {/* ドットナビゲーション */}
+        <div className="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2 md:gap-3">
+          {slides.map((_, idx) => (
             <button
-              key={i}
-              aria-label={`スライド${i + 1}`}
-              className={`hero-dot ${i === current ? 'active' : 'inactive'}`}
-              onClick={() => goTo(i)}
+              key={idx}
+              onClick={() => handleDotClick(idx)}
+              aria-label={`スライド${idx + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                idx === current
+                  ? 'w-8 md:w-10 h-2 md:h-2.5 bg-white'
+                  : 'w-2 md:w-2.5 h-2 md:h-2.5 bg-white/40 hover:bg-white/60'
+              }`}
             />
           ))}
         </div>
+
+        {/* 矢印ナビゲーション（PC） */}
+        <button
+          onClick={() => {
+            goTo((current - 1 + slides.length) % slides.length)
+            resetTimer()
+          }}
+          className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white transition-all duration-300"
+          aria-label="前のスライド"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          onClick={() => {
+            goTo((current + 1) % slides.length)
+            resetTimer()
+          }}
+          className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white transition-all duration-300"
+          aria-label="次のスライド"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
-    </>
+    </div>
   )
 }
