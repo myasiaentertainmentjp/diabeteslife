@@ -65,3 +65,5 @@ jobs:
             pm2 restart diabeteslife
             echo "Deploy complete"
           ENDSSH
+
+# trigger redeploy after VPS local build broke .next
