@@ -62,8 +62,15 @@ jobs:
           ssh -p 2222 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'ENDSSH'
             set -e
             cd /var/www/diabeteslife
-            pm2 restart diabeteslife
+            # メモリ確保のため他サービスを一時停止
+            pm2 stop akabuy-dev || true
+            pm2 stop graymall || true
+            sleep 2
+            # diabeteslifeを再起動
+            pm2 reload diabeteslife
+            sleep 3
+            # 他サービスを再開
+            pm2 start akabuy-dev || true
+            pm2 start graymall || true
             echo "Deploy complete"
           ENDSSH
-
-# trigger redeploy after VPS local build broke .next
