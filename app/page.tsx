@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { HeroSlider } from '@/components/HeroSlider'
 import { HomePageTabs } from '@/components/HomePageTabs'
 import { HomeThreadList } from '@/components/HomeThreadList'
 import { PostButton } from '@/components/PostButton'
@@ -76,6 +77,9 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Hero Slider */}
+      <HeroSlider />
+
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Column - Main Content */}
