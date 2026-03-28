@@ -38,12 +38,10 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(25)
 
-  // Fetch new threads (last week, by date)
+  // Fetch new threads (all, by date)
   const { data: newThreads } = await supabase
     .from('threads')
     .select('id, thread_number, title, category, created_at, user_id, comments_count')
-    .gt('comments_count', 0)
-    .gte('created_at', oneWeekAgo.toISOString())
     .lte('created_at', now)
     .order('created_at', { ascending: false })
     .limit(25)
