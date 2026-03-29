@@ -1,46 +1,72 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getRawPublicUrl, getResizedUrl } from '@/lib/image-utils'
+import { getPresetThumbnailUrl, getRawPublicUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
- * 一覧カード用画像コンポーネント
- * Supabase Transform で事前リサイズ → next/image で WebP変換
+ * 一覧カード用画像コンポーネント（Instagram方式）
+ * - 正方形カード + object-cover でクロップ許容
+ * - 背景ぼかし禁止、二重レイヤー禁止
+ * - 細い帯表示を防ぐため、見映え優先
+ * - Transform URL失敗時はraw URLにフォールバック
  */
-function MealCardImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
+function MealCardImage({ src, alt }: { src: string; alt: string }) {
+  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
+  const [fallbackAttempted, setFallbackAttempted] = useState(false)
+  const [hasError, setHasError] = useState(false)
+
+  const handleError = useCallback(() => {
+    if (!fallbackAttempted) {
+      setImageSrc(getRawPublicUrl(src))
+      setFallbackAttempted(true)
+    } else {
+      setHasError(true)
+    }
+  }, [src, fallbackAttempted])
+
+  if (hasError) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-neutral-200">
+        <UtensilsCrossed size={24} className="text-neutral-400" />
+      </div>
+    )
+  }
+
   return (
     <Image
-      src={getResizedUrl(src, 400, 400, 'cover')}
+      src={imageSrc}
       alt={alt}
       fill
-      sizes="(max-width: 640px) 33vw, 300px"
+      sizes="33vw"
       className="object-cover"
-      loading={priority ? 'eager' : 'lazy'}
-      onError={(e) => {
-        // Transform失敗時は生URLにフォールバック
-        const raw = getRawPublicUrl(src)
-        if (e.currentTarget.src !== raw) {
-          e.currentTarget.src = raw
-        }
-      }}
+      loading="lazy"
+      onError={handleError}
     />
   )
 }
 
 /**
- * モーダル用画像コンポーネント
- * Next.js Image で WebP変換・リサイズを行う
+ * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
  */
 function MealModalImage({ src, alt }: { src: string; alt: string }) {
+  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'modal'))
+  const [fallbackAttempted, setFallbackAttempted] = useState(false)
   const [loaded, setLoaded] = useState(false)
+
+  const handleError = useCallback(() => {
+    if (!fallbackAttempted) {
+      setImageSrc(getRawPublicUrl(src))
+      setFallbackAttempted(true)
+    }
+  }, [src, fallbackAttempted])
 
   return (
     <>
@@ -50,13 +76,14 @@ function MealModalImage({ src, alt }: { src: string; alt: string }) {
         </div>
       )}
       <Image
-        src={getRawPublicUrl(src)}
+        src={imageSrc}
         alt={alt}
         fill
         sizes="(max-width: 768px) 100vw, 600px"
         className={`object-contain ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
         priority
         onLoadingComplete={() => setLoaded(true)}
+        onError={handleError}
       />
     </>
   )
@@ -375,14 +402,14 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-1">
-          {posts.map((post, index) => (
+          {posts.map(post => (
             <button
               key={post.id}
               onClick={() => openPost(post)}
               className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 画像: Supabase Transform で事前リサイズ */}
-              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} priority={index < 6} />
+              {/* 画像: 正方形内に全体表示（フォールバック付き） */}
+              <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
                 <div className="absolute top-1 left-1 flex gap-0.5 z-10">
