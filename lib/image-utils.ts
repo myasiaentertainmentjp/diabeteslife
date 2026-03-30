@@ -53,6 +53,29 @@ export function getRawPublicUrl(url: string | null | undefined): string {
 }
 
 /**
+ * Supabase Transform API でリサイズ（cover/contain指定可）
+ * app/page.tsx 等で使用
+ */
+export function getResizedUrl(
+  url: string | null | undefined,
+  width: number,
+  height?: number,
+  resize: 'cover' | 'contain' = 'cover'
+): string {
+  if (!url) return ''
+  if (!url.includes('supabase.co/storage/v1/object/public/')) {
+    return url
+  }
+  const transformUrl = url.replace(
+    '/storage/v1/object/public/',
+    '/storage/v1/render/image/public/'
+  )
+  let params = `width=${width}&resize=${resize}&quality=75`
+  if (height) params += `&height=${height}`
+  return `${transformUrl}?${params}`
+}
+
+/**
  * 用途別のプリセット
  * /meals の体感速度改善のため、listSquare と modal を軽量化
  */

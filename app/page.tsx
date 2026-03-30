@@ -184,7 +184,7 @@ export default async function Home() {
                     >
                       {article.thumbnail_url ? (
                         <Image
-                          src={getPresetThumbnailUrl(article.thumbnail_url)}
+                          src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
                           alt={article.title}
                           width={80}
                           height={42}

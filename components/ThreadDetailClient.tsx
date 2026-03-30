@@ -338,7 +338,7 @@ export function ThreadDetailClient({
                 <div className="mt-4 pl-4">
                   <div className="relative inline-block">
                     <Image
-                      src={getPresetThumbnailUrl(thread.image_url)}
+                      src={getPresetThumbnailUrl(thread.image_url, 'detail')}
                       alt="投稿画像"
                       width={600}
                       height={384}
@@ -414,7 +414,7 @@ export function ThreadDetailClient({
                           <div className="mt-2">
                             <div className="relative inline-block max-w-xs">
                               <Image
-                                src={getPresetThumbnailUrl(comment.image_url)}
+                                src={getPresetThumbnailUrl(comment.image_url, 'listSquare')}
                                 alt="添付画像"
                                 width={320}
                                 height={192}
@@ -568,7 +568,7 @@ export function ThreadDetailClient({
             ×
           </button>
           <Image
-            src={getPresetThumbnailUrl(imageModal)}
+            src={getPresetThumbnailUrl(imageModal, 'modal')}
             alt="拡大画像"
             fill
             className="object-contain"
