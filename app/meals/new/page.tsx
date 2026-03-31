@@ -20,7 +20,6 @@ export default function MealsNewPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [bloodSugar, setBloodSugar] = useState('')
   const [isPublic, setIsPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -85,7 +84,7 @@ export default function MealsNewPage() {
         tags: selectedTags,
         diabetes_type: userProfile?.diabetes_type || null,  // プロフィールから自動セット
         age_group: userProfile?.age_group || null,           // プロフィールから自動セット
-        blood_sugar_after: bloodSugar ? parseInt(bloodSugar) : null,
+        blood_sugar_after: null,
         is_public: isPublic,
       })
       if (insertError) throw insertError
@@ -169,19 +168,6 @@ export default function MealsNewPage() {
           </div>
         </div>
 
-        {/* 食後血糖値 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">食後血糖値（任意・mg/dL）</label>
-          <input
-            type="number"
-            value={bloodSugar}
-            onChange={e => setBloodSugar(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-rose-400 outline-none text-sm"
-            placeholder="例: 145"
-            min="50"
-            max="600"
-          />
-        </div>
 
         {/* 公開設定 */}
         <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
