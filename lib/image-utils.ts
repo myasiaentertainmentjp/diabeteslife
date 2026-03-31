@@ -90,8 +90,8 @@ export const IMAGE_PRESETS = {
   listSquare: { width: 320, quality: 60 },
   /** 詳細ページ用 */
   detail: { width: 800, quality: 80 },
-  /** モーダル（拡大表示）用 - スマホ閲覧向けに軽量化 */
-  modal: { width: 1000, quality: 72 },
+  /** モーダル（拡大表示）用 - 軽量化のため600pxに削減 */
+  modal: { width: 600, quality: 72 },
   /** アバター用 */
   avatar: { width: 100, quality: 70 },
 } as const
