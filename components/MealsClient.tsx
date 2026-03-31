@@ -12,10 +12,8 @@ import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
 
 /**
- * 一覧カード用画像コンポーネント（Instagram方式）
- * - 正方形カード + object-cover でクロップ許容
- * - 背景ぼかし禁止、二重レイヤー禁止
- * - 細い帯表示を防ぐため、見映え優先
+ * 一覧カード用画像コンポーネント（object-contain で全体表示）
+ * - 正方形カード内に画像全体を表示（トリミングなし）
  * - Transform URL失敗時はraw URLにフォールバック
  */
 function MealCardImage({ src, alt }: { src: string; alt: string }) {
@@ -46,7 +44,7 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
       alt={alt}
       fill
       sizes="33vw"
-      className="object-cover"
+      className="object-contain"
       loading="lazy"
       onError={handleError}
     />
@@ -183,7 +181,6 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
     const { data: newPosts } = await query
 
     if (newPosts && newPosts.length > 0) {
-      // ユーザー名を取得
       const userIds = [...new Set(newPosts.map(p => p.user_id))]
       const { data: users } = await supabase.from('users').select('id, display_name').in('id', userIds)
       const usersMap = Object.fromEntries((users || []).map(u => [u.id, u.display_name || 'ユーザー']))
@@ -202,7 +199,6 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
     setLoadingMore(false)
   }
 
-  // URLパラメーターを組み立てて遷移
   function buildUrl(params: { tag?: string; dtype?: string; age?: string }) {
     const search = new URLSearchParams()
     if (params.tag) search.set('tag', params.tag)
@@ -287,15 +283,6 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
           <h1 className="text-2xl font-bold text-gray-900">食事の記録</h1>
           <p className="text-sm text-gray-500 mt-0.5">みんなの糖尿病食をのぞいてみよう</p>
         </div>
-        {user && (
-          <Link
-            href="/meals/new"
-            className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium text-sm"
-          >
-            <Plus size={16} />
-            投稿する
-          </Link>
-        )}
       </div>
 
       {/* フィルターUI */}
@@ -394,11 +381,12 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
           <p className="font-medium">まだ投稿がありません</p>
-          {user && (
-            <Link href="/meals/new" className="inline-block mt-4 text-rose-500 text-sm hover:underline">
-              最初の投稿をしてみましょう →
-            </Link>
-          )}
+          <button
+            onClick={() => router.push(user ? '/meals/new' : '/login')}
+            className="inline-block mt-4 text-rose-500 text-sm hover:underline"
+          >
+            最初の投稿をしてみましょう →
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-1">
@@ -408,7 +396,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
               onClick={() => openPost(post)}
               className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 画像: 正方形内に全体表示（フォールバック付き） */}
+              {/* 画像: 正方形内に全体表示（object-contain） */}
               <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
@@ -459,6 +447,15 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         </div>
       )}
 
+      {/* 投稿FABボタン（右下固定） */}
+      <button
+        onClick={() => router.push(user ? '/meals/new' : '/login')}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
+        aria-label="食事を投稿する"
+      >
+        <Plus size={26} />
+      </button>
+
       {/* 投稿詳細モーダル */}
       {selectedPost && (
         <div
@@ -469,8 +466,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             className="bg-white rounded-xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col md:flex-row"
             onClick={e => e.stopPropagation()}
           >
-            {/* 画像 - modal用Transform URL + フォールバック */}
-            <div className="relative aspect-square md:w-1/2 flex-shrink-0 bg-black">
+            {/* 画像 - モバイルは高さ制限、PCは正方形 */}
+            <div className="relative h-56 sm:h-72 md:h-auto md:aspect-square md:w-1/2 flex-shrink-0 bg-black">
               <MealModalImage
                 src={selectedPost.image_url}
                 alt={selectedPost.caption || '食事の記録'}
@@ -498,7 +495,6 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                           {AGE_GROUP_OPTIONS.find(o => o.value === selectedPost.age_group)?.label}
                         </span>
                       )}
-                      
                     </div>
                   </div>
                 </div>
@@ -507,22 +503,17 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 </button>
               </div>
 
-              {/* キャプション・タグ・血糖値 */}
+              {/* キャプション・タグ（食後血糖値は表示しない） */}
               <div className="p-4 border-b border-gray-100">
                 {selectedPost.caption && (
                   <p className="text-sm text-gray-700 mb-2">{selectedPost.caption}</p>
                 )}
                 {selectedPost.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
+                  <div className="flex flex-wrap gap-1">
                     {selectedPost.tags.map(tag => (
                       <span key={tag} className="text-xs text-rose-500 font-medium">#{tag}</span>
                     ))}
                   </div>
-                )}
-                {selectedPost.blood_sugar_after && (
-                  <p className="text-xs text-gray-500">
-                    食後血糖値: <span className="font-medium text-gray-700">{selectedPost.blood_sugar_after} mg/dL</span>
-                  </p>
                 )}
               </div>
 
