@@ -20,6 +20,7 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
   const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
   const [fallbackAttempted, setFallbackAttempted] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   const handleError = useCallback(() => {
     if (!fallbackAttempted) {
@@ -39,15 +40,21 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <Image
-      src={imageSrc}
-      alt={alt}
-      fill
-      sizes="33vw"
-      className="object-contain"
-      loading="lazy"
-      onError={handleError}
-    />
+    <>
+      {!loaded && (
+        <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
+      )}
+      <Image
+        src={imageSrc}
+        alt={alt}
+        fill
+        sizes="33vw"
+        className={`object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        loading="lazy"
+        onError={handleError}
+        onLoadingComplete={() => setLoaded(true)}
+      />
+    </>
   )
 }
 
@@ -450,7 +457,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       {/* 投稿FABボタン（右下固定） */}
       <button
         onClick={() => router.push(user ? '/meals/new' : '/login')}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
+        className="fixed bottom-20 right-5 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
         aria-label="食事を投稿する"
       >
         <Plus size={26} />
@@ -467,7 +474,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             onClick={e => e.stopPropagation()}
           >
             {/* 画像 - モバイルは高さ制限、PCは正方形 */}
-            <div className="relative h-56 sm:h-72 md:h-auto md:aspect-square md:w-1/2 flex-shrink-0 bg-black">
+            <div className="relative h-44 sm:h-52 md:h-auto md:aspect-square md:w-1/2 flex-shrink-0 bg-black">
               <MealModalImage
                 src={selectedPost.image_url}
                 alt={selectedPost.caption || '食事の記録'}
