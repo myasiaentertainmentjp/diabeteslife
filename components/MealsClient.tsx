@@ -444,8 +444,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       {/* 投稿FABボタン（右下固定・safe-area対応） */}
       <button
         onClick={() => router.push(user ? '/meals/new' : '/login')}
-        className="fixed right-5 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
-        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+        className="fixed right-4 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
+        style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
         aria-label="食事を投稿する"
       >
         <Plus size={26} />
@@ -461,8 +461,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             className="bg-white rounded-xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col md:flex-row"
             onClick={e => e.stopPropagation()}
           >
-            {/* 画像 - モバイルは高さ制限、PCは正方形 */}
-            <div className="relative h-44 sm:h-52 md:h-auto md:aspect-square md:w-1/2 flex-shrink-0 bg-black">
+            {/* 画像 - モバイル・PC共に正方形 */}
+            <div className="relative aspect-square w-full md:w-1/2 flex-shrink-0 bg-black">
               <MealModalImage
                 src={selectedPost.image_url}
                 alt={selectedPost.caption || '食事の記録'}
@@ -498,18 +498,35 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                 </button>
               </div>
 
-              {/* キャプション・タグ（食後血糖値は表示しない） */}
+              {/* キャプション・タグ・いいね */}
               <div className="p-4 border-b border-gray-100">
-                {selectedPost.caption && (
-                  <p className="text-sm text-gray-700 mb-2">{selectedPost.caption}</p>
-                )}
-                {selectedPost.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {selectedPost.tags.map(tag => (
-                      <span key={tag} className="text-xs text-rose-500 font-medium">#{tag}</span>
-                    ))}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    {selectedPost.caption && (
+                      <p className="text-sm text-gray-700 mb-2">{selectedPost.caption}</p>
+                    )}
+                    {selectedPost.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {selectedPost.tags.map(tag => (
+                          <span key={tag} className="text-xs text-rose-500 font-medium">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                  {/* いいねボタン（ハートのみ） */}
+                  <button
+                    onClick={() => handleLike(selectedPost.id)}
+                    className="flex-shrink-0 p-1"
+                  >
+                    <Heart
+                      size={22}
+                      className={`transition-colors ${
+                        likedIds.has(selectedPost.id) ? 'text-rose-500' : 'text-gray-300 hover:text-rose-400'
+                      }`}
+                      fill={likedIds.has(selectedPost.id) ? 'currentColor' : 'none'}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* コメント一覧 */}
@@ -534,19 +551,6 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
                     </div>
                   ))
                 )}
-              </div>
-
-              {/* いいね */}
-              <div className="px-4 py-2 border-t border-gray-100">
-                <button
-                  onClick={() => handleLike(selectedPost.id)}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                    likedIds.has(selectedPost.id) ? 'text-rose-500' : 'text-gray-500 hover:text-rose-500'
-                  }`}
-                >
-                  <Heart size={18} fill={likedIds.has(selectedPost.id) ? 'currentColor' : 'none'} />
-                  {posts.find(p => p.id === selectedPost.id)?.likes_count ?? selectedPost.likes_count} いいね
-                </button>
               </div>
 
               {/* コメント入力 */}
