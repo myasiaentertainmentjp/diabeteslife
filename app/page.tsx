@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { HeroSlider } from '@/components/HeroSlider'
 import { HomePageTabs } from '@/components/HomePageTabs'
@@ -101,12 +100,19 @@ export default async function Home() {
                       href="/meals"
                       className="relative flex-shrink-0 w-28 h-28 bg-gray-100 rounded-xl overflow-hidden group"
                     >
-                      <Image
+                      <img
                         src={getResizedUrl(meal.image_url, 200, 200, 'cover')}
                         alt={meal.caption || '食事の記録'}
-                        fill
-                        sizes="112px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                        className="group-hover:scale-105 transition-transform duration-200"
                       />
                     </Link>
                   ))}
@@ -183,13 +189,17 @@ export default async function Home() {
                       className="flex items-start gap-3 group"
                     >
                       {article.thumbnail_url ? (
-                        <Image
+                        <img
                           src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
                           alt={article.title}
-                          width={80}
-                          height={42}
-                          className="object-cover rounded shrink-0"
-                          style={{ aspectRatio: '1.91 / 1' }}
+                          loading="lazy"
+                          style={{
+                            width: '80px',
+                            height: '42px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            flexShrink: 0,
+                          }}
                         />
                       ) : (
                         <div

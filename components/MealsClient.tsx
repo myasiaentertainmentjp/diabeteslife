@@ -13,24 +13,11 @@ const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食',
 
 /**
  * 一覧カード用画像コンポーネント（正方形トリミング）
- * - 正方形カード内にobject-coverでトリミング表示
- * - Transform URL失敗時はraw URLにフォールバック
- * - fill + 明示的style指定でunoptimized環境でも確実に動作
+ * - 素のimgタグでunoptimized環境でも確実にサイズ制御
+ * - Supabase Transform APIで最適化済み画像を使用
  */
 function MealCardImage({ src, alt }: { src: string; alt: string }) {
-  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
-  const [fallbackAttempted, setFallbackAttempted] = useState(false)
   const [hasError, setHasError] = useState(false)
-  const [loaded, setLoaded] = useState(false)
-
-  const handleError = useCallback(() => {
-    if (!fallbackAttempted) {
-      setImageSrc(getRawPublicUrl(src))
-      setFallbackAttempted(true)
-    } else {
-      setHasError(true)
-    }
-  }, [src, fallbackAttempted])
 
   if (hasError) {
     return (
@@ -41,22 +28,20 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <>
-      {!loaded && (
-        <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
-      )}
-      <Image
-        src={imageSrc}
-        alt={alt}
-        fill
-        sizes="33vw"
-        className={`object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-        loading="lazy"
-        onError={handleError}
-        onLoad={() => setLoaded(true)}
-      />
-    </>
+    <img
+      src={getPresetThumbnailUrl(src, 'listSquare')}
+      alt={alt}
+      onError={() => setHasError(true)}
+      loading="lazy"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+      }}
+    />
   )
 }
 
