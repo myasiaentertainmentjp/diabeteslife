@@ -24,8 +24,6 @@ const categories: ThreadCategory[] = [
 export default async function Home() {
   const supabase = await createServerSupabaseClient()
   const now = new Date().toISOString()
-  const oneWeekAgo = new Date()
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 
   // Fetch popular threads (by comments count)
   const { data: popularThreads } = await supabase
@@ -45,12 +43,11 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(25)
 
-  // Fetch weekly popular threads
-  const { data: weeklyPopularThreads } = await supabase
+  // Fetch popular threads (all time)
+  const { data: popularTopics } = await supabase
     .from('threads')
     .select('id, thread_number, title, category, created_at, user_id, comments_count')
     .gt('comments_count', 0)
-    .gte('created_at', oneWeekAgo.toISOString())
     .lte('created_at', now)
     .order('comments_count', { ascending: false })
     .order('created_at', { ascending: false })
@@ -140,18 +137,18 @@ export default async function Home() {
             {/* Post Button (Client Component for auth check) */}
             <PostButton />
 
-            {/* Weekly Popular Topics */}
+            {/* Popular Topics */}
             <div className="bg-white rounded-lg shadow-sm">
               <div className="px-4 py-3 border-b border-gray-100">
-                <h2 className="font-bold text-gray-800">一週間の人気トピック</h2>
+                <h2 className="font-bold text-gray-800">人気トピック</h2>
               </div>
-              {!weeklyPopularThreads || weeklyPopularThreads.length === 0 ? (
+              {!popularTopics || popularTopics.length === 0 ? (
                 <div className="px-4 py-6 text-center text-gray-500 text-sm">
                   まだトピックがありません
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
-                  {weeklyPopularThreads.map((thread, index) => (
+                  {popularTopics.map((thread, index) => (
                     <li key={thread.id}>
                       <Link
                         href={`/threads/${thread.thread_number || thread.id}`}
