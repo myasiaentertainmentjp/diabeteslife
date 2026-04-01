@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, TouchEvent } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -43,6 +43,8 @@ export function HeroSlider() {
   const [pos, setPos] = useState(1)
   const [animated, setAnimated] = useState(true)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
@@ -79,6 +81,23 @@ export function HeroSlider() {
   const handleNext = () => goToPos(pos + 1)
   const handleDotClick = (index: number) => goToPos(index + 1)
 
+  // タッチスワイプ対応
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current
+    const threshold = 50 // スワイプと判定する最小距離
+    if (diff > threshold) {
+      handleNext() // 左スワイプ → 次へ
+    } else if (diff < -threshold) {
+      handlePrev() // 右スワイプ → 前へ
+    }
+  }
+
   const dotIndex = (pos - 1 + SLIDE_COUNT) % SLIDE_COUNT
 
   // PC: 3カード表示、SP: 1カード表示
@@ -88,7 +107,12 @@ export function HeroSlider() {
   return (
     <div className="relative w-full overflow-hidden bg-gradient-to-b from-rose-50 to-white">
       {/* SP版 (モバイル) */}
-      <div className="md:hidden py-4 overflow-hidden">
+      <div
+        className="md:hidden py-4 overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
           className="flex"
           style={{
@@ -126,11 +150,11 @@ export function HeroSlider() {
                       className="object-cover"
                       sizes="84vw"
                     />
-                    {/* グラデーションオーバーレイ */}
+                    {/* グラデーションオーバーレイ（下部を濃く） */}
                     <div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 100%)',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.1) 100%)',
                       }}
                     />
                     {/* テキスト */}
@@ -140,14 +164,14 @@ export function HeroSlider() {
                         style={{
                           fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
                           whiteSpace: 'pre-line',
-                          textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                          textShadow: '0 2px 12px rgba(0,0,0,0.8)',
                         }}
                       >
                         {slide.title}
                       </h2>
                       <p
-                        className="text-white/80 text-sm leading-snug"
-                        style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+                        className="text-white/90 text-sm leading-snug"
+                        style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
                       >
                         {slide.description}
                       </p>
@@ -200,11 +224,11 @@ export function HeroSlider() {
                       className="object-cover"
                       sizes="33vw"
                     />
-                    {/* グラデーションオーバーレイ */}
+                    {/* グラデーションオーバーレイ（下部を濃く） */}
                     <div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 100%)',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.1) 100%)',
                       }}
                     />
                     {/* テキスト */}
@@ -214,14 +238,14 @@ export function HeroSlider() {
                         style={{
                           fontSize: 'clamp(1.25rem, 2vw, 1.75rem)',
                           whiteSpace: 'pre-line',
-                          textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                          textShadow: '0 2px 12px rgba(0,0,0,0.8)',
                         }}
                       >
                         {slide.title}
                       </h2>
                       <p
-                        className="text-white/80 text-sm md:text-base leading-snug"
-                        style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+                        className="text-white/90 text-sm md:text-base leading-snug"
+                        style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
                       >
                         {slide.description}
                       </p>

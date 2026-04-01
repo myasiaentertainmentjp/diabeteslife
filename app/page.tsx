@@ -236,7 +236,7 @@ export default async function Home() {
                 {categories.map((category) => (
                   <li key={category}>
                     <Link
-                      href={`/threads?category=${category}`}
+                      href={category === 'todays_meal' ? '/meals' : `/threads?category=${category}`}
                       className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
                     >
                       <span className="text-gray-700 text-sm">
