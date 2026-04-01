@@ -49,7 +49,7 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="33vw"
-        className={`object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`object-contain transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         loading="lazy"
         onError={handleError}
         onLoadingComplete={() => setLoaded(true)}
