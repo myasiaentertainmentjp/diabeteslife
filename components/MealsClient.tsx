@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getPresetThumbnailUrl, getRawPublicUrl, getResizedUrl } from '@/lib/image-utils'
+import { getRawPublicUrl, getResizedUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー'] as const
@@ -46,10 +46,10 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
 }
 
 /**
- * モーダル用画像コンポーネント（Transform URL + raw URLフォールバック）
+ * モーダル用画像コンポーネント（正方形クロップ済み画像 + raw URLフォールバック）
  */
 function MealModalImage({ src, alt }: { src: string; alt: string }) {
-  const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'modal'))
+  const [imageSrc, setImageSrc] = useState(getResizedUrl(src, 600, 600, 'cover'))
   const [fallbackAttempted, setFallbackAttempted] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
@@ -72,7 +72,7 @@ function MealModalImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="(max-width: 768px) 100vw, 600px"
-        className={`object-contain ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
+        className={`object-cover ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
         priority
         onLoadingComplete={() => setLoaded(true)}
         onError={handleError}
