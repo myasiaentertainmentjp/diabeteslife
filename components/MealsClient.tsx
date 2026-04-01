@@ -15,7 +15,7 @@ const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食',
  * 一覧カード用画像コンポーネント（正方形トリミング）
  * - 正方形カード内にobject-coverでトリミング表示
  * - Transform URL失敗時はraw URLにフォールバック
- * - unoptimized: true環境でも確実に動作するよう明示的なサイズ指定
+ * - fill + 明示的style指定でunoptimized環境でも確実に動作
  */
 function MealCardImage({ src, alt }: { src: string; alt: string }) {
   const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
@@ -41,21 +41,22 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <div className="absolute inset-0">
+    <>
       {!loaded && (
         <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
       )}
       <Image
         src={imageSrc}
         alt={alt}
-        width={320}
-        height={320}
-        className={`w-full h-full object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        fill
+        sizes="33vw"
+        className={`object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
         loading="lazy"
         onError={handleError}
         onLoad={() => setLoaded(true)}
       />
-    </div>
+    </>
   )
 }
 
