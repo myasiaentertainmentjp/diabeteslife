@@ -12,9 +12,10 @@ import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー'] as const
 
 /**
- * 一覧カード用画像コンポーネント（object-contain で全体表示）
- * - 正方形カード内に画像全体を表示（トリミングなし）
+ * 一覧カード用画像コンポーネント（正方形トリミング）
+ * - 正方形カード内にobject-coverでトリミング表示
  * - Transform URL失敗時はraw URLにフォールバック
+ * - unoptimized: true環境でも確実に動作するよう明示的なサイズ指定
  */
 function MealCardImage({ src, alt }: { src: string; alt: string }) {
   const [imageSrc, setImageSrc] = useState(getPresetThumbnailUrl(src, 'listSquare'))
@@ -40,21 +41,21 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <>
+    <div className="absolute inset-0">
       {!loaded && (
         <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
       )}
       <Image
         src={imageSrc}
         alt={alt}
-        fill
-        sizes="33vw"
-        className={`object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        width={320}
+        height={320}
+        className={`w-full h-full object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         loading="lazy"
         onError={handleError}
-        onLoadingComplete={() => setLoaded(true)}
+        onLoad={() => setLoaded(true)}
       />
-    </>
+    </div>
   )
 }
 
@@ -383,7 +384,7 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
         )}
       </div>
 
-      {/* 正方形グリッド - 画像全体表示（フォールバック付き） */}
+      {/* 正方形グリッド - object-coverでトリミング表示 */}
       {posts.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-4 opacity-50" />
@@ -401,9 +402,9 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
             <button
               key={post.id}
               onClick={() => openPost(post)}
-              className="relative aspect-square overflow-hidden rounded-md group bg-neutral-100"
+              className="relative w-full aspect-square overflow-hidden rounded-md group bg-neutral-100"
             >
-              {/* 画像: 正方形内に全体表示（object-contain） */}
+              {/* 画像: 正方形トリミング（object-cover） */}
               <MealCardImage src={post.image_url} alt={post.caption || '食事の記録'} />
               {/* 種別・年代バッジ */}
               {(post.diabetes_type || post.age_group) && (
