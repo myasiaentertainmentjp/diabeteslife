@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase'
 import { getPresetThumbnailUrl, getRawPublicUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
-const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー']
+const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー'] as const
 
 /**
  * 一覧カード用画像コンポーネント（object-contain で全体表示）
