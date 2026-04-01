@@ -9,6 +9,7 @@ import { ProfileSetupModal } from "@/components/ProfileSetupModal"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { GoogleAnalytics } from "@/components/GoogleAnalytics"
+import { ScrollToTop } from "@/components/ScrollToTop"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -127,6 +128,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>
+          <ScrollToTop />
           <div className="min-h-screen flex flex-col">
             <Suspense fallback={<HeaderFallback />}>
               <Header />
