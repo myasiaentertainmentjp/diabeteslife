@@ -444,8 +444,8 @@ export function MealsClient({ initialPosts, selectedTag, selectedDiabetesType, s
       {/* 投稿FABボタン（右下固定・safe-area対応） */}
       <button
         onClick={() => router.push(user ? '/meals/new' : '/login')}
-        className="fixed right-4 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
-        style={{ bottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
+        className="fixed right-5 w-14 h-14 bg-rose-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-all z-40"
+        style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
         aria-label="食事を投稿する"
       >
         <Plus size={26} />
