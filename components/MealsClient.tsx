@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase'
-import { getPresetThumbnailUrl, getRawPublicUrl } from '@/lib/image-utils'
+import { getPresetThumbnailUrl, getRawPublicUrl, getResizedUrl } from '@/lib/image-utils'
 import { Heart, MessageCircle, Plus, X, Loader2, UtensilsCrossed, ChevronDown } from 'lucide-react'
 
 const MEAL_TAGS = ['低糖質', '外食', '手作り', 'コンビニ', '間食', '糖質オフ', 'ヘルシー'] as const
@@ -29,7 +29,7 @@ function MealCardImage({ src, alt }: { src: string; alt: string }) {
 
   return (
     <img
-      src={getPresetThumbnailUrl(src, 'listSquare')}
+      src={getResizedUrl(src, 320, 320, 'cover')}
       alt={alt}
       onError={() => setHasError(true)}
       loading="lazy"

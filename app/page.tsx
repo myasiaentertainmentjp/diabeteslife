@@ -6,7 +6,7 @@ import { HomeThreadList } from '@/components/HomeThreadList'
 import { PostButton } from '@/components/PostButton'
 import { THREAD_CATEGORY_LABELS, ThreadCategory } from '@/types/database'
 import { ChevronRight, FileText, Camera } from 'lucide-react'
-import { getPresetThumbnailUrl, getResizedUrl } from '@/lib/image-utils'
+import { getResizedUrl } from '@/lib/image-utils'
 
 // 1時間キャッシュ
 export const revalidate = 3600
@@ -190,7 +190,7 @@ export default async function Home() {
                     >
                       {article.thumbnail_url ? (
                         <img
-                          src={getPresetThumbnailUrl(article.thumbnail_url, 'sidebar')}
+                          src={getResizedUrl(article.thumbnail_url, 160, 84, 'cover')}
                           alt={article.title}
                           loading="lazy"
                           style={{
