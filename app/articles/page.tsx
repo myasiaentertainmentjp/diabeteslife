@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { getPresetThumbnailUrl } from '@/lib/image-utils'
 import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Breadcrumb, BreadcrumbItem } from '@/components/Breadcrumb'
@@ -157,7 +158,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 {article.thumbnail_url && (
                   <div className="aspect-video bg-gray-100 relative">
                     <Image
-                      src={article.thumbnail_url}
+                      src={getPresetThumbnailUrl(article.thumbnail_url, 'grid')}
                       alt={article.title}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
