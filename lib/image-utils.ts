@@ -13,7 +13,9 @@
 export function getThumbnailUrl(
   url: string | null | undefined,
   width = 400,
-  quality = 75
+  quality = 75,
+  height?: number,
+  resize: 'cover' | 'contain' = 'cover'
 ): string {
   if (!url) return ''
 
@@ -28,7 +30,9 @@ export function getThumbnailUrl(
     '/storage/v1/render/image/public/'
   )
 
-  return `${transformUrl}?width=${width}&quality=${quality}`
+  let params = `width=${width}&quality=${quality}&resize=${resize}`
+  if (height) params += `&height=${height}`
+  return `${transformUrl}?${params}`
 }
 
 /**
@@ -81,20 +85,20 @@ export function getResizedUrl(
  */
 export const IMAGE_PRESETS = {
   /** サイドバー用サムネイル */
-  sidebar: { width: 200, quality: 70 },
-  /** 一覧用サムネイル */
-  list: { width: 400, quality: 75 },
-  /** グリッド一覧用（/meals等） */
-  grid: { width: 280, quality: 70 },
+  sidebar: { width: 200, height: 113, quality: 70 },
+  /** 一覧用サムネイル（16:9） */
+  list: { width: 400, height: 225, quality: 75 },
+  /** グリッド一覧用（/meals等）16:9 */
+  grid: { width: 280, height: 158, quality: 70 },
   /** 一覧正方形カード用（/meals）- 3列グリッド向けに軽量化 */
   listSquare: { width: 320, quality: 60 },
   /** 詳細ページ用 */
-  detail: { width: 800, quality: 80 },
+  detail: { width: 800, height: 450, quality: 80 },
   /** モーダル（拡大表示）用 - 軽量化のため600pxに削減 */
   modal: { width: 600, quality: 72 },
   /** アバター用 */
   avatar: { width: 100, quality: 70 },
-} as const
+}
 
 /**
  * プリセットを使用してサムネイルURLを取得
@@ -104,5 +108,6 @@ export function getPresetThumbnailUrl(
   preset: keyof typeof IMAGE_PRESETS
 ): string {
   const { width, quality } = IMAGE_PRESETS[preset]
-  return getThumbnailUrl(url, width, quality)
+  const p = IMAGE_PRESETS[preset] as typeof IMAGE_PRESETS[typeof preset] & { height?: number }
+  return getThumbnailUrl(url, width, quality, p.height, 'cover')
 }
