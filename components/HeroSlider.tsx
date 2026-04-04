@@ -8,28 +8,28 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const slides = [
   {
     id: 1,
-    title: '糖尿病と向き合う\nすべての人へ',
+    title: '糖尿病と向き合うすべての人へ',
     description: '患者さん・ご家族・支える人たちの居場所',
     image: 'https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/hero/hero_slide_1.png',
     link: '/about',
   },
   {
     id: 2,
-    title: '糖尿病と診断された\nあなたへ',
+    title: '糖尿病と診断されたあなたへ',
     description: '同じ経験を持つ仲間と悩みを共有',
     image: 'https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/hero/hero_slide_2.png',
     link: '/threads?category=mental_concerns',
   },
   {
     id: 3,
-    title: 'その足跡が\n未来を守る',
+    title: 'その足跡が未来を守る',
     description: 'HbA1cや体重を継続して記録',
     image: 'https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/hero/hero_slide_3.png',
     link: '/mypage/hba1c',
   },
   {
     id: 4,
-    title: 'みんなの食事が\nここに',
+    title: 'みんなの食事がここに',
     description: '登録無料・匿名OK',
     image: 'https://josanlblwfjdaaezqbnw.supabase.co/storage/v1/object/public/images/hero/hero_slide_4.png',
     link: '/meals',
@@ -162,7 +162,7 @@ export function HeroSlider() {
                       <h2
                         className="text-white font-bold leading-tight mb-1"
                         style={{
-                          fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
+                          fontSize: 'clamp(0.95rem, 3.5vw, 1.4rem)',
                           whiteSpace: 'pre-line',
                           textShadow: '0 2px 12px rgba(0,0,0,0.8)',
                         }}
