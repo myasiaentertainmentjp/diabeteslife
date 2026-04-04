@@ -88,8 +88,8 @@ export const IMAGE_PRESETS = {
   sidebar: { width: 200, height: 113, quality: 70 },
   /** 一覧用サムネイル（16:9） */
   list: { width: 400, height: 225, quality: 75 },
-  /** グリッド一覧用（/meals等）16:9 */
-  grid: { width: 280, height: 158, quality: 70 },
+  /** グリッド一覧用（/meals等）16:9 - SP全幅対応で高解像度 */
+  grid: { width: 800, height: 450, quality: 78 },
   /** 一覧正方形カード用（/meals）- 3列グリッド向けに軽量化 */
   listSquare: { width: 320, quality: 60 },
   /** 詳細ページ用 */
