@@ -276,16 +276,16 @@ export function HeroSlider() {
         <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* ドットナビゲーション */}
-      <div className="flex justify-center gap-2 pb-4">
+      {/* ドットナビゲーション - スライダー内側下部に配置 */}
+      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => handleDotClick(i)}
             className={`rounded-full transition-all duration-300 ${
               i === dotIndex
-                ? 'w-6 h-2 bg-rose-500'
-                : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
+                ? 'w-6 h-2 bg-white'
+                : 'w-2 h-2 bg-white/50 hover:bg-white/80'
             }`}
             aria-label={`スライド ${i + 1}`}
           />
