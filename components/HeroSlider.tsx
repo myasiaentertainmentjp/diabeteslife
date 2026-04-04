@@ -105,7 +105,7 @@ export function HeroSlider() {
   const spTranslate = `translateX(calc(8vw - ${pos} * (84vw + 12px)))`
 
   return (
-    <div className="relative w-full overflow-hidden bg-gradient-to-b from-rose-50 to-white">
+    <div className="relative w-full bg-gradient-to-b from-rose-50 to-white">
       {/* SP版 (モバイル) */}
       <div
         className="md:hidden py-4 overflow-hidden"
@@ -276,16 +276,16 @@ export function HeroSlider() {
         <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* ドットナビゲーション - スライダー内側下部に配置 */}
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
+      {/* ドットナビゲーション */}
+      <div className="flex justify-center gap-2 py-2 md:py-3">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => handleDotClick(i)}
             className={`rounded-full transition-all duration-300 ${
               i === dotIndex
-                ? 'w-6 h-2 bg-white'
-                : 'w-2 h-2 bg-white/50 hover:bg-white/80'
+                ? 'w-6 h-2 bg-rose-500'
+                : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
             }`}
             aria-label={`スライド ${i + 1}`}
           />
