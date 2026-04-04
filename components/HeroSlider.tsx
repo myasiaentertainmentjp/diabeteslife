@@ -162,7 +162,7 @@ export function HeroSlider() {
                       <h2
                         className="text-white font-bold leading-tight mb-1"
                         style={{
-                          fontSize: 'clamp(0.95rem, 3.5vw, 1.4rem)',
+                          fontSize: 'clamp(1.2rem, 4.5vw, 1.6rem)',
                           whiteSpace: 'pre-line',
                           textShadow: '0 2px 12px rgba(0,0,0,0.8)',
                         }}
@@ -170,7 +170,7 @@ export function HeroSlider() {
                         {slide.title}
                       </h2>
                       <p
-                        className="text-white/90 text-sm leading-snug"
+                        className="text-white/80 text-xs leading-snug"
                         style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
                       >
                         {slide.description}
@@ -236,7 +236,7 @@ export function HeroSlider() {
                       <h2
                         className="text-white font-bold leading-tight mb-1"
                         style={{
-                          fontSize: 'clamp(1.25rem, 2vw, 1.75rem)',
+                          fontSize: 'clamp(1.5rem, 2.2vw, 2rem)',
                           whiteSpace: 'pre-line',
                           textShadow: '0 2px 12px rgba(0,0,0,0.8)',
                         }}
