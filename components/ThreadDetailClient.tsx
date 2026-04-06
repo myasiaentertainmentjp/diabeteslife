@@ -143,7 +143,7 @@ export function ThreadDetailClient({
   }
 
   // スレッドがロックされているかチェック
-  const isThreadLocked = thread?.status === 'locked'
+  const isThreadLocked = thread?.is_locked === true
   const isThreadExpired = thread?.created_at
     ? new Date(thread.created_at) < new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
     : false
