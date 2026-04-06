@@ -144,6 +144,8 @@ export function ThreadDetailClient({
 
   // スレッドがロックされているかチェック
   const isThreadLocked = thread?.is_locked === true
+  const nextThreadId = thread?.next_thread_id
+  const isContinuous = thread?.is_continuous === true
   const isThreadExpired = thread?.created_at
     ? new Date(thread.created_at) < new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
     : false
@@ -478,12 +480,24 @@ export function ThreadDetailClient({
 
       {/* スレッド締め切り表示 */}
       {isClosed && (
-        <div className="mx-4 mb-4 px-4 py-3 bg-gray-100 rounded-xl text-center">
-          <p className="text-sm text-gray-500 font-medium">
-            {isThreadFull
-              ? `このスレッドはコメント数が上限（500件）に達したため締め切りました`
-              : `このスレッドは${isThreadLocked ? '締め切られました' : '作成から90日が経過したため締め切りました'}`}
-          </p>
+        <div className="mx-4 mb-4 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 bg-gray-100 text-center">
+            <p className="text-sm text-gray-500 font-medium">
+              {isThreadFull
+                ? 'このスレッドはコメント数が上限（500件）に達したため締め切りました'
+                : isThreadLocked
+                ? '締め切られました'
+                : '作成から90日が経過したため締め切りました'}
+            </p>
+          </div>
+          {nextThreadId && (
+            <a
+              href={`/threads/${nextThreadId}`}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 transition-colors"
+            >
+              <span>続きはこちら →</span>
+            </a>
+          )}
         </div>
       )}
 
