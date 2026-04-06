@@ -142,9 +142,18 @@ export function ThreadDetailClient({
     return ngWords.some((word) => lowerText.includes(word))
   }
 
+  // スレッドがロックされているかチェック
+  const isThreadLocked = thread?.status === 'locked'
+  const isThreadExpired = thread?.created_at
+    ? new Date(thread.created_at) < new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+    : false
+  const isThreadFull = (thread?.comments_count ?? 0) >= (thread?.max_comments_count ?? 500)
+  const isClosed = isThreadLocked || isThreadExpired || isThreadFull
+
   async function handleSubmitComment(e: React.FormEvent) {
     e.preventDefault()
     if (!user || !commentContent.trim() || !thread?.id) return
+    if (isClosed) return
 
     setError('')
     setSubmitting(true)
@@ -356,6 +365,11 @@ export function ThreadDetailClient({
                 <MessageSquare size={20} className="text-gray-600" />
                 <h2 className="font-semibold text-gray-800">
                   コメント ({comments.length})
+        {!isClosed && thread?.max_comments_count && (
+          <span className="text-xs text-gray-400 ml-2">
+            残り{(thread.max_comments_count - (thread.comments_count ?? 0))}件
+          </span>
+        )}
                 </h2>
               </div>
             </div>
@@ -462,8 +476,19 @@ export function ThreadDetailClient({
         </div>
       </div>
 
+      {/* スレッド締め切り表示 */}
+      {isClosed && (
+        <div className="mx-4 mb-4 px-4 py-3 bg-gray-100 rounded-xl text-center">
+          <p className="text-sm text-gray-500 font-medium">
+            {isThreadFull
+              ? `このスレッドはコメント数が上限（500件）に達したため締め切りました`
+              : `このスレッドは${isThreadLocked ? '締め切られました' : '作成から90日が経過したため締め切りました'}`}
+          </p>
+        </div>
+      )}
+
       {/* Floating comment button */}
-      {!mobileCommentOpen && (
+      {!mobileCommentOpen && !isClosed && (
         <button
           onClick={() => {
             setMobileCommentOpen(true)
